@@ -18,7 +18,7 @@
  * Copyright (c) 2020, Dropbox, Inc. All rights reserved.
  */
 
-package com.dropbox.anakin
+package com.dropbox.detector
 
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -210,7 +210,6 @@ class GitClientImpl(
                 .redirectError(ProcessBuilder.Redirect.PIPE)
                 .start()
 
-            proc.waitFor(5, TimeUnit.MINUTES)
             val stdout = proc
                 .inputStream
                 .bufferedReader()
@@ -219,6 +218,9 @@ class GitClientImpl(
                 .errorStream
                 .bufferedReader()
                 .readText()
+
+            proc.waitFor(5, TimeUnit.MINUTES)
+
             val message = stdout + stderr
             if (stderr != "") {
                 logger?.error("Response: $message")

@@ -16,7 +16,7 @@ buildscript {
     }
 }
 
-apply plugin: "com.dropbox.anakin.AnakinPlugin"
+apply plugin: "com.dropbox.detector.AffectedModuleDetector"
 
 allprojects {
     repositories {

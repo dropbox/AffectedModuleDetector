@@ -2,12 +2,12 @@
  * Copyright (c) 2020, Dropbox, Inc. All rights reserved.
  */
 
-package com.dropbox.anakin
+package com.dropbox.detector
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-class AnakinPlugin : Plugin<Project> {
+class AffectedModuleDetectorPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         require(project.isRoot) {
             "Must be applied to root project, but was found on ${project.path} instead."
@@ -16,6 +16,9 @@ class AnakinPlugin : Plugin<Project> {
             AffectedModuleConfiguration.name,
             AffectedModuleConfiguration()
         )
-        AffectedModuleDetector.configure(project.gradle, project)
+        AffectedModuleDetector.configure(
+            project.gradle,
+            project
+        )
     }
 }

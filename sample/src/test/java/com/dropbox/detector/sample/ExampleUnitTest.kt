@@ -1,4 +1,4 @@
-package com.dropbox.anakin.sample
+package com.dropbox.detector.sample
 
 import org.junit.Test
 

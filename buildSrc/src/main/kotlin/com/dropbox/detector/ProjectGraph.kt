@@ -18,7 +18,7 @@
  * Copyright (c) 2020, Dropbox, Inc. All rights reserved.
  */
 
-package com.dropbox.anakin
+package com.dropbox.detector
 
 import java.io.File
 import org.gradle.api.Project

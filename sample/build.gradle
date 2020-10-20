@@ -1,4 +1,4 @@
-import com.dropbox.anakin.AffectedModuleDetector
+import com.dropbox.detector.AffectedModuleDetector
 
 plugins {
     id 'com.android.application'
@@ -10,7 +10,7 @@ android {
     buildToolsVersion "30.0.2"
 
     defaultConfig {
-        applicationId "com.dropbox.anakin.sample"
+        applicationId "com.dropbox.detector.sample"
         minSdkVersion 23
         targetSdkVersion 30
         versionCode 1

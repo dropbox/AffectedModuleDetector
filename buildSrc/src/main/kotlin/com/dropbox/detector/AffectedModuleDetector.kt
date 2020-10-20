@@ -19,7 +19,7 @@
  */
 @file:JvmName("AffectedModuleDetectorUtil")
 
-package com.dropbox.anakin
+package com.dropbox.detector
 
 import java.io.File
 import java.util.UUID
@@ -28,9 +28,9 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.logging.Logger
-import com.dropbox.anakin.AffectedModuleDetector.Companion.CHANGED_PROJECTS_ARG
-import com.dropbox.anakin.AffectedModuleDetector.Companion.DEPENDENT_PROJECTS_ARG
-import com.dropbox.anakin.AffectedModuleDetector.Companion.ENABLE_ARG
+import com.dropbox.detector.AffectedModuleDetector.Companion.CHANGED_PROJECTS_ARG
+import com.dropbox.detector.AffectedModuleDetector.Companion.DEPENDENT_PROJECTS_ARG
+import com.dropbox.detector.AffectedModuleDetector.Companion.ENABLE_ARG
 
 /**
  * The subsets we allow the projects to be partitioned into.
@@ -144,20 +144,26 @@ abstract class AffectedModuleDetector {
                         "extension added."
                 }
 
-            val logger = ToStringLogger.createWithLifecycle(gradle) { log ->
-                config.logFolder?.let {
-                    val distDir = File(it)
-                    if (!distDir.exists()) {
-                        distDir.mkdirs()
+            val logger =
+                ToStringLogger.createWithLifecycle(
+                    gradle
+                ) { log ->
+                    config.logFolder?.let {
+                        val distDir = File(it)
+                        if (!distDir.exists()) {
+                            distDir.mkdirs()
+                        }
+                        val outputFile =
+                            distDir.resolve(UUID.randomUUID().toString() + "_" + config.logFilename)
+                        outputFile.writeText(log)
+                        println("Wrote dependency log to ${outputFile.absolutePath}")
                     }
-                    val outputFile =
-                        distDir.resolve(UUID.randomUUID().toString() + "_" + config.logFilename)
-                    outputFile.writeText(log)
-                    println("Wrote dependency log to ${outputFile.absolutePath}")
                 }
-            }
 
-            val modules = getModulesProperty(rootProject)
+            val modules =
+                getModulesProperty(
+                    rootProject
+                )
 
             AffectedModuleDetectorImpl(
                 rootProject = rootProject,
@@ -238,7 +244,9 @@ abstract class AffectedModuleDetector {
         @JvmStatic
         @Throws(GradleException::class)
         fun isProjectAffected(project: Project): Boolean {
-            return getOrThrow(project).shouldInclude(project)
+            return getOrThrow(
+                project
+            ).shouldInclude(project)
         }
 
         /**
@@ -248,7 +256,9 @@ abstract class AffectedModuleDetector {
          */
         @Throws(GradleException::class)
         fun hasAffectedProjects(project: Project): Boolean {
-            return getOrThrow(project).hasAffectedProjects()
+            return getOrThrow(
+                project
+            ).hasAffectedProjects()
         }
 
         /**
@@ -258,7 +268,9 @@ abstract class AffectedModuleDetector {
          */
         @JvmStatic
         fun isProjectProvided(project: Project): Boolean {
-            return getOrThrow(project).isProjectProvided(project.path)
+            return getOrThrow(
+                project
+            ).isProjectProvided(project.path)
         }
     }
 }
@@ -328,7 +340,7 @@ class AffectedModuleDetectorImpl constructor(
         ProjectGraph(rootProject, git.getGitRoot(), logger)
     }
 
-    private val affectedProjects by lazy {
+    val affectedProjects by lazy {
         findAffectedProjects()
     }
 
