@@ -105,7 +105,7 @@ abstract class AffectedModuleDetector {
     abstract fun getSubset(project: Project): ProjectSubset
 
     companion object {
-        private const val ROOT_PROP_NAME = "SelectiveTestingPlugin"
+        private const val ROOT_PROP_NAME = "AffectedModuleDetectorPlugin"
         internal const val MODULES_ARG = "affected_module_detector.modules"
         private const val DEPENDENT_PROJECTS_ARG = "affected_module_detector.dependentProjects"
         private const val CHANGED_PROJECTS_ARG = "affected_module_detector.changedProjects"
