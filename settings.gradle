@@ -1,2 +1,4 @@
+include ':sample-util'
+include ':sample-core'
 include ':sample'
 rootProject.name = "sample"
