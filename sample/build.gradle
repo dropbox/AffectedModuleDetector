@@ -1,5 +1,3 @@
-import com.dropbox.detector.AffectedModuleDetector
-
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
@@ -31,6 +29,15 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+
+    affectedModuleDetector {
+        baseDir = "${project.rootDir}"
+        pathsAffectingAllModules = [
+                "buildSrc/"
+        ]
+
+        logFolder = "${project.rootDir}"
     }
 }
 
