@@ -21,16 +21,17 @@
 
 package com.dropbox.detector
 
-import java.io.File
-import java.util.UUID
+import com.dropbox.detector.AffectedModuleDetector.Companion.CHANGED_PROJECTS_ARG
+import com.dropbox.detector.AffectedModuleDetector.Companion.DEPENDENT_PROJECTS_ARG
+import com.dropbox.detector.AffectedModuleDetector.Companion.ENABLE_ARG
+import com.dropbox.detector.AffectedModuleDetector.Companion.MODULES_ARG
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.logging.Logger
-import com.dropbox.detector.AffectedModuleDetector.Companion.CHANGED_PROJECTS_ARG
-import com.dropbox.detector.AffectedModuleDetector.Companion.DEPENDENT_PROJECTS_ARG
-import com.dropbox.detector.AffectedModuleDetector.Companion.ENABLE_ARG
+import java.io.File
+import java.util.UUID
 
 /**
  * The subsets we allow the projects to be partitioned into.

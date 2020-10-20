@@ -1,10 +1,6 @@
 package com.dropbox.detector
 
-import com.dropbox.detector.AttachLogsTestRule
 import com.google.common.truth.Truth
-import java.io.File
-import java.lang.IllegalArgumentException
-import kotlin.test.fail
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.gradle.testfixtures.ProjectBuilder
@@ -16,6 +12,8 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import java.io.File
+import kotlin.test.fail
 
 @RunWith(JUnit4::class)
 class AffectedModuleDetectorImplTest {

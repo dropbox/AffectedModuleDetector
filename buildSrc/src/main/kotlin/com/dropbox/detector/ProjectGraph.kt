@@ -20,11 +20,11 @@
 
 package com.dropbox.detector
 
-import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
+import java.io.File
 
-/**
+ /**
  * Creates a project graph for fast lookup by file path
  */
 class ProjectGraph(project: Project, val gitRoot: File, val logger: Logger? = null) {
