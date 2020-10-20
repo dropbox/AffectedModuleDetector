@@ -1,0 +1,26 @@
+language: android
+jdk:
+  - oraclejdk8
+android:
+  components:
+    - tools
+    - platform-tools
+    - build-tools-29.0.3
+    - android-29
+    - extra-android-m2repository
+  licenses:
+    - android-sdk-license-.+
+script:
+  - "./gradlew assemble"
+before_install:
+  - yes | sdkmanager "platforms;android-29"
+branches:
+  except:
+    - gh-pages
+notifications:
+  email: false
+sudo: false
+cache:
+  directories:
+    - "$HOME/.m2"
+    - "$HOME/.gradle"
