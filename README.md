@@ -55,6 +55,15 @@ Optionally, you can specify the configuration block for the detector:
  - `logFilename`: A filename for the output detector to use
  - `logFolder`: A folder to output the log file in
 
+## Sample Usage
+
+To run this on the sample app, try running the following command:
+```
+./gradlew test -Paffected_module_detector.enable
+```
+
+You should see zero tests run.  Make a change within one of the modules and commit it.  Rerunning the command should execute tests in that module and it's dependent modules.
+
 ## Notes
 
 Special thanks to the AndroidX for originally developing this project at https://android.googlesource.com/platform/frameworks/support/+/androidx-master-dev/buildSrc/src/main/kotlin/androidx/build/dependencyTracker
