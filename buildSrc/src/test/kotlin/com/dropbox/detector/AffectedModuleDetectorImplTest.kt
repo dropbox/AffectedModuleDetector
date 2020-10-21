@@ -1289,14 +1289,7 @@ class AffectedModuleDetectorImplTest {
             includeUncommitted: Boolean
         ) = changedFiles
 
-        override fun findPreviousMergeCL() = lastMergeSha
-
-        // Implement unused abstract method
-        override fun getGitLog(
-            gitCommitRange: GitCommitRange,
-            keepMerges: Boolean,
-            fullProjectDir: File
-        ): List<Commit> = listOf()
+        override fun findPreviousCommitSha() = lastMergeSha
 
         override fun getGitRoot(): File {
             return tmpFolder

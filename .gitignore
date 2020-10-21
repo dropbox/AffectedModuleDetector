@@ -15,3 +15,4 @@
 .cxx
 local.properties
 buildSrc/build
+affected_module_detector.log

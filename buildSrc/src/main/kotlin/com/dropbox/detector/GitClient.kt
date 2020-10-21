@@ -26,17 +26,11 @@ import org.gradle.api.logging.Logger
 
 interface GitClient {
     fun findChangedFilesSince(
-        sha: String,
-        top: String = "HEAD",
+        sha: Sha,
+        top: Sha = "HEAD",
         includeUncommitted: Boolean = false
     ): List<String>
-    fun findPreviousMergeCL(): String?
-
-    fun getGitLog(
-        gitCommitRange: GitCommitRange,
-        keepMerges: Boolean,
-        fullProjectDir: File
-    ): List<Commit>
+    fun findPreviousCommitSha(): Sha?
 
     fun getGitRoot(): File
 
@@ -54,11 +48,14 @@ interface GitClient {
         fun executeAndParse(command: String): List<String>
     }
 }
+
+typealias Sha = String
+
 /**
  * A simple git client that uses system process commands to communicate with the git setup in the
  * given working directory.
  */
-class GitClientImpl(
+internal class GitClientImpl(
     /**
      * The root location for git
      */
@@ -74,8 +71,8 @@ class GitClientImpl(
      * Finds changed file paths since the given sha
      */
     override fun findChangedFilesSince(
-        sha: String,
-        top: String,
+        sha: Sha,
+        top: Sha,
         includeUncommitted: Boolean
     ): List<String> {
         // use this if we don't want local changes
@@ -87,9 +84,9 @@ class GitClientImpl(
     }
 
     /**
-     * checks the history to find the first merge CL.
+     * Checks the history to find the first merge CL.
      */
-    override fun findPreviousMergeCL(): String? {
+    override fun findPreviousCommitSha(): String? {
         return commandRunner.executeAndParse(PREV_MERGE_CMD)
                 .firstOrNull()
                 ?.split(" ")
@@ -117,7 +114,7 @@ class GitClientImpl(
     ): List<Commit> {
         // Split commits string out into individual commits (note: this removes the deliminter)
         val gitLogStringList: List<String>? = commitLogString.split(commitStartDelimiter)
-        var commitLog: MutableList<Commit> = mutableListOf()
+        val commitLog: MutableList<Commit> = mutableListOf()
         gitLogStringList?.filter { gitCommit ->
             gitCommit.trim() != ""
         }?.forEach { gitCommit ->
@@ -132,65 +129,6 @@ class GitClientImpl(
             )
         }
         return commitLog.toList()
-    }
-
-    /**
-     * Converts a diff log command into a [List<Commit>]
-     *
-     * @param gitCommitRange the [GitCommitRange] that defines the parameters of the git log command
-     * @param keepMerges boolean for whether or not to add merges to the return [List<Commit>].
-     * @param fullProjectDir a [File] object that represents the full project directory.
-     */
-    override fun getGitLog(
-        gitCommitRange: GitCommitRange,
-        keepMerges: Boolean,
-        fullProjectDir: File
-    ): List<Commit> {
-        val commitStartDelimiter: String = "_CommitStart"
-        val commitSHADelimiter: String = "_CommitSHA:"
-        val subjectDelimiter: String = "_Subject:"
-        val authorEmailDelimiter: String = "_Author:"
-        val dateDelimiter: String = "_Date:"
-        val bodyDelimiter: String = "_Body:"
-        val localProjectDir: String = fullProjectDir.relativeTo(getGitRoot()).toString()
-        val relativeProjectDir: String = fullProjectDir.relativeTo(workingDir).toString()
-
-        var gitLogOptions: String =
-            "--pretty=format:$commitStartDelimiter%n" +
-                    "$commitSHADelimiter%H%n" +
-                    "$authorEmailDelimiter%ae%n" +
-                    "$dateDelimiter%ad%n" +
-                    "$subjectDelimiter%s%n" +
-                    "$bodyDelimiter%b" +
-                    if (!keepMerges) {
-                        " --no-merges"
-                    } else {
-                        ""
-                    }
-        var gitLogCmd: String
-        if (gitCommitRange.fromExclusive != "") {
-            gitLogCmd = "$GIT_LOG_CMD_PREFIX $gitLogOptions " +
-                    "${gitCommitRange.fromExclusive}..${gitCommitRange.untilInclusive}" +
-                    " -- ./$relativeProjectDir"
-        } else {
-            gitLogCmd = "$GIT_LOG_CMD_PREFIX $gitLogOptions ${gitCommitRange.untilInclusive} -n " +
-                    "${gitCommitRange.n} -- ./$relativeProjectDir"
-        }
-        val gitLogString: String = commandRunner.execute(gitLogCmd)
-        val commits = parseCommitLogString(
-            gitLogString,
-            commitStartDelimiter,
-            commitSHADelimiter,
-            subjectDelimiter,
-            authorEmailDelimiter,
-            localProjectDir
-        )
-        if (commits.isEmpty()) {
-            // Probably an error; log this
-            logger?.warn("No git commits found! Ran this command: '" +
-                    gitLogCmd + "' and received this output: '" + gitLogString + "'")
-        }
-        return commits
     }
 
     override fun getGitRoot(): File {
@@ -243,24 +181,8 @@ class GitClientImpl(
     companion object {
         const val PREV_MERGE_CMD = "git --no-pager rev-parse HEAD~1"
         const val CHANGED_FILES_CMD_PREFIX = "git --no-pager diff --name-only"
-        const val GIT_LOG_CMD_PREFIX = "git --no-pager log --name-only"
     }
 }
-
-/**
- * Defines the parameters for a git log command
- *
- * @property fromExclusive the oldest SHA at which the git log starts. Set to an empty string to use
- * [n]
- * @property untilInclusive the latest SHA included in the git log.  Defaults to HEAD
- * @property n a count of how many commits to go back to.  Only used when [fromExclusive] is an
- * empty string
- */
-data class GitCommitRange(
-    val fromExclusive: String = "",
-    val untilInclusive: String = "HEAD",
-    val n: Int = 0
-)
 
 /**
  * Class implementation of a git commit.  It uses the input delimiters to parse the commit

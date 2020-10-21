@@ -43,7 +43,7 @@ import java.util.UUID
  * order to run all the tests along with their runtime dependencies.
  *
  * The subsets are:
- *  CHANGED_PROJECTS -- The containing projects for any files that were changed in this CL.
+ *  CHANGED_PROJECTS -- The containing projects for any files that were changed.
  *
  *  DEPENDENT_PROJECTS -- Any projects that have a dependency on any of the projects
  *      in the CHANGED_PROJECTS set.
@@ -155,8 +155,8 @@ abstract class AffectedModuleDetector {
                             distDir.mkdirs()
                         }
                         val outputFile =
-                            distDir.resolve(UUID.randomUUID().toString() + "_" + config.logFilename)
-                        outputFile.writeText(log)
+                            distDir.resolve(config.logFilename)
+                        outputFile.appendText(log)
                         println("Wrote dependency log to ${outputFile.absolutePath}")
                     }
                 }
@@ -355,10 +355,6 @@ class AffectedModuleDetectorImpl constructor(
 
     private var unknownFiles: MutableSet<String> = mutableSetOf()
 
-    private val alwaysBuild by lazy {
-        ALWAYS_BUILD.map { path -> rootProject.project(path) }
-    }
-
     override fun shouldInclude(project: Project): Boolean {
         return (
             project.isRoot || (
@@ -396,17 +392,15 @@ class AffectedModuleDetectorImpl constructor(
      * Finds only the set of projects that were directly changed in the commit.
      *
      * Also populates the unknownFiles var which is used in findAffectedProjects
-     *
-     * Returns allProjects if there are no previous merge CLs, which shouldn't happen.
      */
     private fun findChangedProjects(): Set<Project> {
-        val lastMergeSha = git.findPreviousMergeCL() ?: return allProjects
+        val lastMergeSha = git.findPreviousCommitSha() ?: return allProjects
         val changedFiles = git.findChangedFilesSince(
             sha = lastMergeSha,
             includeUncommitted = true
         )
 
-        val changedProjects: MutableSet<Project> = alwaysBuild.toMutableSet()
+        val changedProjects = mutableSetOf<Project>()
 
         for (filePath in changedFiles) {
             val containingProject = findContainingProject(filePath)
@@ -433,10 +427,9 @@ class AffectedModuleDetectorImpl constructor(
      * original changedProjects. Always build is still here to ensure at least 1 thing is built
      */
     private fun findDependentProjects(): Set<Project> {
-        val dependentProjects = changedProjects.flatMap {
+        return changedProjects.flatMap {
             dependencyTracker.findAllDependents(it)
         }.toSet()
-        return dependentProjects + alwaysBuild
     }
 
     /**
@@ -462,7 +455,9 @@ class AffectedModuleDetectorImpl constructor(
         var buildAll = false
 
         // Should only trigger if there are no changedFiles
-        if (changedProjects.size == alwaysBuild.size && unknownFiles.isEmpty()) buildAll = true
+        if (changedProjects.isEmpty() && unknownFiles.isEmpty()) {
+            buildAll = true
+        }
         unknownFiles.forEach {
             if (affectsAllModules(it)) {
                 buildAll = true
@@ -513,12 +508,6 @@ class AffectedModuleDetectorImpl constructor(
             logger?.info("search result for $filePath resulted in ${it?.path}")
         }
     }
-
-    companion object {
-        // dummy test to ensure no failure due to "no instrumentation. We can eventually remove
-        // if we resolve b/127819369
-        private val ALWAYS_BUILD: Set<String> = setOf()
-    }
 }
 
 class AffectedModuleConfiguration {
@@ -528,8 +517,7 @@ class AffectedModuleConfiguration {
     var logFolder: String? = null
 
     /**
-     * Name for the log file.  This will be prefixed with a [UUID.randomUUID] to ensure
-     * multiple runs can be uniquely identified and collected on a CI system.
+     * Name for the log file
      */
     var logFilename: String = "affected_module_detector.log"
 

@@ -35,7 +35,7 @@ import org.gradle.internal.time.Clock
 class ToStringLogger(
     private val stringBuilder: StringBuilder = StringBuilder()
 ) : OutputEventListenerBackedLogger(
-        "my_logger",
+        "amd",
         OutputEventListenerBackedLoggerContext(
                 Clock {
                     System.currentTimeMillis()
