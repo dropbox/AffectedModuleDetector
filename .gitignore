@@ -15,4 +15,5 @@
 .cxx
 local.properties
 buildSrc/build
+buildSrc/.idea/
 affected_module_detector.log
