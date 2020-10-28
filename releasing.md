@@ -24,9 +24,15 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
+* Upload to Maven Central
+```bash
+./gradlew publishAllPublicationsToMavenRepository
+```
+
 * Upload to Gradle Plugin Portal
 ```bash
-./gradlew -b buildSrc/build.gradle.kts publishPlugins
+./gradlew login
+./gradlew publishPlugins
 ```
 
 * Merge the release branch to master

@@ -3,6 +3,7 @@ plugins {
     id 'kotlin'
     id 'java-gradle-plugin'
     id 'maven-publish'
+    id "com.gradle.plugin-publish" version "0.12.0"
 }
 
 java {
@@ -18,10 +19,16 @@ dependencies {
     testImplementation("com.google.truth:truth:1.0.1")
 }
 
+ext {
+    DESCRIPTION = "A Gradle Plugin and library to determine which modules were affected in a commit."
+    VERSION = "0.1.0-SNAPSHOT"
+    GIT_URL = 'https://github.com/Dropbox/AffectedModuleDetector'
+    GROUP_ID = "com.dropbox.affectedmoduledetector"
+}
 
-group = "com.dropbox.affectedmoduledetector"
-version = "0.1.0-SNAPSHOT"
-description = "TBD"
+group = GROUP_ID
+version = VERSION
+description = DESCRIPTION
 
 publishing {
     publications {
@@ -29,7 +36,7 @@ publishing {
             pom {
                 name = 'Affected Module Detector'
                 description = 'A concise description of my library'
-                url = 'https://github.com/Dropbox/AffectedModuleDetector'
+                url = GIT_URL
                 licenses {
                     license {
                         name = 'The Apache License, Version 2.0'
@@ -45,11 +52,34 @@ publishing {
                 scm {
                     connection = 'scm:git:git://github.com:dropbox/AffectedModuleDetector.git'
                     developerConnection = 'scm:git:ssh://github.com:dropbox/AffectedModuleDetector.git'
-                    url = 'https://github.com/Dropbox/AffectedModuleDetector'
+                    url = GIT_URL
                 }
             }
 
             from components.java
+        }
+    }
+}
+
+gradlePlugin {
+    plugins {
+        affectedModuleDetectorPlugin {
+            id = GROUP_ID
+            implementationClass = "com.dropbox.affectedmoduledetector.AffectedModuleDetectorPlugin"
+        }
+    }
+}
+
+pluginBundle {
+    website = GIT_URL
+    vcsUrl = GIT_URL
+    description = "A Gradle Plugin to determine which modules were affected in a commit."
+    tags = ["module", "git", "detector", "dependency"]
+
+    plugins {
+        affectedModuleDetectorPlugin {
+            // id is captured from java-gradle-plugin configuration
+            displayName = "Affected Module Detector"
         }
     }
 }
