@@ -1,5 +1,6 @@
-package com.dropbox.test
+package com.dropbox.sample
 
+import com.dropbox.affectedmoduledetector.AffectedModuleDetector
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
@@ -13,7 +14,7 @@ class AffectedTestsPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         // Only allow unit tests to run if the AffectedModuleDetector says to include them
         target.tasks.withType(Test::class.java) { task ->
-            // AffectedModuleDetector.configureTaskGuard(task)
+            AffectedModuleDetector.configureTaskGuard(task)
         }
     }
 }

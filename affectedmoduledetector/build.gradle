@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id 'kotlin'
     id 'java-gradle-plugin'
+    id 'maven-publish'
 }
 
 java {
@@ -15,4 +16,40 @@ dependencies {
     testImplementation("com.nhaarman:mockito-kotlin:1.5.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.4.10")
     testImplementation("com.google.truth:truth:1.0.1")
+}
+
+
+group = "com.dropbox.affectedmoduledetector"
+version = "0.1.0-SNAPSHOT"
+description = "TBD"
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            pom {
+                name = 'Affected Module Detector'
+                description = 'A concise description of my library'
+                url = 'https://github.com/Dropbox/AffectedModuleDetector'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'mplat-dbx'
+                        name = 'Dropbox'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com:dropbox/AffectedModuleDetector.git'
+                    developerConnection = 'scm:git:ssh://github.com:dropbox/AffectedModuleDetector.git'
+                    url = 'https://github.com/Dropbox/AffectedModuleDetector'
+                }
+            }
+
+            from components.java
+        }
+    }
 }
