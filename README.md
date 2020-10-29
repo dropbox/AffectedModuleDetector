@@ -1,4 +1,4 @@
-# Affected Module Detector
+# Affected Module Detector (An early preview)
 
 A Gradle Plugin to determine which modules were affected by a set of files in a commit.  One use case for this plugin is for developers who would like to only run tests in modules which have changed in a given commit.
 
