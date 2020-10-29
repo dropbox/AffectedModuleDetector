@@ -30,7 +30,7 @@ The detector exposes APIs which will be helpful for your plugin to use.  In part
  - AffectedModuleDetector.isProjectAffected - This will return a boolean if the project has been affected. It can only be called after the project has been configured.
 
 
-In the example below, we're showing a hypothetical project graph and what projects would be considered affected if the All Affected Projects option was used and a change was made in the `:networking` module.
+In the example below, we're showing a hypothetical project graph and what projects would be considered affected if the All Affected Projects option was used and a change was made in the `:networking` module. 
 <img src="./dependency_graph.png">
 
 ## Installation
