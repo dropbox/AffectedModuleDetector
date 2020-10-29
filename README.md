@@ -10,7 +10,7 @@ The AffectedModuleDetector will look at the last commit and determine which file
 
 ### Git
 
-The module detector assumes that it is being applied to a project stored in git and a git client is present on the system.  It will query the last commit on the current branch to determine the list of files changed.
+The module detector assumes that it is being applied to a project stored in git and a git client is present on the system.  It will query the last commit on the current branch to determine the list of files changed. 
 
 ### Dependency Tracker
 
