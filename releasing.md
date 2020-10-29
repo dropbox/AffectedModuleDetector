@@ -18,7 +18,7 @@ version = 0.1.0"
 git commit -am "Prepare 0.1.0 release"
 ```
 
-* Create a tag and push it
+* Create a tag and push it 
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
