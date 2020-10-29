@@ -7,6 +7,7 @@ import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.gradle.testfixtures.ProjectBuilder
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -14,7 +15,6 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.io.File
-import kotlin.test.fail
 
 @RunWith(JUnit4::class)
 class AffectedModuleDetectorImplTest {
