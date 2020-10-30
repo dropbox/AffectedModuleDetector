@@ -9,6 +9,7 @@ plugins {
 repositories {
     google()
     jcenter()
+    gradlePluginPortal()
     mavenLocal()
 }
 
