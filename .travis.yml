@@ -11,7 +11,8 @@ android:
   licenses:
     - android-sdk-license-.+
 script:
-  - "./gradlew assemble"
+  - "./gradlew build"
+  - "./gradlew -b sample/build.gradle build"
 before_install:
   - yes | sdkmanager "platforms;android-29"
 branches:
