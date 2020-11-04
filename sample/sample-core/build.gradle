@@ -1,3 +1,5 @@
+import com.dropbox.sample.Dependencies
+
 plugins {
     id 'com.android.library'
     id 'kotlin-android'
@@ -36,11 +38,11 @@ dependencies {
 
     implementation project(":sample-util")
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.3.2'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.2.1'
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    implementation Dependencies.Libs.KOTLIN_STDLIB
+    implementation Dependencies.Libs.ANDROIDX_APP_COMPAT
+    implementation Dependencies.Libs.ANDROID_MATERIAL
+    implementation Dependencies.Libs.ANDROIDX_CONSTRAINTLAYOUT
+    testImplementation Dependencies.Libs.JUNIT
+    androidTestImplementation Dependencies.Libs.ANDROIDX_TEST_EXT
+    androidTestImplementation Dependencies.Libs.ANDROIDX_ESPRESSO
 }

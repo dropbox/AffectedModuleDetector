@@ -11,7 +11,10 @@ android:
   licenses:
     - android-sdk-license-.+
 script:
-  - "./gradlew assemble"
+  - "./gradlew assemble testCoverage publishToMavenLocal"
+  - "./gradlew -b sample/build.gradle build"
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 before_install:
   - yes | sdkmanager "platforms;android-29"
 branches:
