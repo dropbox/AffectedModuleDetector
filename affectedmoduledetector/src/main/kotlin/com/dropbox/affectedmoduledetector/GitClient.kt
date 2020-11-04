@@ -18,7 +18,7 @@
  * Copyright (c) 2020, Dropbox, Inc. All rights reserved.
  */
 
-package com.dropbox.detector
+package com.dropbox.affectedmoduledetector
 
 import java.io.File
 import java.util.concurrent.TimeUnit

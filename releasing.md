@@ -26,7 +26,7 @@ git push origin v0.1.0
 
 * Upload to Maven Central
 ```bash
-./gradlew publishAllPublicationsToMavenRepository
+ ./gradlew publishMavenPublicationToMavenRepository -PSONATYPE_USERNAME=<username> -PSONATYPE_PASSWORD=<password>
 ```
 
 * Upload to Gradle Plugin Portal

@@ -1,6 +1,5 @@
 package com.dropbox.affectedmoduledetector
 
-import com.dropbox.detector.GitClient
 import com.google.common.truth.Truth
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtraPropertiesExtension

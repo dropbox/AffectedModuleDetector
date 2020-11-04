@@ -28,7 +28,7 @@ import org.gradle.api.logging.Logger
  * on each other. This is mainly used by [AffectedModuleDetector] to find out which projects
  * should be run.
  */
-internal class DependencyTracker constructor(
+class DependencyTracker constructor(
     private val rootProject: Project,
     private val logger: Logger?
 ) {

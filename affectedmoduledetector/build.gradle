@@ -61,6 +61,15 @@ publishing {
             from components.java
         }
     }
+    repositories {
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots/"
+            credentials {
+                username project.hasProperty("SONATYPE_USERNAME") ? project.property("SONATYPE_USERNAME") : "username"
+                password project.hasProperty("SONATYPE_PASSWORD") ? project.property("SONATYPE_PASSWORD") : "password"
+            }
+        }
+    }
 }
 
 gradlePlugin {
