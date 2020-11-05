@@ -23,7 +23,7 @@ dependencies {
 
 ext {
     DESCRIPTION = "A Gradle Plugin and library to determine which modules were affected in a commit."
-    VERSION = "0.1.0-SNAPSHOT"
+    VERSION = "0.1.0"
     GIT_URL = 'https://github.com/Dropbox/AffectedModuleDetector'
     GROUP_ID = "com.dropbox.affectedmoduledetector"
 }
