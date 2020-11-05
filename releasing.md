@@ -7,9 +7,9 @@ git pull
 git checkout -b release_0.1.0
 ```
 
-* Update `version` in `buildSrc/build.gradle.kts` (remove `-SNAPSHOT`)
+* Update `VERSION` in `affectedmoduledetector/build.gradle` (remove `-SNAPSHOT`)
 ```kotlin
-version = 0.1.0"
+VERSION = 0.1.0"
 ```
 
 
@@ -35,20 +35,20 @@ git push origin v0.1.0
 ./gradlew publishPlugins
 ```
 
-* Merge the release branch to master
+* Merge the release branch to main
 ```
-git checkout master
+git checkout main
 git pull
 git merge --no-ff release_0.1.0
 ```
-* Update `version` in `buildSrc/build.gradle.kts` (increase version and add `-SNAPSHOT`)
+* Update `version` in `affectedmoduledetector/build.gradle` (increase version and add `-SNAPSHOT`)
 ```kotlin
-version = "REPLACE_WITH_NEXT_VERSION_NUMBER-SNAPSHOT"
+VERSION = "REPLACE_WITH_NEXT_VERSION_NUMBER-SNAPSHOT"
 ```
 
 * Commit your changes
 ```
-git commit -am "Prepare for next development iteration"
+git commit -am "Prepare for development phase"
 ```
 
 * Push your changes
