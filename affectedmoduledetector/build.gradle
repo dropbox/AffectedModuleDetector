@@ -37,7 +37,7 @@ publishing {
         maven(MavenPublication) {
             pom {
                 name = 'Affected Module Detector'
-                description = 'A concise description of my library'
+                description = 'A Gradle Plugin to determine which modules were affected in a commit.'
                 url = GIT_URL
                 licenses {
                     license {
