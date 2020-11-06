@@ -6,8 +6,6 @@
 
 A Gradle Plugin to determine which modules were affected by a set of files in a commit.  One use case for this plugin is for developers who would like to only run tests in modules which have changed in a given commit.
 
-**NOTE:** We're still putting the finishing touches on this and have not published a release yet.  We'll update this when we have a version ready for consumption.
-
 ## Overview
 
 The AffectedModuleDetector will look at the last commit and determine which files have changed, it will then build a dependency graph of all the modules in the project.   The detector exposes a set of APIs which can be used to determine whether a module was considered affected.
