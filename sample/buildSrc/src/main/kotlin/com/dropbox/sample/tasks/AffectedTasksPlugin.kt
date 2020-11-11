@@ -18,6 +18,15 @@ open class TestTasks {
     val jvmTestBackup = "test"
 }
 
+/**
+ * unlike [AffectedTestsPlugin] which skips unaffected tests, this plugn instead creates a task and
+ * registers all affected test tasks. Advantage is speed in not needing to skip modules at a large scale
+ *
+ * Registers 3 tasks
+ * gradlew runAffectedUnitTests - runs jvm tests
+ * gradlew runAffectedAndroidTests - runs connected tests
+ * gradlew assembleAffectedAndroidTests - assembles but does not run on device tests, useful when working with device labs
+ */
 class AffectedTasksPlugin : Plugin<Project> {
     var ANDROID_TEST_BUILD_VARIANT = "AndroidTest"
 
