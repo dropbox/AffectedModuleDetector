@@ -104,5 +104,7 @@ pluginBundle {
 }
 
 signing {
-    sign publishing.publications.maven
+    if (!version.endsWith('SNAPSHOT')) {
+        sign publishing.publications.maven
+    }
 }
