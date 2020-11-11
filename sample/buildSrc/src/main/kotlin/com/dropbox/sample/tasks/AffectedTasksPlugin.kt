@@ -10,7 +10,7 @@ import java.util.*
 
 var TEST_TASK_TO_RUN_EXTENSION = "TestTasks"
 
-open class TestTasks(val project: Project) {
+open class TestTasks {
     var variantToTest = "debug"
     val assembleAndroidTestTask = "assemble${variantToTest.capitalize()}AndroidTest"
     val runAndroidTestTask = "connected${variantToTest.capitalize()}AndroidTest"
@@ -23,7 +23,7 @@ class AffectedTasksPlugin : Plugin<Project> {
 
     lateinit var testTasks: TestTasks
     override fun apply(project: Project) {
-        project.extensions.add(TEST_TASK_TO_RUN_EXTENSION, TestTasks(project))
+        project.extensions.add(TEST_TASK_TO_RUN_EXTENSION, TestTasks())
         project.afterEvaluate {
             val rootProject = project.rootProject
             testTasks = requireNotNull(
@@ -92,13 +92,11 @@ class AffectedTasksPlugin : Plugin<Project> {
     private fun registerAffectedAndroidTests(
         rootProject: Project
     ) {
-        val assembleTask = registerAffectedTestTask(
+        registerAffectedTestTask(
             "assembleAffectedAndroidTests",
             testTasks.assembleAndroidTestTask, null, rootProject
         )
-        }
-
-
+    }
 
 
     private fun filterAndroidTests(project: Project) {
@@ -119,9 +117,5 @@ class AffectedTasksPlugin : Plugin<Project> {
         project.tasks.withType(Test::class.java) { task ->
             AffectedModuleDetector.configureTaskGuard(task)
         }
-    }
-
-    companion object {
-
     }
 }

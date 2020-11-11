@@ -4,7 +4,10 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
 }
+
 apply plugin: "com.dropbox.affectedtasksplugin"
+
+TestTasks.variantToTest = "debug"
 
 android {
     compileSdkVersion 30
