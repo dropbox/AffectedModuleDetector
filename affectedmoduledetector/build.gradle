@@ -4,6 +4,7 @@ plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
     id "com.gradle.plugin-publish" version "0.12.0"
+    id 'signing'
 }
 
 
@@ -26,18 +27,25 @@ ext {
     VERSION = "0.1.1-SNAPSHOT"
     GIT_URL = 'https://github.com/Dropbox/AffectedModuleDetector'
     GROUP_ID = "com.dropbox.affectedmoduledetector"
+    SONATYPE_SNAPSHOT_URL = "https://oss.sonatype.org/content/repositories/snapshots/"
+    SONATYPE_STAGING_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
 }
 
 group = GROUP_ID
 version = VERSION
 description = DESCRIPTION
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 publishing {
     publications {
         maven(MavenPublication) {
             pom {
                 name = 'Affected Module Detector'
-                description = 'A Gradle Plugin to determine which modules were affected in a commit.'
+                description = DESCRIPTION
                 url = GIT_URL
                 licenses {
                     license {
@@ -63,7 +71,7 @@ publishing {
     }
     repositories {
         maven {
-            url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            url version.endsWith('SNAPSHOT') ? SONATYPE_SNAPSHOT_URL : SONATYPE_STAGING_URL
             credentials {
                 username project.hasProperty("SONATYPE_USERNAME") ? project.property("SONATYPE_USERNAME") : "username"
                 password project.hasProperty("SONATYPE_PASSWORD") ? project.property("SONATYPE_PASSWORD") : "password"
@@ -95,3 +103,9 @@ pluginBundle {
     }
 }
 
+
+signing {
+    if (!version.endsWith('SNAPSHOT')) {
+        sign publishing.publications.maven
+    }
+}
