@@ -49,7 +49,8 @@ buildscript {
     classpath "com.dropbox.affectedmoduledetector:affectedmoduledetector:0.1.0"
   }
 }
-apply plugin: "com.dropbox.affectedmoduledetector"```
+apply plugin: "com.dropbox.affectedmoduledetector"
+```
 
 Optionally, you can specify the configuration block for the detector:
 ```
