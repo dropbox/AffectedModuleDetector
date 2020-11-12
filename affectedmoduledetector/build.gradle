@@ -103,6 +103,7 @@ pluginBundle {
     }
 }
 
+
 signing {
     if (!version.endsWith('SNAPSHOT')) {
         sign publishing.publications.maven
