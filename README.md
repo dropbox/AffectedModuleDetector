@@ -1,5 +1,7 @@
 # Affected Module Detector
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.dropbox.affectedmoduledetector/affectedmoduledetector/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.dropbox.affectedmoduledetector/affectedmoduledetector/)
+
 [![Build Status](https://travis-ci.org/dropbox/AffectedModuleDetector.svg?branch=main)](https://travis-ci.org/dropbox/AffectedModuleDetector)
 
 [![codecov](https://codecov.io/gh/dropbox/AffectedModuleDetector/branch/main/graph/badge.svg)](https://codecov.io/gh/dropbox/AffectedModuleDetector)
