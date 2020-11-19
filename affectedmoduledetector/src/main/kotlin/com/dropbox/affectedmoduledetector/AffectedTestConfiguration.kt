@@ -1,7 +1,5 @@
 package com.dropbox.affectedmoduledetector
 
-import java.io.File
-
 /**
  * Used to configure which variant to run for affected tasks by adding following block to modules
  * affectedTestConfiguration{
@@ -17,15 +15,10 @@ open class AffectedTestConfiguration {
      *  gradlew runAffectedUnitTests will run testDebugUnitTest
      *
      */
-    var variantToTest:String? = null
-    set(value) {
-        field = value
-        println("setting variant as $value")
-    }
-    get() {
-        println("getting variant as $field")
-        return field?:"debug"
-    }
+    var variantToTest: String? = null
+        get() {
+            return field ?: "debug"
+        }
 
     /**
      * when [jvmTest] task is not found we will try to run [jvmTestBackup]
@@ -33,9 +26,9 @@ open class AffectedTestConfiguration {
      */
     var jvmTestBackup = "test"
 
-    val assembleAndroidTestTask get() =  "assemble${variantToTest?.capitalize()}AndroidTest"
-    val runAndroidTestTask get() =  "connected${variantToTest?.capitalize()}AndroidTest"
-    val jvmTest get() =  "test${variantToTest?.capitalize()}UnitTest"
+    val assembleAndroidTestTask get() = "assemble${variantToTest?.capitalize()}AndroidTest"
+    val runAndroidTestTask get() = "connected${variantToTest?.capitalize()}AndroidTest"
+    val jvmTest get() = "test${variantToTest?.capitalize()}UnitTest"
 
     companion object {
         const val name = "affectedTestConfiguration"

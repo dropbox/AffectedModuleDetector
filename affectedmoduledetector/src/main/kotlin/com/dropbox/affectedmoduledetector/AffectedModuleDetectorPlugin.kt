@@ -6,9 +6,8 @@ package com.dropbox.affectedmoduledetector
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
-import java.util.LinkedHashSet
+import java.util.*
 
 /**
  * This plugin creates and registers all affected test tasks.
@@ -64,7 +63,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     private fun registerAffectedConnectedTestTask(rootProject: Project) {
-        registerAffectedTestTask("runAffectedAndroidTests", TestType.RUN_ANDROID,  rootProject)
+        registerAffectedTestTask("runAffectedAndroidTests", TestType.RUN_ANDROID, rootProject)
     }
 
     private fun registerAffectedAndroidTests(rootProject: Project) {
@@ -72,12 +71,12 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     private fun registerAffectedTestTask(
-            taskName: String, testType: TestType,
-            rootProject: Project) {
-        rootProject.subprojects{project->
+        taskName: String, testType: TestType,
+        rootProject: Project
+    ) {
+        rootProject.subprojects { project ->
             project.tasks.register(taskName) { task ->
                 val paths = getAffectedPaths(testType, project)
-                println("foo " +paths)
                 paths.forEach { path ->
                     task.dependsOn(path)
                 }
@@ -88,39 +87,38 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     private fun getAffectedPaths(
-            testType: TestType,
-            project: Project
+        testType: TestType,
+        project: Project
     ): Set<String> {
         val paths = LinkedHashSet<String>()
 
 
-            val tasks = requireNotNull(
-                project.extensions.findByName(AffectedTestConfiguration.name)
-            ) as AffectedTestConfiguration
+        val tasks = requireNotNull(
+            project.extensions.findByName(AffectedTestConfiguration.name)
+        ) as AffectedTestConfiguration
 
-            println(tasks)
+        var pathName = ""
+        var backupPath: String? = null
 
-            var pathName = ""
-            var backupPath: String? = null
-
-            when (testType) {
-                TestType.JVM -> {
-                    pathName = "${project.path}:${tasks.jvmTest}"
-                    backupPath = "${project.path}:${tasks.jvmTestBackup}"
-                }
-                TestType.RUN_ANDROID -> pathName = "${project.path}:${tasks.runAndroidTestTask}"
-                TestType.ASSEMBLE_ANDROID -> pathName = "${project.path}:${tasks.assembleAndroidTestTask}"
+        when (testType) {
+            TestType.JVM -> {
+                pathName = "${project.path}:${tasks.jvmTest}"
+                backupPath = "${project.path}:${tasks.jvmTestBackup}"
             }
+            TestType.RUN_ANDROID -> pathName = "${project.path}:${tasks.runAndroidTestTask}"
+            TestType.ASSEMBLE_ANDROID -> pathName =
+                "${project.path}:${tasks.assembleAndroidTestTask}"
+        }
 
-            if (AffectedModuleDetector.isProjectProvided(project)) {
-                if (project.tasks.findByPath(pathName) != null) {
-                    paths.add(pathName)
-                } else if (backupPath != null &&
-                    project.tasks.findByPath(backupPath) != null
-                ) {
-                    paths.add(backupPath)
-                }
+        if (AffectedModuleDetector.isProjectProvided(project)) {
+            if (project.tasks.findByPath(pathName) != null) {
+                paths.add(pathName)
+            } else if (backupPath != null &&
+                project.tasks.findByPath(backupPath) != null
+            ) {
+                paths.add(backupPath)
             }
+        }
 
         return paths
     }
@@ -148,19 +146,14 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
     private fun registerExtensions(project: Project) {
         project.extensions.add(
-                AffectedModuleConfiguration.name,
-                AffectedModuleConfiguration()
+            AffectedModuleConfiguration.name,
+            AffectedModuleConfiguration()
         )
         project.subprojects { subproject ->
             subproject.extensions.add(
-                    AffectedTestConfiguration.name,
-                    AffectedTestConfiguration()
+                AffectedTestConfiguration.name,
+                AffectedTestConfiguration()
             )
-        }
-        project.subprojects {
-        val tasks = requireNotNull(
-            it.extensions.findByName(AffectedTestConfiguration.name)
-        ) as AffectedTestConfiguration
         }
     }
 

@@ -17,6 +17,7 @@ class AffectedModuleConfiguration {
      * Base directory to use for [pathsAffectingAllModules]
      */
     var baseDir: String? = null
+
     /**
      * Files or folders which if changed will trigger all projects to be considered affected
      */
