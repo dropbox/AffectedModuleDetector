@@ -49,9 +49,9 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
 
         project.afterEvaluate {
-            registerJVMTests(project)
             registerAffectedAndroidTests(project)
             registerAffectedConnectedTestTask(project)
+            registerJVMTests(project)
         }
 
         filterAndroidTests(project)
@@ -73,51 +73,55 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
     private fun registerAffectedTestTask(
             taskName: String, testType: TestType,
-            rootProject: Project): Task {
-        val task = rootProject.tasks.register(taskName) { task ->
-            val paths = getAffectedPaths(testType, rootProject)
-            paths.forEach { path ->
-                task.dependsOn(path)
+            rootProject: Project) {
+        rootProject.subprojects{project->
+            project.tasks.register(taskName) { task ->
+                val paths = getAffectedPaths(testType, project)
+                println("foo " +paths)
+                paths.forEach { path ->
+                    task.dependsOn(path)
+                }
+                task.enabled = paths.isNotEmpty()
+                task.onlyIf { paths.isNotEmpty() }
             }
-            task.enabled = paths.isNotEmpty()
-            task.onlyIf { paths.isNotEmpty() }
         }
-        return task.get()
     }
 
     private fun getAffectedPaths(
             testType: TestType,
-            rootProject: Project
+            project: Project
     ): Set<String> {
         val paths = LinkedHashSet<String>()
-        rootProject.subprojects { subproject ->
+
 
             val tasks = requireNotNull(
-                    subproject.extensions.findByName(AffectedTestConfiguration.name)
+                project.extensions.findByName(AffectedTestConfiguration.name)
             ) as AffectedTestConfiguration
+
+            println(tasks)
 
             var pathName = ""
             var backupPath: String? = null
 
             when (testType) {
                 TestType.JVM -> {
-                    pathName = "${subproject.path}:${tasks.jvmTest}"
-                    backupPath = "${subproject.path}:${tasks.jvmTestBackup}"
+                    pathName = "${project.path}:${tasks.jvmTest}"
+                    backupPath = "${project.path}:${tasks.jvmTestBackup}"
                 }
-                TestType.RUN_ANDROID -> pathName = "${subproject.path}:${tasks.runAndroidTestTask}"
-                TestType.ASSEMBLE_ANDROID -> pathName = "${subproject.path}:${tasks.assembleAndroidTestTask}"
+                TestType.RUN_ANDROID -> pathName = "${project.path}:${tasks.runAndroidTestTask}"
+                TestType.ASSEMBLE_ANDROID -> pathName = "${project.path}:${tasks.assembleAndroidTestTask}"
             }
 
-            if (AffectedModuleDetector.isProjectProvided(subproject)) {
-                if (subproject.tasks.findByPath(pathName) != null) {
+            if (AffectedModuleDetector.isProjectProvided(project)) {
+                if (project.tasks.findByPath(pathName) != null) {
                     paths.add(pathName)
                 } else if (backupPath != null &&
-                        subproject.tasks.findByPath(backupPath) != null
+                    project.tasks.findByPath(backupPath) != null
                 ) {
                     paths.add(backupPath)
                 }
             }
-        }
+
         return paths
     }
 
@@ -153,6 +157,12 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
                     AffectedTestConfiguration()
             )
         }
+        project.subprojects {
+        val tasks = requireNotNull(
+            it.extensions.findByName(AffectedTestConfiguration.name)
+        ) as AffectedTestConfiguration
+        }
     }
+
 
 }

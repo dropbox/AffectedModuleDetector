@@ -28,6 +28,7 @@ affectedModuleDetector {
 
     logFolder = "${project.rootDir}"
 }
+
 allprojects {
     repositories {
         google()
