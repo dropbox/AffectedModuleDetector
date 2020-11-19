@@ -1,5 +1,7 @@
 # Affected Module Detector
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.dropbox.affectedmoduledetector/affectedmoduledetector/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.dropbox.affectedmoduledetector/affectedmoduledetector/)
+
 [![Build Status](https://travis-ci.org/dropbox/AffectedModuleDetector.svg?branch=main)](https://travis-ci.org/dropbox/AffectedModuleDetector)
 
 [![codecov](https://codecov.io/gh/dropbox/AffectedModuleDetector/branch/main/graph/badge.svg)](https://codecov.io/gh/dropbox/AffectedModuleDetector)
@@ -39,7 +41,17 @@ In the example below, we're showing a hypothetical project graph and what projec
 
 Apply the project to the root `build.gradle`:
 ```
-apply plugin: "com.dropbox.detector.AffectedModuleDetector"
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "com.dropbox.affectedmoduledetector:affectedmoduledetector:0.1.0"
+  }
+}
+apply plugin: "com.dropbox.affectedmoduledetector"
 ```
 
 Optionally, you can specify the configuration block for the detector:
@@ -51,6 +63,7 @@ Optionally, you can specify the configuration block for the detector:
         ]
         logFilename = "output.log"
         logFolder = "${project.rootDir}/output"
+        variantToTest = "debug"
     }
 ```
 
@@ -58,12 +71,19 @@ Optionally, you can specify the configuration block for the detector:
  - `pathsAffectingAllModules`: Paths to files or folders which if changed will trigger all modules to be considered affected
  - `logFilename`: A filename for the output detector to use
  - `logFolder`: A folder to output the log file in
+ - `variantToTest`: which variant to use for newly registered task
+ 
+ The plugin will create a few top level tasks that will assemble or run tests for only affected modules:
+ * gradlew runAffectedUnitTests - runs jvm tests
+ * gradlew runAffectedAndroidTests - runs connected tests
+ * gradlew assembleAffectedAndroidTests - assembles but does not run on device tests, useful when working with device labs
+
 
 ## Sample Usage
 
 To run this on the sample app, try running the following command:
 ```
-./gradlew test -Paffected_module_detector.enable
+./gradlew runAffectedUnitTests -Paffected_module_detector.enable
 ```
 
 You should see zero tests run.  Make a change within one of the modules and commit it.  Rerunning the command should execute tests in that module and it's dependent modules.
