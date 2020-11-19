@@ -78,7 +78,7 @@ Optionally, you can specify the configuration block for the detector in the root
  Optionally modules can specify a configuration block for his variant tests to run
  ```
  affectedTestConfiguration{
-    variantToTest = ""
+    variantToTest = "debug" //default is debug
 }
 ```
  - `variantToTest`: which variant to use for newly registered task
