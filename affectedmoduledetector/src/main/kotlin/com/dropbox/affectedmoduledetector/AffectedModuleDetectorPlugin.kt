@@ -9,6 +9,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
 import java.util.LinkedHashSet
+
 /**
  * This plugin creates and registers all affected test tasks.
  * Advantage is speed in not needing to skip modules at a large scale
@@ -26,7 +27,6 @@ import java.util.LinkedHashSet
  *   pathsAffectingAllModules = [
  *       "buildSrc/"
  *   ]
- *   variantToTest = "debug"
  *   logFolder = "${project.rootDir}".
  *   }
  *
@@ -34,6 +34,8 @@ import java.util.LinkedHashSet
  * To enable affected module detection, you need to pass [ENABLE_ARG] into the build as a command line parameter
  * See [AffectedModuleDetector] for additonal flags
  */
+//TODO MIKE: add logging for why we filtered out
+enum class TestType { JVM, ASSEMBLE_ANDROID, RUN_ANDROID }
 class AffectedModuleDetectorPlugin : Plugin<Project> {
 
     lateinit var testTasks: AffectedModuleConfiguration
@@ -42,58 +44,38 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         require(project.isRoot) {
             "Must be applied to root project, but was found on ${project.path} instead."
         }
-        project.extensions.add(
-                AffectedModuleConfiguration.name,
-                AffectedModuleConfiguration()
-        )
-        AffectedModuleDetector.configure(
-                project.gradle,
-                project
-        )
+        registerExtensions(project)
+        AffectedModuleDetector.configure(project.gradle, project)
 
 
         project.afterEvaluate {
-            val rootProject = registerJVMTests(project)
-
-            registerAffectedAndroidTests(rootProject)
-            registerAffectedConnectedTestTask(rootProject)
+            registerJVMTests(project)
+            registerAffectedAndroidTests(project)
+            registerAffectedConnectedTestTask(project)
         }
 
         filterAndroidTests(project)
         filterUnitTests(project)
     }
 
-    private fun registerJVMTests(project: Project): Project {
+    private fun registerJVMTests(project: Project) {
         val rootProject = project.rootProject
-        testTasks = requireNotNull(
-                project.extensions.findByName(AffectedModuleConfiguration.name)
-        ) as AffectedModuleConfiguration
-        registerAffectedTestTask(
-                "runAffectedUnitTests",
-                testTasks.jvmTest, testTasks.jvmTestBackup, rootProject,
-        )
-        return rootProject
+        registerAffectedTestTask("runAffectedUnitTests", TestType.JVM, rootProject)
     }
 
     private fun registerAffectedConnectedTestTask(rootProject: Project) {
-        registerAffectedTestTask(
-                "runAffectedAndroidTests",
-                testTasks.runAndroidTestTask, null, rootProject
-        )
+        registerAffectedTestTask("runAffectedAndroidTests", TestType.RUN_ANDROID,  rootProject)
     }
 
     private fun registerAffectedAndroidTests(rootProject: Project) {
-        registerAffectedTestTask(
-                "buildTestApks",
-                testTasks.assembleAndroidTestTask, null, rootProject
-        )
+        registerAffectedTestTask("buildTestApks", TestType.ASSEMBLE_ANDROID, rootProject)
     }
 
     private fun registerAffectedTestTask(
-            taskName: String, testTask: String, testTaskBackup: String?,
+            taskName: String, testType: TestType,
             rootProject: Project): Task {
         val task = rootProject.tasks.register(taskName) { task ->
-            val paths = getAffectedPaths(testTask, testTaskBackup, rootProject)
+            val paths = getAffectedPaths(testType, rootProject)
             paths.forEach { path ->
                 task.dependsOn(path)
             }
@@ -104,19 +86,32 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     private fun getAffectedPaths(
-            task: String,
-            taskBackup: String?,
+            testType: TestType,
             rootProject: Project
-    ):
-            Set<String> {
+    ): Set<String> {
         val paths = LinkedHashSet<String>()
         rootProject.subprojects { subproject ->
-            val pathName = "${subproject.path}:$task"
-            val backupPath = "${subproject.path}:$taskBackup"
+
+            val tasks = requireNotNull(
+                    subproject.extensions.findByName(AffectedTestConfiguration.name)
+            ) as AffectedTestConfiguration
+
+            var pathName = ""
+            var backupPath: String? = null
+
+            when (testType) {
+                TestType.JVM -> {
+                    pathName = "${subproject.path}:${tasks.jvmTest}"
+                    backupPath = "${subproject.path}:${tasks.jvmTestBackup}"
+                }
+                TestType.RUN_ANDROID -> pathName = "${subproject.path}:${tasks.runAndroidTestTask}"
+                TestType.ASSEMBLE_ANDROID -> pathName = "${subproject.path}:${tasks.assembleAndroidTestTask}"
+            }
+
             if (AffectedModuleDetector.isProjectProvided(subproject)) {
                 if (subproject.tasks.findByPath(pathName) != null) {
                     paths.add(pathName)
-                } else if (taskBackup != null &&
+                } else if (backupPath != null &&
                         subproject.tasks.findByPath(backupPath) != null
                 ) {
                     paths.add(backupPath)
@@ -146,4 +141,18 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             AffectedModuleDetector.configureTaskGuard(task)
         }
     }
+
+    private fun registerExtensions(project: Project) {
+        project.extensions.add(
+                AffectedModuleConfiguration.name,
+                AffectedModuleConfiguration()
+        )
+        project.subprojects { subproject ->
+            subproject.extensions.add(
+                    AffectedTestConfiguration.name,
+                    AffectedTestConfiguration()
+            )
+        }
+    }
+
 }

@@ -94,7 +94,7 @@ abstract class AffectedModuleDetector {
      *
      * Can be called during the configuration or execution phase
      */
-    abstract fun isProjectProvided(path: String): Boolean
+    abstract fun isProjectProvided2(project: Project): Boolean
 
     /**
      * Returns the set that the project belongs to. The set is one of the ProjectSubset above.
@@ -270,7 +270,7 @@ abstract class AffectedModuleDetector {
         fun isProjectProvided(project: Project): Boolean {
             return getOrThrow(
                 project
-            ).isProjectProvided(project.path)
+            ).isProjectProvided2(project)
         }
     }
 }
@@ -290,7 +290,7 @@ private class AcceptAll(
 
     override fun hasAffectedProjects() = true
 
-    override fun isProjectProvided(path: String) = true
+    override fun isProjectProvided2(project: Project) = true
 
     override fun getSubset(project: Project): ProjectSubset {
         val wrappedResult = wrapped?.getSubset(project)
@@ -358,7 +358,7 @@ class AffectedModuleDetectorImpl constructor(
         return (
             project.isRoot || (
                 affectedProjects.contains(project) &&
-                    isProjectProvided(project.path)
+                    isProjectProvided2(project)
                 )
             ).also {
             logger?.info(
@@ -369,8 +369,9 @@ class AffectedModuleDetectorImpl constructor(
 
     override fun hasAffectedProjects() = affectedProjects.isNotEmpty()
 
-    override fun isProjectProvided(path: String): Boolean {
-        return (modules == null || modules.contains(path))
+    override fun isProjectProvided2(project: Project): Boolean {
+        if(modules == null ) return true
+        return modules.contains(project.path)
     }
 
     override fun getSubset(project: Project): ProjectSubset {

@@ -20,6 +20,14 @@ buildscript {
 apply plugin: "org.jlleitschuh.gradle.ktlint"
 apply plugin: "com.dropbox.affectedmoduledetector"
 
+affectedModuleDetector {
+    baseDir = "${project.rootDir}"
+    pathsAffectingAllModules = [
+            "buildSrc/"
+    ]
+
+    logFolder = "${project.rootDir}"
+}
 allprojects {
     repositories {
         google()
@@ -30,3 +38,4 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+

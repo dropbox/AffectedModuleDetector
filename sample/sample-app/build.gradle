@@ -5,9 +5,10 @@ plugins {
     id 'kotlin-android'
 }
 
-apply plugin: "com.dropbox.affectedtasksplugin"
+affectedTestConfiguration{
+    variantToTest = "debug"
+}
 
-TestTasks.variantToTest = "debug"
 
 android {
     compileSdkVersion 30
@@ -37,14 +38,7 @@ android {
         jvmTarget = '1.8'
     }
 
-    affectedModuleDetector {
-        baseDir = "${project.rootDir}"
-        pathsAffectingAllModules = [
-                "buildSrc/"
-        ]
 
-        logFolder = "${project.rootDir}"
-    }
 }
 
 dependencies {
