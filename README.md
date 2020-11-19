@@ -51,10 +51,11 @@ buildscript {
     classpath "com.dropbox.affectedmoduledetector:affectedmoduledetector:0.1.0"
   }
 }
+//rootproject
 apply plugin: "com.dropbox.affectedmoduledetector"
 ```
 
-Optionally, you can specify the configuration block for the detector:
+Optionally, you can specify the configuration block for the detector in the root project:
 ```
     affectedModuleDetector {
         baseDir = "${project.rootDir}"
@@ -71,6 +72,15 @@ Optionally, you can specify the configuration block for the detector:
  - `pathsAffectingAllModules`: Paths to files or folders which if changed will trigger all modules to be considered affected
  - `logFilename`: A filename for the output detector to use
  - `logFolder`: A folder to output the log file in
+ 
+ 
+ 
+ Optionally modules can specify a configuration block for his variant tests to run
+ ```
+ affectedTestConfiguration{
+    variantToTest = ""
+}
+```
  - `variantToTest`: which variant to use for newly registered task
  
  The plugin will create a few top level tasks that will assemble or run tests for only affected modules:
