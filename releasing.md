@@ -29,12 +29,6 @@ git push origin v0.1.0
  ./gradlew publishMavenPublicationToMavenRepository -PSONATYPE_USERNAME=<username> -PSONATYPE_PASSWORD=<password>
 ```
 
-* Upload to Gradle Plugin Portal
-```bash
-./gradlew login
-./gradlew publishPlugins
-```
-
 * Merge the release branch to main
 ```
 git checkout main
