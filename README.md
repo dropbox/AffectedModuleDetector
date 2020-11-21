@@ -43,29 +43,33 @@ Apply the project to the root `build.gradle`:
 ```
 buildscript {
   repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
+    maven()
   }
   dependencies {
-    classpath "com.dropbox.affectedmoduledetector:affectedmoduledetector:0.1.0"
+    classpath "com.dropbox.affectedmoduledetector:affectedmoduledetector:<LATEST_VERSION>"
   }
 }
 //rootproject
 apply plugin: "com.dropbox.affectedmoduledetector"
 ```
 
-Optionally, you can specify the configuration block for the detector in the root project:
+If you want to develop a plugin using the APIs, add this to your `buildSrc`'s `dependencies` list:
 ```
-    affectedModuleDetector {
-        baseDir = "${project.rootDir}"
-        pathsAffectingAllModules = [
-                "buildSrc/"
-        ]
-        logFilename = "output.log"
-        logFolder = "${project.rootDir}/output"
-        variantToTest = "debug"
-    }
+implementation("com.dropbox.affectedmoduledetector:affectedmoduledetector:<LATEST_VERSION>")
+```
+
+## Configuration
+
+You can specify the configuration block for the detector in the root project:
+```
+affectedModuleDetector {
+    baseDir = "${project.rootDir}"
+    pathsAffectingAllModules = [
+            "buildSrc/"
+    ]
+    logFilename = "output.log"
+    logFolder = "${project.rootDir}/output"
+}
 ```
 
  - `baseDir`: The root directory for all of the `pathsAffectingAllModules`.  Used to validate the paths exist.
@@ -75,13 +79,12 @@ Optionally, you can specify the configuration block for the detector in the root
  
  
  
- Optionally modules can specify a configuration block for his variant tests to run
+ Modules can specify a configuration block to specify which variant tests to run
  ```
  affectedTestConfiguration{
     variantToTest = "debug" //default is debug
 }
 ```
- - `variantToTest`: which variant to use for newly registered task
  
  The plugin will create a few top level tasks that will assemble or run tests for only affected modules:
  * gradlew runAffectedUnitTests - runs jvm tests
