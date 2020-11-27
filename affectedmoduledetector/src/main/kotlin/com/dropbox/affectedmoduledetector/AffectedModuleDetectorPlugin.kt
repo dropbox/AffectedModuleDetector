@@ -110,7 +110,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
                 "${project.path}:${tasks.assembleAndroidTestTask}"
         }
 
-        if (AffectedModuleDetector.isProjectProvided(project)) {
+        if (AffectedModuleDetector.isProjectAffected(project)) {
             if (project.tasks.findByPath(pathName) != null) {
                 paths.add(pathName)
             } else if (backupPath != null &&
