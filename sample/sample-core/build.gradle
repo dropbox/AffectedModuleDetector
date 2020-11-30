@@ -5,7 +5,7 @@ plugins {
     id 'kotlin-android'
 }
 affectedTestConfiguration{
-    variantToTest = ""
+    variantToTest = "debug"
 }
 
 android {
