@@ -49,8 +49,8 @@ publishing {
         maven {
             url version.endsWith('SNAPSHOT') ? SONATYPE_SNAPSHOT_URL : SONATYPE_STAGING_URL
             credentials {
-                username project.hasProperty("SONATYPE_USERNAME") ? project.property("SONATYPE_USERNAME") : "username"
-                password project.hasProperty("SONATYPE_PASSWORD") ? project.property("SONATYPE_PASSWORD") : "password"
+                username project.hasProperty("SONATYPE_NEXUS_USERNAME") ? project.property("SONATYPE_NEXUS_USERNAME") : "username"
+                password project.hasProperty("SONATYPE_NEXUS_PASSWORD") ? project.property("SONATYPE_NEXUS_PASSWORD") : "password"
             }
         }
     }
