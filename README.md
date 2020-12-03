@@ -23,8 +23,8 @@ The tracker will evaluate the project and find all modules and their dependencie
 ### Affected Module Detector
 
 The detector allows for three options for affected modules:
- - **Changed Projects**: These are projects which had files changed within them – enabled with `-Paffected_module_detector.dependentProjects`)
- - **Dependent Projects**: These are projects which are dependent on projects which had changes within them – enabled with `-Paffected_module_detector.changedProjects`)
+ - **Changed Projects**: These are projects which had files changed within them – enabled with `-Paffected_module_detector.changedProjects`)
+ - **Dependent Projects**: These are projects which are dependent on projects which had changes within them – enabled with `-Paffected_module_detector.dependentProjects`)
  - **All Affected Projects**:  This is the union of Changed Projects and Dependent Projects (this is the default configuration) 
 
  These options can be useful depending on how many tests your project has and where in the integration cycle you would like to run them.  For example, Changed Projects may be a good options when initially sending a Pull Requests, and All Affected Projects may be useful to use when a developer merges their pull request.
