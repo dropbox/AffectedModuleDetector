@@ -23,9 +23,9 @@ The tracker will evaluate the project and find all modules and their dependencie
 ### Affected Module Detector
 
 The detector allows for three options for affected modules:
- - Changed Projects: These are projects which had files changed within them
- - Dependent Projects: These are projects which are dependent on projects which had changes within them
- - All Affected Projects:  This is the union of Changed Projects and Dependent Projects
+ - **Changed Projects**: These are projects which had files changed within them – enabled with `-Paffected_module_detector.changedProjects`)
+ - **Dependent Projects**: These are projects which are dependent on projects which had changes within them – enabled with `-Paffected_module_detector.dependentProjects`)
+ - **All Affected Projects**:  This is the union of Changed Projects and Dependent Projects (this is the default configuration) 
 
  These options can be useful depending on how many tests your project has and where in the integration cycle you would like to run them.  For example, Changed Projects may be a good options when initially sending a Pull Requests, and All Affected Projects may be useful to use when a developer merges their pull request.
 
@@ -40,7 +40,7 @@ In the example below, we're showing a hypothetical project graph and what projec
 ## Installation
 
 Apply the project to the root `build.gradle`:
-```
+```groovy
 buildscript {
   repositories {
     maven()
@@ -61,7 +61,7 @@ implementation("com.dropbox.affectedmoduledetector:affectedmoduledetector:<LATES
 ## Configuration
 
 You can specify the configuration block for the detector in the root project:
-```
+```groovy
 affectedModuleDetector {
     baseDir = "${project.rootDir}"
     pathsAffectingAllModules = [
@@ -80,26 +80,64 @@ affectedModuleDetector {
  
  
  Modules can specify a configuration block to specify which variant tests to run
- ```
+ ```groovy
  affectedTestConfiguration{
     variantToTest = "debug" //default is debug
 }
 ```
  
  The plugin will create a few top level tasks that will assemble or run tests for only affected modules:
- * gradlew runAffectedUnitTests - runs jvm tests
- * gradlew runAffectedAndroidTests - runs connected tests
- * gradlew assembleAffectedAndroidTests - assembles but does not run on device tests, useful when working with device labs
+ * `./gradlew runAffectedUnitTests` - runs jvm tests
+ * `./gradlew runAffectedAndroidTests` - runs connected tests
+ * `./gradlew assembleAffectedAndroidTests` - assembles but does not run on device tests, useful when working with device labs
 
 
 ## Sample Usage
 
-To run this on the sample app, try running the following command:
+Running the plugin generated tasks is quite simple. By default, if `affected_module_detector.enable` is not set,
+the generated tasks will run on all the modules. However, the plugin offers three different modes of operation so that it
+only executes the given task on a subset of projects.
+
+#### Running All Affected Projects (Changed Projects + Dependent Projects)
+
+To run all the projects affected by a change, run one of the tasks while enabling the module detector.
+
 ```
 ./gradlew runAffectedUnitTests -Paffected_module_detector.enable
 ```
 
-You should see zero tests run.  Make a change within one of the modules and commit it.  Rerunning the command should execute tests in that module and it's dependent modules.
+#### Running All Changed Projects
+
+To run all the projects that changed, run one of the tasks (while enabling the module detector) and with `-Paffected_module_detector.changedProjects`
+
+```
+./gradlew runAffectedUnitTests -Paffected_module_detector.enable -Paffected_module_detector.changedProjects
+```
+
+#### Running All Dependent Projects
+
+To run all the dependent projects of projects that changed, run one of the tasks (while enabling the module detector) and with `-Paffected_module_detector.dependentProjects`
+
+```
+./gradlew runAffectedUnitTests -Paffected_module_detector.enable -Paffected_module_detector.dependentProjects
+```
+
+## Using the Sample project
+
+To run this on the sample app:
+
+1. Publish the plugin to local maven:
+```
+./gradlew :affectedmoduledetector:publishToMavenLocal
+```
+
+2. Try running the following command:
+
+```
+ ./gradlew runAffectedUnitTests -Paffected_module_detector.enable
+```
+
+You should see zero tests run. Make a change within one of the modules and commit it. Rerunning the command should execute tests in that module and its dependent modules.
 
 ## Notes
 
