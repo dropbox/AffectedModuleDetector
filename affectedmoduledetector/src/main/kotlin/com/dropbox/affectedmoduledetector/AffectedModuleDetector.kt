@@ -173,7 +173,7 @@ abstract class AffectedModuleDetector {
                 modules = modules,
                 config = config
             ).also {
-                logger.info("Using real detector")
+                logger.info("Using real detector with $subset")
                 setInstance(
                     rootProject,
                     it
