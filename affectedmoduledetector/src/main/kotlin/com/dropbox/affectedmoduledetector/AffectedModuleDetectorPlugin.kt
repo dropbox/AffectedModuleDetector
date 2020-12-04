@@ -67,22 +67,21 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     private fun registerAffectedAndroidTests(rootProject: Project) {
-        registerAffectedTestTask("buildTestApks", TestType.ASSEMBLE_ANDROID, rootProject)
+        registerAffectedTestTask("assembleAffectedAndroidTests", TestType.ASSEMBLE_ANDROID, rootProject)
     }
 
     private fun registerAffectedTestTask(
         taskName: String, testType: TestType,
         rootProject: Project
     ) {
+        val task = rootProject.tasks.register(taskName).get()
         rootProject.subprojects { project ->
-            project.tasks.register(taskName) { task ->
-                val paths = getAffectedPaths(testType, project)
-                paths.forEach { path ->
-                    task.dependsOn(path)
-                }
-                task.enabled = paths.isNotEmpty()
-                task.onlyIf { paths.isNotEmpty() }
+            val paths = getAffectedPaths(testType, project)
+            paths.forEach { path ->
+                task.dependsOn(path)
             }
+            task.enabled = paths.isNotEmpty()
+            task.onlyIf { paths.isNotEmpty() }
         }
     }
 
