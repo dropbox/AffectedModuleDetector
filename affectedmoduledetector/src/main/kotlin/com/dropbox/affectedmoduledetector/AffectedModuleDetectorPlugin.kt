@@ -37,8 +37,6 @@ import java.util.*
 enum class TestType { JVM, ASSEMBLE_ANDROID, RUN_ANDROID }
 class AffectedModuleDetectorPlugin : Plugin<Project> {
 
-    lateinit var testTasks: AffectedModuleConfiguration
-
     override fun apply(project: Project) {
         require(project.isRoot) {
             "Must be applied to root project, but was found on ${project.path} instead."
@@ -90,7 +88,6 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         project: Project
     ): Set<String> {
         val paths = LinkedHashSet<String>()
-
 
         val tasks = requireNotNull(
             project.extensions.findByName(AffectedTestConfiguration.name)
