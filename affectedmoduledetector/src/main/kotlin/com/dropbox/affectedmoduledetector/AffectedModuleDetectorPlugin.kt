@@ -76,12 +76,14 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     ) {
         val task = rootProject.tasks.register(taskName).get()
         rootProject.subprojects { project ->
-            val paths = getAffectedPaths(testType, project)
-            paths.forEach { path ->
-                task.dependsOn(path)
+            project.afterEvaluate {
+                val paths = getAffectedPaths(testType, project)
+                paths.forEach { path ->
+                    task.dependsOn(path)
+                }
+                task.enabled = paths.isNotEmpty()
+                task.onlyIf { paths.isNotEmpty() }
             }
-            task.enabled = paths.isNotEmpty()
-            task.onlyIf { paths.isNotEmpty() }
         }
     }
 
