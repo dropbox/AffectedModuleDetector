@@ -5,6 +5,10 @@ plugins {
     id 'kotlin-android'
 }
 
+affectedTestConfiguration {
+    assembleAndroidTestTask = "assembleDebugAndroidTest"
+}
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"

@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.fail
 import org.gradle.api.Project
 import org.gradle.api.internal.project.DefaultProject
+import org.gradle.api.plugins.JavaLibraryPlugin
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
@@ -81,7 +82,6 @@ class AffectedModuleDetectorPluginTest {
         tasks.forEach { taskName ->
             val task = rootProject.tasks.findByName(taskName)
             assertThat(task).isNotNull()
-            assertThat(task?.enabled).isFalse()
         }
     }
 
@@ -89,19 +89,20 @@ class AffectedModuleDetectorPluginTest {
     fun `GIVEN root project WHEN plugin is applied and child has configuration THEN tasks are added`() {
         // GIVEN
         val taskName = "assembleAffectedAndroidTests"
-        childProject.tasks.register("assembleDebugAndroidTest")
+        childProject.tasks.register("myfaketask")
 
         // WHEN
         rootProject.pluginManager.apply(AffectedModuleDetectorPlugin::class.java)
-        val default = rootProject as DefaultProject
-        default.evaluate()
+        val ext = requireNotNull(childProject.extensions.findByType(AffectedTestConfiguration::class.java))
+        ext.jvmTest = "myfaketest"
+
+        (rootProject as DefaultProject).evaluate()
 
         // THEN
-        val task = rootProject.tasks.findByName(taskName)
-        assertThat(task).isNotNull()
-        assertThat(task?.enabled).isTrue()
-        task?.dependsOn?.forEach { dependency ->
-            assertThat(dependency).isEqualTo(":child:assembleDebugAndroidTest")
+        val task = requireNotNull(rootProject.tasks.findByName(taskName))
+        assertThat(task.enabled).isTrue()
+        task.dependsOn.forEach { dependency ->
+            assertThat(dependency).isEqualTo(":child:myfaketask")
         }
     }
 }

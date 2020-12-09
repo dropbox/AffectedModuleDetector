@@ -5,8 +5,8 @@ plugins {
     id 'kotlin-android'
 }
 
-affectedTestConfiguration{
-    variantToTest = "debug"
+affectedTestConfiguration {
+    assembleAndroidTestTask = "assembleAndroidTest"
 }
 
 
