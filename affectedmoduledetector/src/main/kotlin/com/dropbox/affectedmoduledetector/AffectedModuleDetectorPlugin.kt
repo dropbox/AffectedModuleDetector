@@ -6,6 +6,7 @@ package com.dropbox.affectedmoduledetector
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
 import java.util.*
 
@@ -56,8 +57,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     private fun registerJVMTests(project: Project) {
-        val rootProject = project.rootProject
-        registerAffectedTestTask("runAffectedUnitTests", TestType.JVM, rootProject)
+        registerAffectedTestTask("runAffectedUnitTests", TestType.JVM, project)
     }
 
     private fun registerAffectedConnectedTestTask(rootProject: Project) {
@@ -69,56 +69,57 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     private fun registerAffectedTestTask(
-        taskName: String, testType: TestType,
+        taskName: String,
+        testType: TestType,
         rootProject: Project
     ) {
         val task = rootProject.tasks.register(taskName).get()
         rootProject.subprojects { project ->
             project.afterEvaluate {
-                val paths = getAffectedPaths(testType, project)
-                paths.forEach { path ->
-                    task.dependsOn(path)
+                val pluginIds = listOf("com.android.application", "com.android.library", "java-library")
+                pluginIds.forEach { pluginId ->
+                    if (pluginId == "java-library") {
+                        if (testType == TestType.JVM) {
+                            withPlugin(pluginId, task, testType, project)
+                        }
+                    } else {
+                        withPlugin(pluginId, task, testType, project)
+                    }
                 }
-                task.enabled = paths.isNotEmpty()
-                task.onlyIf { paths.isNotEmpty() }
             }
         }
     }
 
-    private fun getAffectedPaths(
+    private fun withPlugin(pluginId: String, task: Task, testType: TestType, project: Project) {
+        project.pluginManager.withPlugin(pluginId) {
+            val path = getAffectedPath(testType, project)
+            path?.let {
+                task.dependsOn(it)
+            }
+        }
+    }
+
+    private fun getAffectedPath(
         testType: TestType,
         project: Project
-    ): Set<String> {
-        val paths = LinkedHashSet<String>()
-
+    ): String? {
         val tasks = requireNotNull(
             project.extensions.findByName(AffectedTestConfiguration.name)
-        ) as AffectedTestConfiguration
+        ) {
+            "Unable to find ${AffectedTestConfiguration.name} in $project"
+        } as AffectedTestConfiguration
 
-        var pathName = ""
-        var backupPath: String? = null
-
-        when (testType) {
-            TestType.JVM -> {
-                pathName = "${project.path}:${tasks.jvmTest}"
-                backupPath = "${project.path}:${tasks.jvmTestBackup}"
-            }
-            TestType.RUN_ANDROID -> pathName = "${project.path}:${tasks.runAndroidTestTask}"
-            TestType.ASSEMBLE_ANDROID -> pathName =
-                "${project.path}:${tasks.assembleAndroidTestTask}"
+        val pathName = when (testType) {
+            TestType.JVM -> "${project.path}:${tasks.jvmTest}"
+            TestType.RUN_ANDROID -> "${project.path}:${tasks.runAndroidTestTask}"
+            TestType.ASSEMBLE_ANDROID -> "${project.path}:${tasks.assembleAndroidTestTask}"
         }
 
-        if (AffectedModuleDetector.isProjectAffected(project)) {
-            if (project.tasks.findByPath(pathName) != null) {
-                paths.add(pathName)
-            } else if (backupPath != null &&
-                project.tasks.findByPath(backupPath) != null
-            ) {
-                paths.add(backupPath)
-            }
+        return if (AffectedModuleDetector.isProjectAffected(project)) {
+            pathName
+        } else {
+            null
         }
-
-        return paths
     }
 
     private fun filterAndroidTests(project: Project) {
@@ -154,6 +155,4 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             )
         }
     }
-
-
 }
