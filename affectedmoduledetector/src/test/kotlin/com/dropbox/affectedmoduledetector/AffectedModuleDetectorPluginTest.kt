@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.fail
 import org.gradle.api.Project
 import org.gradle.api.internal.project.DefaultProject
+import org.gradle.api.plugins.JavaLibraryPlugin
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Before
