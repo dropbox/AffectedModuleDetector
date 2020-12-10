@@ -17,7 +17,7 @@ class AffectedTestConfigurationTest {
     fun `GIVEN AffectedTestConfiguration WHEN default values THEN default values returned`() {
         assertThat(config.assembleAndroidTestTask).isEqualTo("assembleDebugAndroidTest")
         assertThat(config.runAndroidTestTask).isEqualTo("connectedDebugAndroidTest")
-        assertThat(config.jvmTest).isEqualTo("testDebugUnitTest")
+        assertThat(config.jvmTestTask).isEqualTo("testDebugUnitTest")
     }
 
     @Test
@@ -30,12 +30,12 @@ class AffectedTestConfigurationTest {
         // WHEN
         config.assembleAndroidTestTask = assembleAndroidTestTask
         config.runAndroidTestTask = runAndroidTestTask
-        config.jvmTest = jvmTest
+        config.jvmTestTask = jvmTest
 
         // THEN
         assertThat(config.assembleAndroidTestTask).isEqualTo(assembleAndroidTestTask)
         assertThat(config.runAndroidTestTask).isEqualTo(runAndroidTestTask)
-        assertThat(config.jvmTest).isEqualTo(jvmTest)
+        assertThat(config.jvmTestTask).isEqualTo(jvmTest)
     }
 
     @Test
