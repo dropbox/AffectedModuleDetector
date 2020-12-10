@@ -112,7 +112,9 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             is TestType.JvmTest -> getPathAndTask(project, tasks.jvmTestTask)
         }
 
+        println("get affected path")
         return if (AffectedModuleDetector.isProjectAffected(project)) {
+            println("found pathname $pathName")
             pathName
         } else {
             null

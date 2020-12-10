@@ -6,7 +6,7 @@ plugins {
 }
 
 affectedTestConfiguration {
-    jvmTest = "test"
+    jvmTestTask = "test"
 }
 
 android {
