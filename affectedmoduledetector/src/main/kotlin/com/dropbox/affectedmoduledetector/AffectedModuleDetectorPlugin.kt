@@ -8,7 +8,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
-import java.util.*
 
 /**
  * This plugin creates and registers all affected test tasks.
@@ -107,15 +106,23 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         } as AffectedTestConfiguration
 
         val pathName = when (testType) {
-            is TestType.RunAndroidTest -> "${project.path}:${tasks.runAndroidTestTask}"
-            is TestType.AssembleAndroidTest -> "${project.path}:${tasks.assembleAndroidTestTask}"
-            is TestType.JvmTest -> "${project.path}:${tasks.jvmTest}"
+            is TestType.RunAndroidTest -> getPathAndTask(project, tasks.runAndroidTestTask)
+            is TestType.AssembleAndroidTest -> getPathAndTask(project, tasks.assembleAndroidTestTask)
+            is TestType.JvmTest -> getPathAndTask(project, tasks.jvmTestTask)
         }
 
         return if (AffectedModuleDetector.isProjectAffected(project)) {
             pathName
         } else {
             null
+        }
+    }
+
+    private fun getPathAndTask(project: Project, task: String?): String? {
+        return if (task.isNullOrEmpty()) {
+            null
+        } else {
+            "${project.path}:${task}"
         }
     }
 

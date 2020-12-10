@@ -4,7 +4,6 @@ import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.fail
 import org.gradle.api.Project
 import org.gradle.api.internal.project.DefaultProject
-import org.gradle.api.plugins.JavaLibraryPlugin
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
@@ -94,7 +93,7 @@ class AffectedModuleDetectorPluginTest {
         // WHEN
         rootProject.pluginManager.apply(AffectedModuleDetectorPlugin::class.java)
         val ext = requireNotNull(childProject.extensions.findByType(AffectedTestConfiguration::class.java))
-        ext.jvmTest = "myfaketest"
+        ext.jvmTestTask = "myfaketest"
 
         (rootProject as DefaultProject).evaluate()
 

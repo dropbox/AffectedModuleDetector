@@ -1,6 +1,6 @@
 ext {
     DESCRIPTION = "A Gradle Plugin and library to determine which modules were affected in a commit."
-    VERSION = "0.1.1-SNAPSHOT"
+    VERSION = "0.1.2-SNAPSHOT"
     GIT_URL = 'https://github.com/Dropbox/AffectedModuleDetector'
     GROUP_ID = "com.dropbox.affectedmoduledetector"
     SONATYPE_SNAPSHOT_URL = "https://oss.sonatype.org/content/repositories/snapshots/"
