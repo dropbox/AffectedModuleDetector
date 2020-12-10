@@ -42,17 +42,16 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             "Must be applied to root project, but was found on ${project.path} instead."
         }
         registerExtensions(project)
-        AffectedModuleDetector.configure(project.gradle, project)
+        project.gradle.projectsEvaluated {
+            AffectedModuleDetector.configure(project.gradle, project)
 
-
-        project.afterEvaluate {
             registerAffectedAndroidTests(project)
             registerAffectedConnectedTestTask(project)
             registerJVMTests(project)
-        }
 
-        filterAndroidTests(project)
-        filterUnitTests(project)
+            filterAndroidTests(project)
+            filterUnitTests(project)
+        }
     }
 
     private fun registerJVMTests(project: Project) {
@@ -74,14 +73,12 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     ) {
         val task = rootProject.tasks.register(taskName).get()
         rootProject.subprojects { project ->
-            project.afterEvaluate {
-                val paths = getAffectedPaths(testType, project)
-                paths.forEach { path ->
-                    task.dependsOn(path)
-                }
-                task.enabled = paths.isNotEmpty()
-                task.onlyIf { paths.isNotEmpty() }
+            val paths = getAffectedPaths(testType, project)
+            paths.forEach { path ->
+                task.dependsOn(path)
             }
+            task.enabled = paths.isNotEmpty()
+            task.onlyIf { paths.isNotEmpty() }
         }
     }
 
