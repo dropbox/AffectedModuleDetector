@@ -114,6 +114,16 @@ abstract class AffectedModuleDetector {
 
         @JvmStatic
         fun configure(gradle: Gradle, rootProject: Project) {
+            require(rootProject == rootProject.rootProject) {
+                "Project provided must be root, project was ${rootProject.path}"
+            }
+
+            // Configure method must run after all projects have been evaluated
+            rootProject.allprojects { project ->
+                require(project.state.executed) {
+                    "$project wasn't evaluated, ensure all projects have been evaluated before calling configure.`"
+                }
+            }
             val enabled = rootProject.hasProperty(ENABLE_ARG)
             if (!enabled) {
                 setInstance(

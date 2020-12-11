@@ -5,6 +5,7 @@ import junit.framework.Assert.fail
 import org.gradle.api.Project
 import org.gradle.api.internal.project.DefaultProject
 import org.gradle.testfixtures.ProjectBuilder
+import org.gradle.testkit.runner.GradleRunner
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -17,7 +18,6 @@ class AffectedModuleDetectorPluginTest {
     val tmpFolder = TemporaryFolder()
 
     lateinit var rootProject: Project
-
     lateinit var childProject : Project
 
     @Before
@@ -71,37 +71,27 @@ class AffectedModuleDetectorPluginTest {
             "runAffectedAndroidTests",
             "assembleAffectedAndroidTests"
         )
+        writeBuildGradle(
+                """plugins {
+                |   id "com.dropbox.affectedmoduledetector"
+                |}""".trimMargin()
+        )
 
         // WHEN
-        rootProject.pluginManager.apply(AffectedModuleDetectorPlugin::class.java)
-        val default = rootProject as DefaultProject
-        default.evaluate()
+        val result = GradleRunner.create()
+                .withProjectDir(tmpFolder.root)
+                .withPluginClasspath()
+                .withArguments("tasks")
+                .build()
 
         // THEN
         tasks.forEach { taskName ->
-            val task = rootProject.tasks.findByName(taskName)
-            assertThat(task).isNotNull()
-            assertThat(task?.enabled).isFalse()
+            assertThat(result.output).contains(taskName)
         }
     }
 
-    @Test
-    fun `GIVEN root project WHEN plugin is applied and child has configuration THEN tasks are added`() {
-        // GIVEN
-        val taskName = "assembleAffectedAndroidTests"
-        childProject.tasks.register("assembleDebugAndroidTest")
-
-        // WHEN
-        rootProject.pluginManager.apply(AffectedModuleDetectorPlugin::class.java)
-        val default = rootProject as DefaultProject
-        default.evaluate()
-
-        // THEN
-        val task = rootProject.tasks.findByName(taskName)
-        assertThat(task).isNotNull()
-        assertThat(task?.enabled).isTrue()
-        task?.dependsOn?.forEach { dependency ->
-            assertThat(dependency).isEqualTo(":child:assembleDebugAndroidTest")
-        }
+    private fun writeBuildGradle(build: String) {
+        tmpFolder.newFile("build.gradle")
+                .writeText(build)
     }
 }
