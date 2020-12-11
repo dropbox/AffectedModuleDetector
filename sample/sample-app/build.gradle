@@ -37,20 +37,9 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-
-
 }
 
 dependencies {
-
     implementation project(":sample-core")
     implementation project(":sample-util")
-
-    implementation Dependencies.Libs.KOTLIN_STDLIB
-    implementation Dependencies.Libs.ANDROIDX_APP_COMPAT
-    implementation Dependencies.Libs.ANDROID_MATERIAL
-    implementation Dependencies.Libs.ANDROIDX_CONSTRAINTLAYOUT
-    testImplementation Dependencies.Libs.JUNIT
-    androidTestImplementation Dependencies.Libs.ANDROIDX_TEST_EXT
-    androidTestImplementation Dependencies.Libs.ANDROIDX_ESPRESSO
 }

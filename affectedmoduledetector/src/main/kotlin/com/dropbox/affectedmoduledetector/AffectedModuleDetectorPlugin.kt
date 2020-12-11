@@ -31,7 +31,7 @@ import org.gradle.api.tasks.testing.Test
  *
  *
  * To enable affected module detection, you need to pass [ENABLE_ARG] into the build as a command line parameter
- * See [AffectedModuleDetector] for additonal flags
+ * See [AffectedModuleDetector] for additional flags
  */
 class AffectedModuleDetectorPlugin : Plugin<Project> {
 
@@ -45,45 +45,44 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
             registerAffectedAndroidTests(project)
             registerAffectedConnectedTestTask(project)
-            registerJVMTests(project)
+            registerJvmTests(project)
 
             filterAndroidTests(project)
-            filterUnitTests(project)
+            filterJvmTests(project)
         }
     }
 
-    private fun registerJVMTests(project: Project) {
-        registerAffectedTestTask(TestType.JvmTest("runAffectedUnitTests"), project)
+    private fun registerJvmTests(project: Project) {
+        registerAffectedTestTask(TestType.JvmTest("runAffectedUnitTests", TASK_GROUP_NAME, "Runs all affected unit tests"), project)
     }
 
     private fun registerAffectedConnectedTestTask(rootProject: Project) {
-        registerAffectedTestTask(TestType.RunAndroidTest("runAffectedAndroidTests"), rootProject)
+        registerAffectedTestTask(TestType.RunAndroidTest("runAffectedAndroidTests", TASK_GROUP_NAME, "Runs all affected Android Tests. Requires a connected device. "), rootProject)
     }
 
     private fun registerAffectedAndroidTests(rootProject: Project) {
-        registerAffectedTestTask(TestType.AssembleAndroidTest("assembleAffectedAndroidTests"), rootProject)
+        registerAffectedTestTask(TestType.AssembleAndroidTest("assembleAffectedAndroidTests", TASK_GROUP_NAME, "Assembles all affected Android Tests.  Useful when working with device labs."), rootProject)
     }
 
-    private fun registerAffectedTestTask(
-        testType: TestType,
-        rootProject: Project
+    internal fun registerAffectedTestTask(
+            testType: TestType,
+            rootProject: Project
     ) {
-        val task = rootProject.tasks.register(taskName).get()
-        task.group = TASK_GROUP_NAME
+        val task = rootProject.tasks.register(testType.name).get()
+        task.group = testType.group
+        task.description = testType.description
+
         rootProject.subprojects { project ->
-            val pluginIds = listOf("com.android.application", "com.android.library", "java-library")
-                pluginIds.forEach { pluginId ->
-                    if (pluginId == "java-library") {
-                        if (testType is TestType.JvmTest ) {
-                            withPlugin(pluginId, task, testType, project)
-                        }
-                    } else {
+            val pluginIds = listOf("com.android.application", "com.android.library", "java-library", "kotlin")
+            pluginIds.forEach { pluginId ->
+                if (pluginId == "java-library" || pluginId == "kotlin") {
+                    if (testType is TestType.JvmTest ) {
                         withPlugin(pluginId, task, testType, project)
                     }
-                }           
+                } else {
+                    withPlugin(pluginId, task, testType, project)
+                }
             }
-            task.enabled = paths.isNotEmpty()
-            task.onlyIf { paths.isNotEmpty() }
         }
     }
 
@@ -112,9 +111,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             is TestType.JvmTest -> getPathAndTask(project, tasks.jvmTestTask)
         }
 
-        println("get affected path")
         return if (AffectedModuleDetector.isProjectAffected(project)) {
-            println("found pathname $pathName")
             pathName
         } else {
             null
@@ -144,7 +141,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     // Only allow unit tests to run if the AffectedModuleDetector says to include them
-    private fun filterUnitTests(project: Project) {
+    private fun filterJvmTests(project: Project) {
         project.tasks.withType(Test::class.java) { task ->
             AffectedModuleDetector.configureTaskGuard(task)
         }
@@ -162,14 +159,14 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             )
         }
     }
+    
+    internal sealed class TestType(open val name: String, open val group: String, open val description: String) {
+        data class RunAndroidTest(override val name: String, override val group: String, override val  description: String) : TestType(name, group, description)
+        data class AssembleAndroidTest(override val name: String, override val group: String, override val  description: String) : TestType(name, group, description)
+        data class JvmTest(override val name: String, override val group: String, override val  description: String) : TestType(name, group, description)
+    }
 
     companion object {
         const val TASK_GROUP_NAME = "Affected Module Detector"
-    }
-    
-    private sealed class TestType(open val name: String) {
-        data class RunAndroidTest(override val name: String) : TestType(name)
-        class AssembleAndroidTest(override val name: String) : TestType(name)
-        class JvmTest(override val name: String) : TestType(name)
     }
 }
