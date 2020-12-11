@@ -73,7 +73,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         task.description = testType.description
 
         rootProject.subprojects { project ->
-            val pluginIds = listOf("com.android.application", "com.android.library", "java-library", "kotlin")
+            val pluginIds = setOf("com.android.application", "com.android.library", "java-library", "kotlin")
             pluginIds.forEach { pluginId ->
                 if (pluginId == "java-library" || pluginId == "kotlin") {
                     if (testType is TestType.JvmTest ) {
