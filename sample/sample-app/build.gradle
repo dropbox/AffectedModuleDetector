@@ -5,8 +5,8 @@ plugins {
     id 'kotlin-android'
 }
 
-affectedTestConfiguration{
-    variantToTest = "debug"
+affectedTestConfiguration {
+    assembleAndroidTestTask = "assembleAndroidTest"
 }
 
 
@@ -37,8 +37,6 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-
-
 }
 
 dependencies {

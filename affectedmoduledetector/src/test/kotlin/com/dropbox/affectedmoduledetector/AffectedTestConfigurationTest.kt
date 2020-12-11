@@ -14,71 +14,28 @@ class AffectedTestConfigurationTest {
     }
 
     @Test
-    fun `GIVEN AffectedTestConfiguration WHEN default value of variant to test THEN debug is returned`() {
-        assertThat(config.variantToTest).isEqualTo("debug")
-    }
-
-    @Test
-    fun `GIVEN AffectedTestConfiguration WHEN variant to test is set THEN value is returned`() {
-        // GIVEN
-        val sample = "sample"
-
-        // WHEN
-        config.variantToTest = sample
-
-        // THEN
-        assertThat(config.variantToTest).isEqualTo(sample)
-    }
-
-    @Test
-    fun `GIVEN AffectedTestConfiguration WHEN assemble android test task is called THEN default is returned`() {
+    fun `GIVEN AffectedTestConfiguration WHEN default values THEN default values returned`() {
         assertThat(config.assembleAndroidTestTask).isEqualTo("assembleDebugAndroidTest")
-    }
-
-    @Test
-    fun `GIVEN AffectedTestConfiguration WHEN variant is setup and assemble android test task is called THEN variant task is returned`() {
-        // GIVEN
-        config.variantToTest = "sample"
-
-        // WHEN
-        val task = config.assembleAndroidTestTask
-
-        // THEN
-        assertThat(task).isEqualTo("assembleSampleAndroidTest")
-    }
-
-    @Test
-    fun `GIVEN AffectedTestConfiguration WHEN run android test task is called THEN default is returned`() {
         assertThat(config.runAndroidTestTask).isEqualTo("connectedDebugAndroidTest")
+        assertThat(config.jvmTestTask).isEqualTo("testDebugUnitTest")
     }
 
     @Test
-    fun `GIVEN AffectedTestConfiguration WHEN variant is setup and run android test task is called THEN variant task is returned`() {
+    fun `GIVEN AffectedTestConfiguration WHEN values are updated THEN new values are returned`() {
         // GIVEN
-        config.variantToTest = "sample"
+        val assembleAndroidTestTask = "assembleAndroidTestTask"
+        val runAndroidTestTask = "runAndroidTestTask"
+        val jvmTest = "jvmTest"
 
         // WHEN
-        val task = config.runAndroidTestTask
+        config.assembleAndroidTestTask = assembleAndroidTestTask
+        config.runAndroidTestTask = runAndroidTestTask
+        config.jvmTestTask = jvmTest
 
         // THEN
-        assertThat(task).isEqualTo("connectedSampleAndroidTest")
-    }
-
-    @Test
-    fun `GIVEN AffectedTestConfiguration WHEN jvm test is called THEN default is returned`() {
-        assertThat(config.jvmTest).isEqualTo("testDebugUnitTest")
-    }
-
-    @Test
-    fun `GIVEN AffectedTestConfiguration WHEN variant is setup and jvm test is called THEN variant task is returned`() {
-        // GIVEN
-        config.variantToTest = "sample"
-
-        // WHEN
-        val task = config.jvmTest
-
-        // THEN
-        assertThat(task).isEqualTo("testSampleUnitTest")
+        assertThat(config.assembleAndroidTestTask).isEqualTo(assembleAndroidTestTask)
+        assertThat(config.runAndroidTestTask).isEqualTo(runAndroidTestTask)
+        assertThat(config.jvmTestTask).isEqualTo(jvmTest)
     }
 
     @Test

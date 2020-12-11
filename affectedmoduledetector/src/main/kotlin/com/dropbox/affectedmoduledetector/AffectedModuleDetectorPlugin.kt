@@ -6,8 +6,8 @@ package com.dropbox.affectedmoduledetector
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
-import java.util.*
 
 /**
  * This plugin creates and registers all affected test tasks.
@@ -22,19 +22,17 @@ import java.util.*
  * configure using affected module detector block after applying the plugin
  *
  *   affectedModuleDetector {
- *   baseDir = "${project.rootDir}"
- *   pathsAffectingAllModules = [
- *       "buildSrc/"
- *   ]
- *   logFolder = "${project.rootDir}".
+ *     baseDir = "${project.rootDir}"
+ *     pathsAffectingAllModules = [
+ *         "buildSrc/"
+ *     ]
+ *     logFolder = "${project.rootDir}".
  *   }
  *
  *
  * To enable affected module detection, you need to pass [ENABLE_ARG] into the build as a command line parameter
- * See [AffectedModuleDetector] for additonal flags
+ * See [AffectedModuleDetector] for additional flags
  */
-//TODO MIKE: add logging for why we filtered out
-enum class TestType { JVM, ASSEMBLE_ANDROID, RUN_ANDROID }
 class AffectedModuleDetectorPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
@@ -47,76 +45,85 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
             registerAffectedAndroidTests(project)
             registerAffectedConnectedTestTask(project)
-            registerJVMTests(project)
+            registerJvmTests(project)
 
             filterAndroidTests(project)
-            filterUnitTests(project)
+            filterJvmTests(project)
         }
     }
 
-    private fun registerJVMTests(project: Project) {
-        val rootProject = project.rootProject
-        registerAffectedTestTask("runAffectedUnitTests", TestType.JVM, rootProject)
+    private fun registerJvmTests(project: Project) {
+        registerAffectedTestTask(TestType.JvmTest("runAffectedUnitTests", TASK_GROUP_NAME, "Runs all affected unit tests"), project)
     }
 
     private fun registerAffectedConnectedTestTask(rootProject: Project) {
-        registerAffectedTestTask("runAffectedAndroidTests", TestType.RUN_ANDROID, rootProject)
+        registerAffectedTestTask(TestType.RunAndroidTest("runAffectedAndroidTests", TASK_GROUP_NAME, "Runs all affected Android Tests. Requires a connected device. "), rootProject)
     }
 
     private fun registerAffectedAndroidTests(rootProject: Project) {
-        registerAffectedTestTask("assembleAffectedAndroidTests", TestType.ASSEMBLE_ANDROID, rootProject)
+        registerAffectedTestTask(TestType.AssembleAndroidTest("assembleAffectedAndroidTests", TASK_GROUP_NAME, "Assembles all affected Android Tests.  Useful when working with device labs."), rootProject)
     }
 
-    private fun registerAffectedTestTask(
-        taskName: String, testType: TestType,
-        rootProject: Project
+    internal fun registerAffectedTestTask(
+            testType: TestType,
+            rootProject: Project
     ) {
-        val task = rootProject.tasks.register(taskName).get()
-        task.group = TASK_GROUP_NAME
+        val task = rootProject.tasks.register(testType.name).get()
+        task.group = testType.group
+        task.description = testType.description
+
         rootProject.subprojects { project ->
-            val paths = getAffectedPaths(testType, project)
-            paths.forEach { path ->
-                task.dependsOn(path)
+            val pluginIds = setOf("com.android.application", "com.android.library", "java-library", "kotlin")
+            pluginIds.forEach { pluginId ->
+                if (pluginId == "java-library" || pluginId == "kotlin") {
+                    if (testType is TestType.JvmTest ) {
+                        withPlugin(pluginId, task, testType, project)
+                    }
+                } else {
+                    withPlugin(pluginId, task, testType, project)
+                }
             }
-            task.enabled = paths.isNotEmpty()
-            task.onlyIf { paths.isNotEmpty() }
         }
     }
 
-    private fun getAffectedPaths(
+    private fun withPlugin(pluginId: String, task: Task, testType: TestType, project: Project) {
+        project.pluginManager.withPlugin(pluginId) {
+            val path = getAffectedPath(testType, project)
+            path?.let {
+                task.dependsOn(it)
+            }
+        }
+    }
+
+    private fun getAffectedPath(
         testType: TestType,
         project: Project
-    ): Set<String> {
-        val paths = LinkedHashSet<String>()
-
+    ): String? {
         val tasks = requireNotNull(
             project.extensions.findByName(AffectedTestConfiguration.name)
-        ) as AffectedTestConfiguration
+        ) {
+            "Unable to find ${AffectedTestConfiguration.name} in $project"
+        } as AffectedTestConfiguration
 
-        var pathName = ""
-        var backupPath: String? = null
-
-        when (testType) {
-            TestType.JVM -> {
-                pathName = "${project.path}:${tasks.jvmTest}"
-                backupPath = "${project.path}:${tasks.jvmTestBackup}"
-            }
-            TestType.RUN_ANDROID -> pathName = "${project.path}:${tasks.runAndroidTestTask}"
-            TestType.ASSEMBLE_ANDROID -> pathName =
-                "${project.path}:${tasks.assembleAndroidTestTask}"
+        val pathName = when (testType) {
+            is TestType.RunAndroidTest -> getPathAndTask(project, tasks.runAndroidTestTask)
+            is TestType.AssembleAndroidTest -> getPathAndTask(project, tasks.assembleAndroidTestTask)
+            is TestType.JvmTest -> getPathAndTask(project, tasks.jvmTestTask)
         }
 
-        if (AffectedModuleDetector.isProjectAffected(project)) {
-            if (project.tasks.findByPath(pathName) != null) {
-                paths.add(pathName)
-            } else if (backupPath != null &&
-                project.tasks.findByPath(backupPath) != null
-            ) {
-                paths.add(backupPath)
-            }
+        return if (AffectedModuleDetector.isProjectAffected(project)) {
+            pathName
+        } else {
+            null
         }
+    }
 
-        return paths
+    private fun getPathAndTask(project: Project, task: String?): String? {
+        return if (task.isNullOrEmpty()) {
+            null
+        } else {
+            "${project.path}:${task}"
+        }
     }
 
     private fun filterAndroidTests(project: Project) {
@@ -134,7 +141,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     // Only allow unit tests to run if the AffectedModuleDetector says to include them
-    private fun filterUnitTests(project: Project) {
+    private fun filterJvmTests(project: Project) {
         project.tasks.withType(Test::class.java) { task ->
             AffectedModuleDetector.configureTaskGuard(task)
         }
@@ -152,9 +159,14 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             )
         }
     }
+    
+    internal sealed class TestType(open val name: String, open val group: String, open val description: String) {
+        data class RunAndroidTest(override val name: String, override val group: String, override val  description: String) : TestType(name, group, description)
+        data class AssembleAndroidTest(override val name: String, override val group: String, override val  description: String) : TestType(name, group, description)
+        data class JvmTest(override val name: String, override val group: String, override val  description: String) : TestType(name, group, description)
+    }
 
     companion object {
         const val TASK_GROUP_NAME = "Affected Module Detector"
     }
-
 }

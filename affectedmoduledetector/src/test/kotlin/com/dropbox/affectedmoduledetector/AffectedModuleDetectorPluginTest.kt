@@ -3,9 +3,7 @@ package com.dropbox.affectedmoduledetector
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.fail
 import org.gradle.api.Project
-import org.gradle.api.internal.project.DefaultProject
 import org.gradle.testfixtures.ProjectBuilder
-import org.gradle.testkit.runner.GradleRunner
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -63,35 +61,20 @@ class AffectedModuleDetectorPluginTest {
     }
 
     @Test
-    fun `GIVEN root project WHEN plugin is applied THEN tasks are added`() {
+    fun `GIVEN affected module detector plugin WHEN register task is called THEN task is added`() {
         // GIVEN
-        // expected tasks
-        val tasks = listOf(
-            "runAffectedUnitTests",
-            "runAffectedAndroidTests",
-            "assembleAffectedAndroidTests"
-        )
-        writeBuildGradle(
-                """plugins {
-                |   id "com.dropbox.affectedmoduledetector"
-                |}""".trimMargin()
-        )
+        val task = AffectedModuleDetectorPlugin.TestType.AssembleAndroidTest("fakeTask", "fakeGroup", "fakeDescription")
+        val plugin = AffectedModuleDetectorPlugin()
 
         // WHEN
-        val result = GradleRunner.create()
-                .withProjectDir(tmpFolder.root)
-                .withPluginClasspath()
-                .withArguments("tasks")
-                .build()
+        plugin.registerAffectedTestTask(task, rootProject)
+        val result = rootProject.tasks.findByPath(task.name)
+
 
         // THEN
-        tasks.forEach { taskName ->
-            assertThat(result.output).contains(taskName)
-        }
-    }
-
-    private fun writeBuildGradle(build: String) {
-        tmpFolder.newFile("build.gradle")
-                .writeText(build)
+        assertThat(result).isNotNull()
+        assertThat(result?.name).isEqualTo("fakeTask")
+        assertThat(result?.group).isEqualTo("fakeGroup")
+        assertThat(result?.description).isEqualTo("fakeDescription")
     }
 }

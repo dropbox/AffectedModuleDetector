@@ -4,8 +4,9 @@ plugins {
     id 'com.android.library'
     id 'kotlin-android'
 }
-affectedTestConfiguration{
-    variantToTest = "debug"
+
+affectedTestConfiguration {
+    jvmTestTask = "test"
 }
 
 android {
