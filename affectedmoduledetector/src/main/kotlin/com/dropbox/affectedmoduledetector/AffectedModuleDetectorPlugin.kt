@@ -72,6 +72,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         rootProject: Project
     ) {
         val task = rootProject.tasks.register(taskName).get()
+        task.group = TASK_GROUP_NAME
         rootProject.subprojects { project ->
             val paths = getAffectedPaths(testType, project)
             paths.forEach { path ->
@@ -152,5 +153,8 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         }
     }
 
+    companion object {
+        const val TASK_GROUP_NAME = "Affected Module Detector"
+    }
 
 }
