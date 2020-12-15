@@ -30,7 +30,7 @@ interface GitClient {
         top: Sha = "HEAD",
         includeUncommitted: Boolean = false
     ): List<String>
-    fun findPreviousCommitSha(): Sha?
+    fun findLastMasterCommit(): Sha?
 
     fun getGitRoot(): File
 
@@ -86,8 +86,8 @@ internal class GitClientImpl(
     /**
      * Checks the history to find the first merge CL.
      */
-    override fun findPreviousCommitSha(): String? {
-        return commandRunner.executeAndParse(PREV_COMMIT_CMD)
+    override fun findLastMasterCommit(): String? {
+        return commandRunner.executeAndParse(LAST_MASTER_COMMIT_CMD)
                 .firstOrNull()
                 ?.split(" ")
                 ?.firstOrNull()
@@ -181,6 +181,7 @@ internal class GitClientImpl(
     companion object {
         const val PREV_COMMIT_CMD = "git --no-pager rev-parse HEAD~1"
         const val PREV_MERGE_CMD = "git show-branch -a | grep '\\*' | grep -v `git rev-parse --abbrev-ref HEAD` | head -n1 | sed 's/.*\\[\\(.*\\)\\].*/\\1/' | sed 's/[\\^~].*//'"
+        const val LAST_MASTER_COMMIT_CMD = "git log -n 1 master --format=format:\"%H\""
         const val CHANGED_FILES_CMD_PREFIX = "git --no-pager diff --name-only"
     }
 }

@@ -399,14 +399,14 @@ class AffectedModuleDetectorImpl constructor(
     }
 
     /**
-     * Finds only the set of projects that were directly changed in the commit.
+     * Finds only the set of projects that were directly changed since the last master commit.
      *
      * Also populates the unknownFiles var which is used in findAffectedProjects
      */
     private fun findChangedProjects(): Set<Project> {
-        val lastMergeSha = git.findPreviousCommitSha() ?: return allProjects
+        val lastMasterCommitSha = git.findLastMasterCommit() ?: return allProjects
         val changedFiles = git.findChangedFilesSince(
-            sha = lastMergeSha,
+            sha = lastMasterCommitSha,
             includeUncommitted = true
         )
 
