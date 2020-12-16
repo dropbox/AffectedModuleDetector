@@ -178,7 +178,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = emptyList(),
                 tmpFolder = tmpFolder.root
             ),
@@ -200,7 +200,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = emptyList(),
                 tmpFolder = tmpFolder.root
             ),
@@ -222,7 +222,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = emptyList(),
                 tmpFolder = tmpFolder.root
             ),
@@ -244,7 +244,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(convertToFilePath("p1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
@@ -266,7 +266,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(convertToFilePath("p1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
@@ -288,7 +288,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(convertToFilePath("p1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
@@ -310,7 +310,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("p1", "foo.java"),
                     convertToFilePath("p2", "bar.java")
@@ -335,7 +335,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("p1", "foo.java"),
                     convertToFilePath("p2", "bar.java")
@@ -360,7 +360,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("p1", "foo.java"),
                     convertToFilePath("p2", "bar.java")
@@ -385,7 +385,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf("foo.java"),
                 tmpFolder = tmpFolder.root
             ),
@@ -407,7 +407,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf("foo.java"),
                 tmpFolder = tmpFolder.root
             ),
@@ -429,7 +429,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf("foo.java", convertToFilePath("p7", "bar.java")),
                 tmpFolder = tmpFolder.root
             ),
@@ -451,7 +451,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath(
                         "compose", "foo.java"
@@ -477,7 +477,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath(
                         "compose", "foo.java"
@@ -503,7 +503,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath(
                         "compose", "foo.java"
@@ -529,7 +529,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath(
                         "compose", "foo.java"
@@ -555,7 +555,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath(
                         "compose", "foo.java"
@@ -581,7 +581,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath(
                         "compose", "foo.java"
@@ -607,7 +607,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath(
                         "p8", "foo.java"
@@ -633,7 +633,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath(
                         "p8", "foo.java"
@@ -658,7 +658,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath(
                         "p8", "foo.java"
@@ -684,7 +684,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath(
                         "p8", "foo.java"
@@ -710,7 +710,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("p7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
@@ -735,7 +735,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("p7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
@@ -760,7 +760,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("p7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
@@ -785,7 +785,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("p7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
@@ -810,7 +810,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("p7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
@@ -835,7 +835,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("p7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
@@ -860,7 +860,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("..", "gradle.properties")
                 ),
@@ -884,7 +884,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("gradle.properties")
                 ),
@@ -908,7 +908,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("tools", "android", "buildSrc", "foo.java")
                 ),
@@ -932,7 +932,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("tools", "android", "buildSrc", "foo.java")
                 ),
@@ -957,7 +957,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("ui", "gradlew")
                 ),
@@ -981,7 +981,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("android", "gradlew")
                 ),
@@ -1005,7 +1005,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(
                     convertToFilePath("tools", "android", "buildSrc", "foo.sh")
                 ),
@@ -1029,7 +1029,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(convertToFilePath("tools", "android", "buildSrc", "sample.thing?")),
                 tmpFolder = tmpFolder.root
             ),
@@ -1051,7 +1051,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(convertToFilePath("p1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
@@ -1095,7 +1095,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(convertToFilePath("p1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
@@ -1139,7 +1139,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(convertToFilePath("p1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
@@ -1219,7 +1219,7 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             modules = setOf(":p1"),
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(convertToFilePath("p1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
@@ -1239,7 +1239,7 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             modules = emptySet(),
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(convertToFilePath("p1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
@@ -1260,7 +1260,7 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             modules = null,
             injectedGitClient = MockGitClient(
-                lastMasterCommitSha = "foo",
+                lastMergeSha = "foo",
                 changedFiles = listOf(convertToFilePath("p1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
@@ -1278,7 +1278,7 @@ class AffectedModuleDetectorImplTest {
     }
 
     private class MockGitClient(
-        val lastMasterCommitSha: String?,
+        val lastMergeSha: String?,
         val changedFiles: List<String>,
         val tmpFolder: File
     ) : GitClient {
@@ -1289,7 +1289,7 @@ class AffectedModuleDetectorImplTest {
             includeUncommitted: Boolean
         ) = changedFiles
 
-        override fun findLastMasterCommit() = lastMasterCommitSha
+        override fun findPreviousCommitSha() = lastMergeSha
 
         override fun getGitRoot(): File {
             return tmpFolder
