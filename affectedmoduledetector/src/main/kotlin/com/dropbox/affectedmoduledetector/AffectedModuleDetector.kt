@@ -334,7 +334,8 @@ class AffectedModuleDetectorImpl constructor(
     private val git by lazy {
         injectedGitClient ?: GitClientImpl(
             rootProject.projectDir,
-            logger
+            logger,
+            config = config
         )
     }
 
@@ -404,9 +405,7 @@ class AffectedModuleDetectorImpl constructor(
      * Also populates the unknownFiles var which is used in findAffectedProjects
      */
     private fun findChangedProjects(): Set<Project> {
-        val lastMergeSha = git.findPreviousCommitSha() ?: return allProjects
-        val changedFiles = git.findChangedFilesSince(
-            sha = lastMergeSha,
+        val changedFiles = git.findChangedFiles(
             includeUncommitted = true
         )
 
