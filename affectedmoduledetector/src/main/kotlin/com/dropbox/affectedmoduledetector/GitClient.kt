@@ -20,6 +20,7 @@
 
 package com.dropbox.affectedmoduledetector
 
+import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProvider
 import java.io.File
 import java.util.concurrent.TimeUnit
 import org.gradle.api.logging.Logger

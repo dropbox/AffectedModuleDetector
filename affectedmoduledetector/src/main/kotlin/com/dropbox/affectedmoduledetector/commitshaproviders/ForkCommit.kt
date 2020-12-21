@@ -1,29 +1,7 @@
-package com.dropbox.affectedmoduledetector
+package com.dropbox.affectedmoduledetector.commitshaproviders
 
-interface CommitShaProvider {
-    fun getCommitSha(commandRunner: GitClient.CommandRunner): Sha?
-
-    companion object {
-        fun fromString(string: String): CommitShaProvider {
-            return when (string) {
-                "PreviousCommit" -> PreviousCommit()
-                else -> ForkCommit()
-            }
-        }
-    }
-}
-
-class PreviousCommit: CommitShaProvider {
-    override fun getCommitSha(commandRunner: GitClient.CommandRunner): Sha? {
-        return commandRunner.executeAndParse(PREV_COMMIT_CMD)
-            .firstOrNull()
-            ?.split(" ")
-            ?.firstOrNull()
-    }
-    companion object {
-        const val PREV_COMMIT_CMD = "git --no-pager rev-parse HEAD~1"
-    }
-}
+import com.dropbox.affectedmoduledetector.GitClient
+import com.dropbox.affectedmoduledetector.Sha
 
 class ForkCommit: CommitShaProvider {
     override fun getCommitSha(commandRunner: GitClient.CommandRunner): Sha? {
