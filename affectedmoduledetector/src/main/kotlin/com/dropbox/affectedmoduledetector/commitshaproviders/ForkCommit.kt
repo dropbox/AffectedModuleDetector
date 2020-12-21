@@ -5,7 +5,10 @@ import com.dropbox.affectedmoduledetector.Sha
 
 class ForkCommit: CommitShaProvider {
     override fun getCommitSha(commandRunner: GitClient.CommandRunner): Sha? {
-        val currentBranch = commandRunner.executeAndParse(CURRENT_BRANCH_CMD).firstOrNull()
+        val currentBranch = commandRunner.executeAndParse(CURRENT_BRANCH_CMD)
+            .firstOrNull()
+            ?.split(" ")
+            ?.firstOrNull()
 
         requireNotNull(currentBranch) {
             "Current branch not found"
