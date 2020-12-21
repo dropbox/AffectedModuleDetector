@@ -12,8 +12,7 @@ class ForkCommit: CommitShaProvider {
         }
 
         val parentBranch = commandRunner.executeAndParse(SHOW_ALL_BRANCHES_CMD)
-            .filter { it.contains("*") }
-            .first { !it.contains(currentBranch) }
+            .first { !it.contains(currentBranch) && it.contains("*") }
             .substringAfter("[")
             .substringBefore("]")
             .substringBefore("~")
