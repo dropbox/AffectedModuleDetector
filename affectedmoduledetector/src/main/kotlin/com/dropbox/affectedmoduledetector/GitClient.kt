@@ -44,6 +44,10 @@ interface GitClient {
          * Executes the given shell command and returns the stdout by lines.
          */
         fun executeAndParse(command: String): List<String>
+        /**
+         * Executes the given shell command and returns the first stdout line.
+         */
+        fun executeAndParseFirst(command: String): String
     }
 }
 
@@ -74,9 +78,6 @@ internal class GitClientImpl(
         includeUncommitted: Boolean
     ): List<String> {
         val sha = getCommitSha()
-        requireNotNull(sha) {
-            "No commit sha to compare current branch changes against"
-        }
 
         // use this if we don't want local changes
         return commandRunner.executeAndParse(if (includeUncommitted) {
@@ -86,7 +87,7 @@ internal class GitClientImpl(
         })
     }
 
-    private fun getCommitSha(): Sha? {
+    private fun getCommitSha(): Sha {
         val commitShaProvider = CommitShaProvider.fromString(config.compareFrom)
 
         return commitShaProvider.getCommitSha(commandRunner)
@@ -174,6 +175,17 @@ internal class GitClientImpl(
                     it.isEmpty()
                 }
             return response
+        }
+
+        override fun executeAndParseFirst(command: String): String {
+            return requireNotNull(
+                executeAndParse(command)
+                    .firstOrNull()
+                    ?.split(" ")
+                    ?.firstOrNull()
+            ) {
+                "No first value from command: $command"
+            }
         }
     }
 

@@ -4,11 +4,8 @@ import com.dropbox.affectedmoduledetector.GitClient
 import com.dropbox.affectedmoduledetector.Sha
 
 class ForkCommit: CommitShaProvider {
-    override fun getCommitSha(commandRunner: GitClient.CommandRunner): Sha? {
-        val currentBranch = commandRunner.executeAndParse(CURRENT_BRANCH_CMD)
-            .firstOrNull()
-            ?.split(" ")
-            ?.firstOrNull()
+    override fun getCommitSha(commandRunner: GitClient.CommandRunner): Sha {
+        val currentBranch = commandRunner.executeAndParseFirst(CURRENT_BRANCH_CMD)
 
         requireNotNull(currentBranch) {
             "Current branch not found"
@@ -25,10 +22,7 @@ class ForkCommit: CommitShaProvider {
             "Parent branch not found"
         }
 
-        return commandRunner.executeAndParse("git merge-base $currentBranch $parentBranch")
-            .firstOrNull()
-            ?.split(" ")
-            ?.firstOrNull()
+        return commandRunner.executeAndParseFirst("git merge-base $currentBranch $parentBranch")
     }
 
     companion object {
