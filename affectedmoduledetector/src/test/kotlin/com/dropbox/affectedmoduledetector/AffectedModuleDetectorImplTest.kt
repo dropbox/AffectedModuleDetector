@@ -1241,6 +1241,7 @@ class AffectedModuleDetectorImplTest {
     ) : GitClient {
 
         override fun findChangedFiles(
+            top: Sha,
             includeUncommitted: Boolean
         ) = changedFiles
 

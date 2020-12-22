@@ -406,7 +406,9 @@ class AffectedModuleDetectorImpl constructor(
      * Also populates the unknownFiles var which is used in findAffectedProjects
      */
     private fun findChangedProjects(): Set<Project> {
-        val changedFiles = git.findChangedFiles(true)
+        val changedFiles = git.findChangedFiles(
+            includeUncommitted = true
+        )
 
         val changedProjects = mutableSetOf<Project>()
 
