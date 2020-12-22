@@ -25,6 +25,7 @@ import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.CHANG
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.DEPENDENT_PROJECTS_ARG
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.ENABLE_ARG
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.MODULES_ARG
+import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProvider
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -335,7 +336,7 @@ class AffectedModuleDetectorImpl constructor(
         injectedGitClient ?: GitClientImpl(
             rootProject.projectDir,
             logger,
-            config = config
+            commitShaProvider = CommitShaProvider.fromString(config.compareFrom)
         )
     }
 

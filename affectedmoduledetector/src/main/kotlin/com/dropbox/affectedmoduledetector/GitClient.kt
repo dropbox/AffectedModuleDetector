@@ -67,7 +67,7 @@ internal class GitClientImpl(
         workingDir = workingDir,
         logger = logger
     ),
-    private val config: AffectedModuleConfiguration
+    private val commitShaProvider: CommitShaProvider
 ) : GitClient {
 
     /**
@@ -77,7 +77,7 @@ internal class GitClientImpl(
         top: Sha,
         includeUncommitted: Boolean
     ): List<String> {
-        val sha = getCommitSha()
+        val sha = commitShaProvider.getCommitSha(commandRunner)
 
         // use this if we don't want local changes
         return commandRunner.executeAndParse(if (includeUncommitted) {
@@ -85,12 +85,6 @@ internal class GitClientImpl(
         } else {
             "$CHANGED_FILES_CMD_PREFIX $top $sha"
         })
-    }
-
-    private fun getCommitSha(): Sha {
-        val commitShaProvider = CommitShaProvider.fromString(config.compareFrom)
-
-        return commitShaProvider.getCommitSha(commandRunner)
     }
 
     private fun findGitDirInParentFilepath(filepath: File): File? {
