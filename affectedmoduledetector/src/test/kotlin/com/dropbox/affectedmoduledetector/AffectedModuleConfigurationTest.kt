@@ -185,6 +185,7 @@ class AffectedModuleConfigurationTest {
         } catch (e: Exception) {
             assertThat(e::class).isEqualTo(IllegalArgumentException::class)
             assertThat(e.message).isEqualTo("The property configuration compareFrom must be one of the following: PreviousCommit, ForkCommit")
+            assertThat(config.compareFrom).isEqualTo("PreviousCommit")
         }
     }
 }
