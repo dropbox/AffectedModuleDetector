@@ -184,7 +184,7 @@ internal class GitClientImpl(
                     ?.split(" ")
                     ?.firstOrNull()
             ) {
-                "No first value from command: $command"
+                "No value from command: $command provided"
             }
         }
     }
