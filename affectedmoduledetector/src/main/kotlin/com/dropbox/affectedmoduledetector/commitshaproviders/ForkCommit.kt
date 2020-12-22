@@ -7,10 +7,6 @@ class ForkCommit: CommitShaProvider {
     override fun getCommitSha(commandRunner: GitClient.CommandRunner): Sha {
         val currentBranch = commandRunner.executeAndParseFirst(CURRENT_BRANCH_CMD)
 
-        requireNotNull(currentBranch) {
-            "Current branch not found"
-        }
-
         val parentBranch = commandRunner.executeAndParse(SHOW_ALL_BRANCHES_CMD)
             .first { !it.contains(currentBranch) && it.contains("*") }
             .substringAfter("[")
