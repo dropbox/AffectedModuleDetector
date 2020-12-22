@@ -77,7 +77,7 @@ internal class GitClientImpl(
         top: Sha,
         includeUncommitted: Boolean
     ): List<String> {
-        val sha = commitShaProvider.getCommitSha(commandRunner)
+        val sha = commitShaProvider.get(commandRunner)
 
         // use this if we don't want local changes
         return commandRunner.executeAndParse(if (includeUncommitted) {

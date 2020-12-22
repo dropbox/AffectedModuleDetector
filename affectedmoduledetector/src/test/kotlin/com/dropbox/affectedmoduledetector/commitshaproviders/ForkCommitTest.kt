@@ -33,7 +33,7 @@ class ForkCommitTest {
         val parentBranches = listOf("[main]")
         commandRunner.addReply(ForkCommit.SHOW_ALL_BRANCHES_CMD, parentBranches.joinToString(System.lineSeparator()))
 
-        forkCommit.getCommitSha(commandRunner)
+        forkCommit.get(commandRunner)
     }
 
     @Test(expected = IllegalArgumentException::class)
@@ -42,7 +42,7 @@ class ForkCommitTest {
         val parentBranches = listOf("[main]")
         commandRunner.addReply(ForkCommit.SHOW_ALL_BRANCHES_CMD, parentBranches.joinToString(System.lineSeparator()))
 
-        forkCommit.getCommitSha(commandRunner)
+        forkCommit.get(commandRunner)
     }
 
     @Test
@@ -52,7 +52,7 @@ class ForkCommitTest {
         commandRunner.addReply(ForkCommit.SHOW_ALL_BRANCHES_CMD, parentBranches.joinToString(System.lineSeparator()))
         commandRunner.addReply("git merge-base feature main", "commit-sha")
 
-        val actual = forkCommit.getCommitSha(commandRunner)
+        val actual = forkCommit.get(commandRunner)
 
         assertThat(actual).isEqualTo("commit-sha")
     }

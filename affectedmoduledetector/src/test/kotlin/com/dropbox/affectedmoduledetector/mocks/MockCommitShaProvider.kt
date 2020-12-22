@@ -10,7 +10,7 @@ class MockCommitShaProvider: CommitShaProvider {
     fun addReply(sha: Sha) {
         replies.add(sha)
     }
-    override fun getCommitSha(commandRunner: GitClient.CommandRunner): Sha {
+    override fun get(commandRunner: GitClient.CommandRunner): Sha {
         return replies.first()
     }
 }

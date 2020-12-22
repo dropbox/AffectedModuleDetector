@@ -4,7 +4,7 @@ import com.dropbox.affectedmoduledetector.GitClient
 import com.dropbox.affectedmoduledetector.Sha
 
 interface CommitShaProvider {
-    fun getCommitSha(commandRunner: GitClient.CommandRunner): Sha
+    fun get(commandRunner: GitClient.CommandRunner): Sha
 
     companion object {
         fun fromString(string: String): CommitShaProvider {

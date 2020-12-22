@@ -4,7 +4,7 @@ import com.dropbox.affectedmoduledetector.GitClient
 import com.dropbox.affectedmoduledetector.Sha
 
 class ForkCommit: CommitShaProvider {
-    override fun getCommitSha(commandRunner: GitClient.CommandRunner): Sha {
+    override fun get(commandRunner: GitClient.CommandRunner): Sha {
         val currentBranch = commandRunner.executeAndParseFirst(CURRENT_BRANCH_CMD)
 
         val parentBranch = commandRunner.executeAndParse(SHOW_ALL_BRANCHES_CMD)

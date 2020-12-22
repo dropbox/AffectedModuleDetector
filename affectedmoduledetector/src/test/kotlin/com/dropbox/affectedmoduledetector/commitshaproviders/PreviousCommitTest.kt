@@ -26,7 +26,7 @@ class PreviousCommitTest {
     fun whenGetCommitSha_thenReturnCommitSha() {
         commandRunner.addReply(PreviousCommit.PREV_COMMIT_CMD, "commit-sha")
 
-        val actual = previousCommit.getCommitSha(commandRunner)
+        val actual = previousCommit.get(commandRunner)
 
         assertThat(actual).isEqualTo("commit-sha")
     }
