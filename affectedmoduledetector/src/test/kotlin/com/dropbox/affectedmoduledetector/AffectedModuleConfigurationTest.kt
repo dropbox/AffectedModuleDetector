@@ -9,6 +9,7 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.io.File
+import java.lang.Exception
 
 @RunWith(JUnit4::class)
 class AffectedModuleConfigurationTest {
@@ -159,4 +160,31 @@ class AffectedModuleConfigurationTest {
         assertThat(AffectedModuleConfiguration.name).isEqualTo("affectedModuleDetector")
     }
 
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN compareFrom THEN is PreviousCommit`() {
+        val actual = config.compareFrom
+
+        assertThat(actual).isEqualTo("PreviousCommit")
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN compareFrom is set to ForkCommit THEN is ForkCommit`() {
+        val forkCommit = "ForkCommit"
+
+        config.compareFrom = forkCommit
+
+        val actual = config.compareFrom
+        assertThat(actual).isEqualTo(forkCommit)
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN compareFrom is set to invalid sha provider THEN exception thrown and value not set`() {
+        try {
+            config.compareFrom = "InvalidInput"
+            fail()
+        } catch (e: Exception) {
+            assertThat(e::class).isEqualTo(IllegalArgumentException::class)
+            assertThat(e.message).isEqualTo("The property configuration compareFrom must be one of the following: PreviousCommit, ForkCommit")
+        }
+    }
 }
