@@ -68,7 +68,6 @@ class GitClientImplTest {
         assertEquals(
                 changes,
                 client.findChangedFiles(
-                    top = "otherSha",
                     includeUncommitted = false
                 ))
     }

@@ -27,7 +27,6 @@ import org.gradle.api.logging.Logger
 
 interface GitClient {
     fun findChangedFiles(
-        top: Sha = "HEAD",
         includeUncommitted: Boolean = false
     ): List<String>
     fun getGitRoot(): File
@@ -74,7 +73,6 @@ internal class GitClientImpl(
      * Finds changed file paths
      */
     override fun findChangedFiles(
-        top: Sha,
         includeUncommitted: Boolean
     ): List<String> {
         val sha = commitShaProvider.get(commandRunner)
@@ -83,6 +81,7 @@ internal class GitClientImpl(
         return commandRunner.executeAndParse(if (includeUncommitted) {
             "$CHANGED_FILES_CMD_PREFIX HEAD..$sha"
         } else {
+            val top = commandRunner.executeAndParseFirst(TOP_COMMIT_CMD)
             "$CHANGED_FILES_CMD_PREFIX $top $sha"
         })
     }
@@ -185,6 +184,7 @@ internal class GitClientImpl(
 
     companion object {
         const val CHANGED_FILES_CMD_PREFIX = "git --no-pager diff --name-only"
+        const val TOP_COMMIT_CMD = "git --no-pager rev-parse HEAD"
     }
 }
 
