@@ -1,7 +1,7 @@
 package com.dropbox.affectedmoduledetector
 
 import com.google.common.truth.Truth.assertThat
-import junit.framework.Assert.fail
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

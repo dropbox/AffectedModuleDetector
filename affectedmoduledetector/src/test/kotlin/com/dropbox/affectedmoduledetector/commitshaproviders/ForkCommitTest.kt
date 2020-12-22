@@ -3,6 +3,7 @@ package com.dropbox.affectedmoduledetector.commitshaproviders
 import com.dropbox.affectedmoduledetector.AttachLogsTestRule
 import com.dropbox.affectedmoduledetector.mocks.MockCommandRunner
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,22 +28,40 @@ class ForkCommitTest {
         assertThat(ForkCommit.SHOW_ALL_BRANCHES_CMD).isEqualTo("git show-branch -a")
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun givenNoParentBranchThatIsNotCurrentBranch_whenGetCommitSha_thenThrowException() {
-        commandRunner.addReply(ForkCommit.CURRENT_BRANCH_CMD, "main")
-        val parentBranches = listOf("[main]")
-        commandRunner.addReply(ForkCommit.SHOW_ALL_BRANCHES_CMD, parentBranches.joinToString(System.lineSeparator()))
+        try {
+            commandRunner.addReply(ForkCommit.CURRENT_BRANCH_CMD, "main")
+            val parentBranches = listOf("[main]")
+            commandRunner.addReply(
+                ForkCommit.SHOW_ALL_BRANCHES_CMD,
+                parentBranches.joinToString(System.lineSeparator())
+            )
 
-        forkCommit.get(commandRunner)
+            forkCommit.get(commandRunner)
+            fail()
+        } catch (e: Exception) {
+            assertThat(e::class).isEqualTo(IllegalArgumentException::class)
+            assertThat(e.message).isEqualTo("Parent branch not found")
+        }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun givenNoParentBranchThatContainsAsterisk_whenGetCommitSha_thenThrowException() {
-        commandRunner.addReply(ForkCommit.CURRENT_BRANCH_CMD, "feature")
-        val parentBranches = listOf("[main]")
-        commandRunner.addReply(ForkCommit.SHOW_ALL_BRANCHES_CMD, parentBranches.joinToString(System.lineSeparator()))
+        try {
+            commandRunner.addReply(ForkCommit.CURRENT_BRANCH_CMD, "feature")
+            val parentBranches = listOf("[main]")
+            commandRunner.addReply(
+                ForkCommit.SHOW_ALL_BRANCHES_CMD,
+                parentBranches.joinToString(System.lineSeparator())
+            )
 
-        forkCommit.get(commandRunner)
+            forkCommit.get(commandRunner)
+            fail()
+        } catch (e: Exception) {
+            assertThat(e::class).isEqualTo(IllegalArgumentException::class)
+            assertThat(e.message).isEqualTo("Parent branch not found")
+        }
     }
 
     @Test
