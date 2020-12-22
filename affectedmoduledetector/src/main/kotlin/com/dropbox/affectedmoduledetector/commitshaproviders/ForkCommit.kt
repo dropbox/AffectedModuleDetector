@@ -8,13 +8,13 @@ class ForkCommit: CommitShaProvider {
         val currentBranch = commandRunner.executeAndParseFirst(CURRENT_BRANCH_CMD)
 
         val parentBranch = commandRunner.executeAndParse(SHOW_ALL_BRANCHES_CMD)
-            .first { !it.contains(currentBranch) && it.contains("*") }
-            .substringAfter("[")
-            .substringBefore("]")
-            .substringBefore("~")
-            .substringBefore("^")
+            .firstOrNull { !it.contains(currentBranch) && it.contains("*") }
+            ?.substringAfter("[")
+            ?.substringBefore("]")
+            ?.substringBefore("~")
+            ?.substringBefore("^")
 
-        require(parentBranch.isNotEmpty()) {
+        requireNotNull(parentBranch) {
             "Parent branch not found"
         }
 
