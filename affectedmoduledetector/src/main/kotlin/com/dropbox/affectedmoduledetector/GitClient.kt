@@ -81,7 +81,7 @@ internal class GitClientImpl(
 
         // use this if we don't want local changes
         return commandRunner.executeAndParse(if (includeUncommitted) {
-            "$CHANGED_FILES_CMD_PREFIX HEAD..$sha"
+            "$CHANGED_FILES_CMD_PREFIX $sha"
         } else {
             "$CHANGED_FILES_CMD_PREFIX $top $sha"
         })
