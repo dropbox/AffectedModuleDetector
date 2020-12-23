@@ -20,18 +20,16 @@
 
 package com.dropbox.affectedmoduledetector
 
+import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProvider
 import java.io.File
 import java.util.concurrent.TimeUnit
 import org.gradle.api.logging.Logger
 
 interface GitClient {
-    fun findChangedFilesSince(
-        sha: Sha,
+    fun findChangedFiles(
         top: Sha = "HEAD",
         includeUncommitted: Boolean = false
     ): List<String>
-    fun findPreviousCommitSha(): Sha?
-
     fun getGitRoot(): File
 
     /**
@@ -46,6 +44,10 @@ interface GitClient {
          * Executes the given shell command and returns the stdout by lines.
          */
         fun executeAndParse(command: String): List<String>
+        /**
+         * Executes the given shell command and returns the first stdout line.
+         */
+        fun executeAndParseFirst(command: String): String
     }
 }
 
@@ -64,33 +66,25 @@ internal class GitClientImpl(
     private val commandRunner: GitClient.CommandRunner = RealCommandRunner(
         workingDir = workingDir,
         logger = logger
-    )
+    ),
+    private val commitShaProvider: CommitShaProvider
 ) : GitClient {
 
     /**
-     * Finds changed file paths since the given sha
+     * Finds changed file paths
      */
-    override fun findChangedFilesSince(
-        sha: Sha,
+    override fun findChangedFiles(
         top: Sha,
         includeUncommitted: Boolean
     ): List<String> {
+        val sha = commitShaProvider.get(commandRunner)
+
         // use this if we don't want local changes
         return commandRunner.executeAndParse(if (includeUncommitted) {
             "$CHANGED_FILES_CMD_PREFIX HEAD..$sha"
         } else {
             "$CHANGED_FILES_CMD_PREFIX $top $sha"
         })
-    }
-
-    /**
-     * Checks the history to find the first merge CL.
-     */
-    override fun findPreviousCommitSha(): String? {
-        return commandRunner.executeAndParse(PREV_COMMIT_CMD)
-                .firstOrNull()
-                ?.split(" ")
-                ?.firstOrNull()
     }
 
     private fun findGitDirInParentFilepath(filepath: File): File? {
@@ -176,11 +170,20 @@ internal class GitClientImpl(
                 }
             return response
         }
+
+        override fun executeAndParseFirst(command: String): String {
+            return requireNotNull(
+                executeAndParse(command)
+                    .firstOrNull()
+                    ?.split(" ")
+                    ?.firstOrNull()
+            ) {
+                "No value from command: $command provided"
+            }
+        }
     }
 
     companion object {
-        const val PREV_COMMIT_CMD = "git --no-pager rev-parse HEAD~1"
-        const val PREV_MERGE_CMD = "git show-branch -a | grep '\\*' | grep -v `git rev-parse --abbrev-ref HEAD` | head -n1 | sed 's/.*\\[\\(.*\\)\\].*/\\1/' | sed 's/[\\^~].*//'"
         const val CHANGED_FILES_CMD_PREFIX = "git --no-pager diff --name-only"
     }
 }

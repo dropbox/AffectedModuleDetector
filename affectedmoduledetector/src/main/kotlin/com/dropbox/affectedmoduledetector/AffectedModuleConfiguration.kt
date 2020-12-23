@@ -37,6 +37,15 @@ class AffectedModuleConfiguration {
             return field
         }
 
+    var compareFrom: String = "PreviousCommit"
+    set(value) {
+        val commitShaProviders = listOf("PreviousCommit", "ForkCommit")
+        require(commitShaProviders.contains(value)) {
+            "The property configuration compareFrom must be one of the following: ${commitShaProviders.joinToString(", ")}"
+        }
+        field = value
+    }
+
     companion object {
         const val name = "affectedModuleDetector"
     }

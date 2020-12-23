@@ -69,13 +69,17 @@ affectedModuleDetector {
     ]
     logFilename = "output.log"
     logFolder = "${project.rootDir}/output"
+    compareFrom = "PreviousCommit" //default is PreviousCommit
 }
 ```
 
- - `baseDir`: The root directory for all of the `pathsAffectingAllModules`.  Used to validate the paths exist.
+ - `baseDir`: The root directory for all of the `pathsAffectingAllModules`. Used to validate the paths exist.
  - `pathsAffectingAllModules`: Paths to files or folders which if changed will trigger all modules to be considered affected
  - `logFilename`: A filename for the output detector to use
  - `logFolder`: A folder to output the log file in
+ - `compareFrom`: A commit to compare the branch changes against. Can be either:
+    - PreviousCommit: compare against the previous commit
+    - ForkCommit: compare against the commit the branch was forked from
  
  
  

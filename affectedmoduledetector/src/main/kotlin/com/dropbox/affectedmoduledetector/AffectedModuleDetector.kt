@@ -25,6 +25,7 @@ import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.CHANG
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.DEPENDENT_PROJECTS_ARG
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.ENABLE_ARG
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.MODULES_ARG
+import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProvider
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -334,7 +335,8 @@ class AffectedModuleDetectorImpl constructor(
     private val git by lazy {
         injectedGitClient ?: GitClientImpl(
             rootProject.projectDir,
-            logger
+            logger,
+            commitShaProvider = CommitShaProvider.fromString(config.compareFrom)
         )
     }
 
@@ -404,9 +406,7 @@ class AffectedModuleDetectorImpl constructor(
      * Also populates the unknownFiles var which is used in findAffectedProjects
      */
     private fun findChangedProjects(): Set<Project> {
-        val lastMergeSha = git.findPreviousCommitSha() ?: return allProjects
-        val changedFiles = git.findChangedFilesSince(
-            sha = lastMergeSha,
+        val changedFiles = git.findChangedFiles(
             includeUncommitted = true
         )
 

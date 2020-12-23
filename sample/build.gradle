@@ -25,6 +25,7 @@ affectedModuleDetector {
     pathsAffectingAllModules = [
             "buildSrc/"
     ]
+    compareFrom = "ForkCommit"
 
     logFolder = "${project.rootDir}"
 }
