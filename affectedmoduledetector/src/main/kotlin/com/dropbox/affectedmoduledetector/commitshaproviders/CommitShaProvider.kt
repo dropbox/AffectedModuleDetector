@@ -10,7 +10,8 @@ interface CommitShaProvider {
         fun fromString(string: String): CommitShaProvider {
             return when (string) {
                 "PreviousCommit" -> PreviousCommit()
-                else -> ForkCommit()
+                "ForkCommit" -> ForkCommit()
+                else -> throw IllegalArgumentException("Unsupported compareFrom type")
             }
         }
     }
