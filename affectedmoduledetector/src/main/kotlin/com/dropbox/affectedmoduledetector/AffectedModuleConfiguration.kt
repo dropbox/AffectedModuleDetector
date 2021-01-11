@@ -37,6 +37,8 @@ class AffectedModuleConfiguration {
             return field
         }
 
+    var specifiedBranch: String? = null
+
     var compareFrom: String = "PreviousCommit"
     set(value) {
         val commitShaProviders = listOf("PreviousCommit", "ForkCommit", "SpecifiedBranchCommit")
@@ -50,8 +52,6 @@ class AffectedModuleConfiguration {
         }
         field = value
     }
-
-    var specifiedBranch: String? = null
 
     companion object {
         const val name = "affectedModuleDetector"
