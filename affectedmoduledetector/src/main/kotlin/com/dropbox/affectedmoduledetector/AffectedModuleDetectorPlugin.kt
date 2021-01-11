@@ -40,12 +40,12 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             "Must be applied to root project, but was found on ${project.path} instead."
         }
         registerExtensions(project)
+        registerAffectedAndroidTests(project)
+        registerAffectedConnectedTestTask(project)
+        registerJvmTests(project)
+
         project.gradle.projectsEvaluated {
             AffectedModuleDetector.configure(project.gradle, project)
-
-            registerAffectedAndroidTests(project)
-            registerAffectedConnectedTestTask(project)
-            registerJvmTests(project)
 
             filterAndroidTests(project)
             filterJvmTests(project)
@@ -73,24 +73,31 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         task.description = testType.description
 
         rootProject.subprojects { project ->
-            val pluginIds = setOf("com.android.application", "com.android.library", "java-library", "kotlin")
-            pluginIds.forEach { pluginId ->
-                if (pluginId == "java-library" || pluginId == "kotlin") {
-                    if (testType is TestType.JvmTest ) {
+            project.afterEvaluate {
+                val pluginIds = setOf("com.android.application", "com.android.library", "java-library", "kotlin")
+                pluginIds.forEach { pluginId ->
+                    if (pluginId == "java-library" || pluginId == "kotlin") {
+                        if (testType is TestType.JvmTest ) {
+                            withPlugin(pluginId, task, testType, project)
+                        }
+                    } else {
                         withPlugin(pluginId, task, testType, project)
                     }
-                } else {
-                    withPlugin(pluginId, task, testType, project)
                 }
             }
+
         }
     }
 
     private fun withPlugin(pluginId: String, task: Task, testType: TestType, project: Project) {
         project.pluginManager.withPlugin(pluginId) {
-            val path = getAffectedPath(testType, project)
-            path?.let {
-                task.dependsOn(it)
+            getAffectedPath(testType, project)?.let {path ->
+                task.dependsOn(path)
+                project.afterEvaluate {
+                    project.tasks.findByPath(path)?.onlyIf {
+                        AffectedModuleDetector.isProjectAffected(project)
+                    }
+                }
             }
         }
     }
@@ -105,16 +112,10 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             "Unable to find ${AffectedTestConfiguration.name} in $project"
         } as AffectedTestConfiguration
 
-        val pathName = when (testType) {
+        return when (testType) {
             is TestType.RunAndroidTest -> getPathAndTask(project, tasks.runAndroidTestTask)
             is TestType.AssembleAndroidTest -> getPathAndTask(project, tasks.assembleAndroidTestTask)
             is TestType.JvmTest -> getPathAndTask(project, tasks.jvmTestTask)
-        }
-
-        return if (AffectedModuleDetector.isProjectAffected(project)) {
-            pathName
-        } else {
-            null
         }
     }
 
