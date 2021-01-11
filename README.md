@@ -80,6 +80,8 @@ affectedModuleDetector {
  - `compareFrom`: A commit to compare the branch changes against. Can be either:
     - PreviousCommit: compare against the previous commit
     - ForkCommit: compare against the commit the branch was forked from
+    - SpecifiedBranchCommit: specify the branch to compare changes against using the `specifiedBranch` configuration
+ - `specifiedBranch`: A branch to specify changes against. Must be used in combination with `compareFrom = "SpecifiedBranchCommit"` 
  
  
  

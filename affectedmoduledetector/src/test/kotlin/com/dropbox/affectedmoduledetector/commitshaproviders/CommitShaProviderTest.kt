@@ -17,10 +17,17 @@ class CommitShaProviderTest {
     }
 
     @Test
-    fun givenForkCommit_whenFromString_thenReturnPreviousCommit() {
+    fun givenForkCommit_whenFromString_thenReturnForkCommit() {
         val actual = CommitShaProvider.fromString("ForkCommit")
 
         assertThat(actual::class).isEqualTo(ForkCommit::class)
+    }
+
+    @Test
+    fun givenSpecifiedBranchCommit_whenFromString_thenReturnSpecifiedBranchCommit() {
+        val actual = CommitShaProvider.fromString("SpecifiedBranchCommit", "branch")
+
+        assertThat(actual::class).isEqualTo(SpecifiedBranchCommit::class)
     }
 
     @Test
