@@ -31,6 +31,17 @@ class CommitShaProviderTest {
     }
 
     @Test
+    fun givenSpecifiedBranchCommitAndSpecifiedBranchNull_whenFromString_thenReturnSpecifiedBranchCommit() {
+        try {
+            CommitShaProvider.fromString("SpecifiedBranchCommit")
+            fail()
+        } catch (e: Exception) {
+            assertThat(e::class).isEqualTo(IllegalArgumentException::class)
+            assertThat(e.message).isEqualTo("Specified branch must be defined")
+        }
+    }
+
+    @Test
     fun givenInvalidCommitString_whenFromString_thenExceptionThrown() {
         try {
             CommitShaProvider.fromString("Invalid")
