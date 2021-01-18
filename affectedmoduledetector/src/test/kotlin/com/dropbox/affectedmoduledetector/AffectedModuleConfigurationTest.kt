@@ -178,13 +178,41 @@ class AffectedModuleConfigurationTest {
     }
 
     @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN compareFrom is set to SpecifiedBranchCommit THEN is SpecifiedBranchCommit`() {
+        val specifiedBranchCommit = "SpecifiedBranchCommit"
+        val specifiedBranch = "myBranch"
+
+        config.specifiedBranch = specifiedBranch
+        config.compareFrom = specifiedBranchCommit
+
+        val actual = config.compareFrom
+        assertThat(actual).isEqualTo(specifiedBranchCommit)
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN compareFrom is set to SpecifiedBranchCommit AND specifiedBranch not defined THEN error thrown`() {
+        val specifiedBranchCommit = "SpecifiedBranchCommit"
+
+        try {
+            config.compareFrom = specifiedBranchCommit
+        } catch (e: IllegalArgumentException) {
+            // THEN
+            assertThat(e.message).isEqualTo("Specify a branch using the configuration specifiedBranch")
+            return
+        }
+
+        fail("Expected to catch an exception")
+
+    }
+
+    @Test
     fun `GIVEN AffectedModuleConfiguration WHEN compareFrom is set to invalid sha provider THEN exception thrown and value not set`() {
         try {
             config.compareFrom = "InvalidInput"
             fail()
         } catch (e: Exception) {
             assertThat(e::class).isEqualTo(IllegalArgumentException::class)
-            assertThat(e.message).isEqualTo("The property configuration compareFrom must be one of the following: PreviousCommit, ForkCommit")
+            assertThat(e.message).isEqualTo("The property configuration compareFrom must be one of the following: PreviousCommit, ForkCommit, SpecifiedBranchCommit")
             assertThat(config.compareFrom).isEqualTo("PreviousCommit")
         }
     }

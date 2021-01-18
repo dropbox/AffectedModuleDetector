@@ -17,10 +17,28 @@ class CommitShaProviderTest {
     }
 
     @Test
-    fun givenForkCommit_whenFromString_thenReturnPreviousCommit() {
+    fun givenForkCommit_whenFromString_thenReturnForkCommit() {
         val actual = CommitShaProvider.fromString("ForkCommit")
 
         assertThat(actual::class).isEqualTo(ForkCommit::class)
+    }
+
+    @Test
+    fun givenSpecifiedBranchCommit_whenFromString_thenReturnSpecifiedBranchCommit() {
+        val actual = CommitShaProvider.fromString("SpecifiedBranchCommit", "branch")
+
+        assertThat(actual::class).isEqualTo(SpecifiedBranchCommit::class)
+    }
+
+    @Test
+    fun givenSpecifiedBranchCommitAndSpecifiedBranchNull_whenFromString_thenReturnSpecifiedBranchCommit() {
+        try {
+            CommitShaProvider.fromString("SpecifiedBranchCommit")
+            fail()
+        } catch (e: Exception) {
+            assertThat(e::class).isEqualTo(IllegalArgumentException::class)
+            assertThat(e.message).isEqualTo("Specified branch must be defined")
+        }
     }
 
     @Test

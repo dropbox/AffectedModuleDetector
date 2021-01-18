@@ -77,9 +77,11 @@ affectedModuleDetector {
  - `pathsAffectingAllModules`: Paths to files or folders which if changed will trigger all modules to be considered affected
  - `logFilename`: A filename for the output detector to use
  - `logFolder`: A folder to output the log file in
+ - `specifiedBranch`: A branch to specify changes against. Must be used in combination with configuration `compareFrom = "SpecifiedBranchCommit"` 
  - `compareFrom`: A commit to compare the branch changes against. Can be either:
     - PreviousCommit: compare against the previous commit
     - ForkCommit: compare against the commit the branch was forked from
+    - SpecifiedBranchCommit: specify the branch to compare changes against using the `specifiedBranch` configuration before the `compareFrom` configuration
  
  
  
