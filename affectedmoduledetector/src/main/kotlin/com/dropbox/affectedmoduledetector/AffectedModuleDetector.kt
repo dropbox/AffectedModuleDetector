@@ -362,10 +362,10 @@ class AffectedModuleDetectorImpl constructor(
 
     override fun shouldInclude(project: Project): Boolean {
         return (
-            project.isRoot || (
+            (project.isRoot || (
                 affectedProjects.contains(project) &&
                     isProjectProvided2(project)
-                )
+                )) && !config.excludedModules.contains(project.name)
             ).also {
             logger?.info(
                 "checking whether I should include ${project.path} and my answer is $it"

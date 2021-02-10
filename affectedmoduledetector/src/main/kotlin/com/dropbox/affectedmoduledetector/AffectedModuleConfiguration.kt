@@ -53,6 +53,11 @@ class AffectedModuleConfiguration {
         field = value
     }
 
+    /**
+     * A set of modules that will not be considered in the build process, even if changes are made in them.
+     */
+    var excludedModules = emptySet<String>()
+
     companion object {
         const val name = "affectedModuleDetector"
     }
