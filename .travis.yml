@@ -11,8 +11,7 @@ android:
   licenses:
   - android-sdk-license-.+
 script:
-- "./gradlew assemble testCoverage publishToMavenLocal"
-- "./gradlew -b sample/build.gradle build"
+- "./gradlew assemble testCoverage"
 after_success:
 - tools/release/deploy_snapshot.sh
 - bash <(curl -s https://codecov.io/bash)
