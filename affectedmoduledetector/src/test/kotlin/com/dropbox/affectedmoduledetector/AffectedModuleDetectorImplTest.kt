@@ -1230,6 +1230,28 @@ class AffectedModuleDetectorImplTest {
         Truth.assertThat(detector.shouldInclude(p5)).isTrue()
     }
 
+    @Test
+    fun `GIVEN module is in excludedModules configuration WHEN shouldInclude THEN excluded module false AND dependent modules true`() {
+        affectedModuleConfiguration = affectedModuleConfiguration.also {
+            it.excludedModules = setOf("p1")
+        }
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
+            modules = null,
+            injectedGitClient = MockGitClient(
+                changedFiles = listOf(convertToFilePath("p1", "foo.java")),
+                tmpFolder = tmpFolder.root
+            ),
+            config = affectedModuleConfiguration
+        )
+        Truth.assertThat(detector.shouldInclude(p1)).isFalse()
+        Truth.assertThat(detector.shouldInclude(p4)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p5)).isTrue()
+    }
+
     // For both Linux/Windows
     fun convertToFilePath(vararg list: String): String {
         return list.toList().joinToString(File.separator)

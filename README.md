@@ -70,6 +70,9 @@ affectedModuleDetector {
     logFilename = "output.log"
     logFolder = "${project.rootDir}/output"
     compareFrom = "PreviousCommit" //default is PreviousCommit
+    excludedModules = [
+        "sample-util"
+    ]
 }
 ```
 
@@ -82,6 +85,7 @@ affectedModuleDetector {
     - PreviousCommit: compare against the previous commit
     - ForkCommit: compare against the commit the branch was forked from
     - SpecifiedBranchCommit: specify the branch to compare changes against using the `specifiedBranch` configuration before the `compareFrom` configuration
+ - `excludedModules` : A list of modules that will be excluded from the build process
  
  
  
