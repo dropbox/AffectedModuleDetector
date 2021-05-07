@@ -24,6 +24,6 @@ else
   openssl aes-256-cbc -md sha256 -d -in tools/release/secring.gpg.aes -out tools/release/secring.gpg -k "${ENCRYPT_KEY}"
   # https://docs.gradle.org/current/userguide/signing_plugin.html#sec:signatory_credentials
 
-  ./gradlew publishMavenPublicationToMavenRepository -PSONATYPE_NEXUS_USERNAME="${SONATYPE_NEXUS_USERNAME}" -PSONATYPE_NEXUS_PASSWORD="${SONATYPE_NEXUS_PASSWORD}" -Psigning.keyId="${SIGNING_ID}" -Psigning.password="${SIGNING_PASSWORD}" -Psigning.secretKeyRingFile=${PWD}/tools/release/secring.gpg
+  ./gradlew publishMavenPublicationToMavenRepository -PSONATYPE_NEXUS_USERNAME="${SONATYPE_USERNAME}" -PSONATYPE_NEXUS_PASSWORD="${SONATYPE_PASSWORD}" -Psigning.keyId="${SIGNING_ID}" -Psigning.password="${SIGNING_PASSWORD}" -Psigning.secretKeyRingFile=${PWD}/tools/release/secring.gpg
   echo "'$SLUG' deployed!"
 fi
