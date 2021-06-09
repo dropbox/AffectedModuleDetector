@@ -179,8 +179,9 @@ internal class GitClientImpl(
     }
 
     companion object {
+        // -M95 is necessary to detect certain file moves.  See https://github.com/dropbox/AffectedModuleDetector/issues/60
+        const val CHANGED_FILES_CMD_PREFIX = "git --no-pager diff --name-only -M95"
         const val PREV_MERGE_CMD = "git --no-pager rev-parse HEAD~1"
-        const val CHANGED_FILES_CMD_PREFIX = "git --no-pager diff --name-only"
     }
 }
 
