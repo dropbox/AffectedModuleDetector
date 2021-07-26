@@ -358,6 +358,8 @@ class AffectedModuleDetectorImpl constructor(
         findDependentProjects()
     }
 
+    private var changedFiles: MutableSet<String> = mutableSetOf()
+
     private var unknownFiles: MutableSet<String> = mutableSetOf()
 
     override fun shouldInclude(project: Project): Boolean {
@@ -400,8 +402,10 @@ class AffectedModuleDetectorImpl constructor(
      * Also populates the unknownFiles var which is used in findAffectedProjects
      */
     private fun findChangedProjects(): Set<Project> {
-        val changedFiles = git.findChangedFiles(
-            includeUncommitted = true
+        changedFiles.addAll(
+            git.findChangedFiles(
+                includeUncommitted = true
+            )
         )
 
         val changedProjects = mutableSetOf<Project>()
@@ -462,7 +466,7 @@ class AffectedModuleDetectorImpl constructor(
         if (changedProjects.isEmpty() && unknownFiles.isEmpty()) {
             buildAll = true
         }
-        unknownFiles.forEach {
+        changedFiles.forEach {
             if (affectsAllModules(it)) {
                 buildAll = true
             }
