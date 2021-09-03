@@ -10,7 +10,6 @@ object Dependencies {
         const val AFFECTED_MODULE_DETECTOR = "com.dropbox.affectedmoduledetector:affectedmoduledetector:${Versions.AFFECTED_MODULE_DETECTOR_VERSION}"
         const val KOTLIN_STDLIB = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.KOTLIN_VERSION}"
         const val KOTLIN_GRADLE_PLUGIN = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.KOTLIN_VERSION}"
-        const val ANDROIDX_CORE_KTX = "androidx.core:core-ktx:1.3.2"
         const val ANDROIDX_APP_COMPAT = "androidx.appcompat:appcompat:1.2.0"
         const val ANDROID_MATERIAL = "com.google.android.material:material:1.2.1"
         const val ANDROIDX_CONSTRAINTLAYOUT = "androidx.constraintlayout:constraintlayout:1.1.3"
