@@ -56,7 +56,7 @@ class AffectedModuleDetectorIntegrationTest {
                 """buildscript {
                 |   repositories {
                 |       google()
-                |       jcenter()
+                |       mavenCentral()
                 |   }
                 |   dependencies {
                 |       classpath "com.android.tools.build:gradle:4.1.0"
@@ -69,7 +69,7 @@ class AffectedModuleDetectorIntegrationTest {
                 |allprojects {
                 |   repositories {
                 |       google()
-                |       jcenter()
+                |       mavenCentral()
                 |   }
                 |}""".trimMargin()
         )
