@@ -1,7 +1,7 @@
 package com.dropbox.affectedmoduledetector
 
 object Dependencies {
-    private object Versions {
+    object Versions {
         const val KOTLIN_VERSION = "1.4.10"
     }
 
