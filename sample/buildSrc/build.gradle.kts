@@ -1,8 +1,10 @@
+import com.dropbox.affectedmoduledetector.Dependencies.Versions.KOTLIN_VERSION
+
 /*
  * Copyright (c) 2020, Dropbox, Inc. All rights reserved.
  */
 plugins {
-    kotlin("jvm") version "1.4.10"
+    kotlin("jvm") version KOTLIN_VERSION
     `java-gradle-plugin`
 }
 
