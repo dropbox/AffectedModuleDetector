@@ -1,4 +1,4 @@
-import com.dropbox.affectedmoduledetector.Dependencies.Versions.KOTLIN_VERSION
+import com.dropbox.affectedmoduledetector.Dependencies
 
 /*
  * Copyright (c) 2020, Dropbox, Inc. All rights reserved.
@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.dropbox.affectedmoduledetector:affectedmoduledetector:0.1.2-SNAPSHOT")
+    implementation(Dependencies.Libs.AFFECTED_MODULE_DETECTOR)
     testImplementation("junit:junit:4.13.1")
     testImplementation("com.nhaarman:mockito-kotlin:1.5.0")
     testImplementation("com.google.truth:truth:1.0.1")
