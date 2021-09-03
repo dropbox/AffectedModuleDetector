@@ -6,6 +6,7 @@ import com.dropbox.affectedmoduledetector.Dependencies.Versions.KOTLIN_VERSION
 plugins {
     kotlin("jvm") version KOTLIN_VERSION
     `java-gradle-plugin`
+    `kotlin-dsl`
 }
 
 repositories {
