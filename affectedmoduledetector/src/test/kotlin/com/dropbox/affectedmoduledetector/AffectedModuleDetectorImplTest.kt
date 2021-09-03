@@ -43,10 +43,10 @@ class AffectedModuleDetectorImplTest {
     private lateinit var p12: Project
     private lateinit var p13: Project
     private val pathsAffectingAllModules = setOf(
-        "tools/android/buildSrc",
-        "android/gradlew",
-        "android/gradle",
-        "dbx/core/api/"
+        convertToFilePath("tools", "android", "buildSrc"),
+        convertToFilePath("android", "gradlew"),
+        convertToFilePath("android", "gradle"),
+        convertToFilePath("dbx", "core", "api")
     )
     private lateinit var affectedModuleConfiguration: AffectedModuleConfiguration
 
@@ -104,21 +104,21 @@ class AffectedModuleDetectorImplTest {
             .withParent(root)
             .build()
         p3 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p1:p3"))
+            .withProjectDir(tmpDir.resolve("p1-p3"))
             .withName("p3")
             .withParent(p1)
             .build()
         val p3config = p3.configurations.create("p3config")
         p3config.dependencies.add(p3.dependencies.project(mutableMapOf("path" to ":p1")))
         p4 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p1:p3:p4"))
+            .withProjectDir(tmpDir.resolve("p1-p3-p4"))
             .withName("p4")
             .withParent(p3)
             .build()
         val p4config = p4.configurations.create("p4config")
         p4config.dependencies.add(p4.dependencies.project(mutableMapOf("path" to ":p1:p3")))
         p5 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p2:p5"))
+            .withProjectDir(tmpDir.resolve("p2-p5"))
             .withName("p5")
             .withParent(p2)
             .build()
@@ -126,7 +126,7 @@ class AffectedModuleDetectorImplTest {
         p5config.dependencies.add(p5.dependencies.project(mutableMapOf("path" to ":p2")))
         p5config.dependencies.add(p5.dependencies.project(mutableMapOf("path" to ":p1:p3")))
         p6 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p1:p3:p6"))
+            .withProjectDir(tmpDir.resolve("p1-p3-p6"))
             .withName("p6")
             .withParent(p3)
             .build()
