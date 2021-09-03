@@ -18,6 +18,6 @@ repositories {
 dependencies {
     implementation(Dependencies.Libs.AFFECTED_MODULE_DETECTOR)
     testImplementation(Dependencies.Libs.JUNIT)
-    testImplementation("com.nhaarman:mockito-kotlin:1.5.0")
+    testImplementation(Dependencies.Libs.MOCKITO_KOTLIN)
     testImplementation("com.google.truth:truth:1.0.1")
 }
