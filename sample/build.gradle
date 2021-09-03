@@ -11,9 +11,9 @@ buildscript {
         mavenLocal()
     }
     dependencies {
-        classpath Dependencies.Libs.ANDROID_BUILD_TOOLS
-        classpath Dependencies.Libs.KOTLIN_GRADLE_PLUGIN
-        classpath Dependencies.Libs.KTLINT
+        classpath(Dependencies.Libs.ANDROID_BUILD_TOOLS)
+        classpath(Dependencies.Libs.KOTLIN_GRADLE_PLUGIN)
+        classpath(Dependencies.Libs.KTLINT)
     }
 }
 
