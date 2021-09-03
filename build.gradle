@@ -10,7 +10,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:7.0.2"
+        classpath Dependencies.Libs.ANDROID_BUILD_TOOLS
         classpath Dependencies.Libs.KOTLIN_GRADLE_PLUGIN
         classpath("org.jlleitschuh.gradle:ktlint-gradle:10.2.0")
         classpath("org.jacoco:org.jacoco.core:0.8.7")
