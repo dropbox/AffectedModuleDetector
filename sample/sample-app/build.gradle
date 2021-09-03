@@ -1,4 +1,4 @@
-import com.dropbox.sample.Dependencies
+import com.dropbox.affectedmoduledetector.Dependencies
 
 plugins {
     id 'com.android.application'

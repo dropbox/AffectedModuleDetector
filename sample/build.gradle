@@ -1,4 +1,4 @@
-import com.dropbox.sample.Dependencies
+import com.dropbox.affectedmoduledetector.Dependencies
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
