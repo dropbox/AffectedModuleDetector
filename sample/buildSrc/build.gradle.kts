@@ -19,5 +19,5 @@ dependencies {
     implementation(Dependencies.Libs.AFFECTED_MODULE_DETECTOR)
     testImplementation(Dependencies.Libs.JUNIT)
     testImplementation(Dependencies.Libs.MOCKITO_KOTLIN)
-    testImplementation("com.google.truth:truth:1.0.1")
+    testImplementation(Dependencies.Libs.TRUTH)
 }

@@ -16,6 +16,7 @@ object Dependencies {
         const val ANDROIDX_CONSTRAINTLAYOUT = "androidx.constraintlayout:constraintlayout:1.1.3"
         const val JUNIT = "junit:junit:4.13.1"
         const val MOCKITO_KOTLIN = "com.nhaarman:mockito-kotlin:1.5.0"
+        const val TRUTH = "com.google.truth:truth:1.0.1"
         const val ANDROIDX_TEST_EXT = "androidx.test.ext:junit:1.1.2"
         const val ANDROIDX_ESPRESSO = "androidx.test.espresso:espresso-core:3.3.0"
         const val ANDROID_BUILD_TOOLS = "com.android.tools.build:gradle:4.1.0"
