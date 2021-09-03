@@ -13,7 +13,7 @@ buildscript {
         classpath Dependencies.Libs.ANDROID_BUILD_TOOLS
         classpath Dependencies.Libs.KOTLIN_GRADLE_PLUGIN
         classpath(Dependencies.Libs.KTLINT)
-        classpath("org.jacoco:org.jacoco.core:0.8.7")
+        classpath(Dependencies.Libs.JACOCO)
     }
 }
 

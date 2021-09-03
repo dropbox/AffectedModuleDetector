@@ -21,5 +21,6 @@ object Dependencies {
         const val ANDROIDX_ESPRESSO = "androidx.test.espresso:espresso-core:3.3.0"
         const val ANDROID_BUILD_TOOLS = "com.android.tools.build:gradle:4.1.0"
         const val KTLINT = "org.jlleitschuh.gradle:ktlint-gradle:9.1.1"
+        const val JACOCO = "org.jacoco:org.jacoco.core:0.8.5"
     }
 }
