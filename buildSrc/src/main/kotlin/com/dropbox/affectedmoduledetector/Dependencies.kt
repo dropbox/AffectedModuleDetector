@@ -1,4 +1,4 @@
-package com.dropbox.sample
+package com.dropbox.affectedmoduledetector
 
 object Dependencies {
     private object Versions {
