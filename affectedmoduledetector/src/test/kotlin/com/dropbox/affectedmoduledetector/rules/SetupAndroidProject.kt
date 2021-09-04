@@ -2,6 +2,7 @@ package com.dropbox.affectedmoduledetector.rules
 
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.io.FileNotFoundException
 
 /**
  * TestRule that allows setup of the Android SDK within the context of a GradleRunner test.
@@ -25,7 +26,11 @@ class SetupAndroidProject : TemporaryFolder() {
         // ever be one level deep then we can simply use ".." to go up one level where we _should_ find our file.
         val localDotProperties = File("../local.properties")
 
-        if (!localDotProperties.exists()) return // TODO: fail the test with a sensible message
+        if (!localDotProperties.exists()) throw FileNotFoundException(
+            """Unable to locate Android SDK. Ensure that you have either the ANDROID_SDK_ROOT environment variable 
+            |set or the sdk.dir location correctly set in local.properties within the Gradle root project directory.
+            |""".trimMargin()
+        )
 
         // Read our machine specific local.properties file and copy it to our temp Gradle test directory for the test.
         localDotProperties.bufferedReader().use {
