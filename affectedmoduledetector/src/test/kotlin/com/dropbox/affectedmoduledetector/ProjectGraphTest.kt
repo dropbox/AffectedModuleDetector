@@ -1,6 +1,6 @@
 package com.dropbox.affectedmoduledetector
 
-import java.io.File
+import com.dropbox.affectedmoduledetector.util.toOsSpecificPath
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNull
 import org.gradle.api.plugins.ExtraPropertiesExtension
@@ -21,26 +21,26 @@ class ProjectGraphTest {
     fun testSimple() {
         val tmpDir = tmpFolder.root
         val root = ProjectBuilder.builder()
-                .withProjectDir(tmpDir)
-                .withName("root")
-                .build()
+            .withProjectDir(tmpDir)
+            .withName("root")
+            .build()
         // Project Graph expects supportRootFolder.
         (root.properties.get("ext") as ExtraPropertiesExtension).set("supportRootFolder", tmpDir)
         val p1 = ProjectBuilder.builder()
-                .withProjectDir(tmpDir.resolve("p1"))
-                .withName("p1")
-                .withParent(root)
-                .build()
+            .withProjectDir(tmpDir.resolve("p1"))
+            .withName("p1")
+            .withParent(root)
+            .build()
         val p2 = ProjectBuilder.builder()
-                .withProjectDir(tmpDir.resolve("p2"))
-                .withName("p2")
-                .withParent(root)
-                .build()
+            .withProjectDir(tmpDir.resolve("p2"))
+            .withName("p2")
+            .withParent(root)
+            .build()
         val p3 = ProjectBuilder.builder()
-                .withProjectDir(tmpDir.resolve("p1").resolve("p3"))
-                .withName("p3")
-                .withParent(p1)
-                .build()
+            .withProjectDir(tmpDir.resolve("p1").resolve("p3"))
+            .withName("p3")
+            .withParent(p1)
+            .build()
         val graph = ProjectGraph(root, tmpDir)
         assertNull(graph.findContainingProject("nowhere"))
         assertNull(graph.findContainingProject("rootfile.java"))
