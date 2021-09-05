@@ -20,6 +20,7 @@
 
 package com.dropbox.affectedmoduledetector
 
+import com.dropbox.affectedmoduledetector.util.toOsSpecificPath
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import java.io.File
@@ -53,7 +54,7 @@ internal class ProjectGraph(project: Project, val gitRoot: File, val logger: Log
      * The file's path prefix should match the project's path.
      */
     fun findContainingProject(filePath: String): Project? {
-        val sections = filePath.split(File.separatorChar)
+        val sections = filePath.toOsSpecificPath().split(File.separatorChar)
         val realSections = sections.toMutableList()
         val projectRelativeDir = findProjectRelativeDir()
         for (dir in projectRelativeDir) {

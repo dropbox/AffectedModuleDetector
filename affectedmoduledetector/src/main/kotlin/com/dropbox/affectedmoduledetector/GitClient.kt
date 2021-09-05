@@ -172,12 +172,10 @@ internal class GitClientImpl(
         }
 
         override fun executeAndParse(command: String): List<String> {
-            val response = execute(command)
+            return execute(command).toOsSpecificLineEnding()
                 .split(System.lineSeparator())
-                .filterNot {
-                    it.isEmpty()
-                }
-            return response
+                .map { it.toOsSpecificPath() }
+                .filterNot { it.isEmpty() }
         }
 
         override fun executeAndParseFirst(command: String): String {

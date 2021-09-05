@@ -45,21 +45,20 @@ class ProjectGraphTest {
         assertNull(graph.findContainingProject("nowhere"))
         assertNull(graph.findContainingProject("rootfile.java"))
         assertEquals(
-                p1,
-                graph.findContainingProject("p1/px/x.java".toLocalPath())
+            p1,
+            graph.findContainingProject("p1/px/x.java")
         )
         assertEquals(
-                p1,
-                graph.findContainingProject("p1/a.java".toLocalPath())
+            p1,
+            graph.findContainingProject("p1/a.java")
         )
         assertEquals(
-                p3,
-                graph.findContainingProject("p1/p3/a.java".toLocalPath())
+            p3,
+            graph.findContainingProject("p1/p3/a.java")
         )
         assertEquals(
-                p2,
-                graph.findContainingProject("p2/a/b/c/d/e/f/a.java".toLocalPath())
+            p2,
+            graph.findContainingProject("p2/a/b/c/d/e/f/a.java")
         )
     }
-    private fun String.toLocalPath() = this.split("/").joinToString(File.separator)
 }
