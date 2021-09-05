@@ -18,7 +18,6 @@ buildscript {
 }
 
 apply plugin: "org.jlleitschuh.gradle.ktlint"
-apply plugin: "com.dropbox.affectedmoduledetector"
 
 affectedModuleDetector {
     baseDir = "${project.rootDir}"

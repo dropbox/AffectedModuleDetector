@@ -1,1 +1,2 @@
 include ':affectedmoduledetector'
+include ':sample'
