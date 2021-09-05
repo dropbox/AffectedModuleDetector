@@ -13,6 +13,13 @@ fun String.toOsSpecificPath(): String {
     return this.split("/").joinToString(File.separator)
 }
 
+/**
+ * Returns a String with an OS specific line endings for the operating system.
+ *
+ * The Git client appears to only talk Unix-like line endings ("\n") however the Gradle client understands all OS
+ * line ending variants. This causes issues on systems other than those that use Unix-like line endings i.e. Windows.
+ * Therefore we need to normalise the line endings.
+ */
 fun String.toOsSpecificLineEnding(): String {
     return this.replace("\n", System.lineSeparator())
 }
