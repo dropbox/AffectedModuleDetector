@@ -118,7 +118,7 @@ abstract class AffectedModuleDetector {
             require(rootProject == rootProject.rootProject) {
                 "Project provided must be root, project was ${rootProject.path}"
             }
-            
+
             val enabled = rootProject.hasProperty(ENABLE_ARG)
             if (!enabled) {
                 setInstance(
@@ -146,7 +146,7 @@ abstract class AffectedModuleDetector {
                     rootProject.extensions.findByType(AffectedModuleConfiguration::class.java)
                 ) {
                     "Root project ${rootProject.path} must have the AffectedModuleConfiguration " +
-                        "extension added."
+                            "extension added."
                 }
 
             val logger =
@@ -364,21 +364,21 @@ class AffectedModuleDetectorImpl constructor(
 
     override fun shouldInclude(project: Project): Boolean {
         return (
-            (project.isRoot || (
-                affectedProjects.contains(project) &&
-                    isProjectProvided2(project)
-                )) && !config.excludedModules.contains(project.name)
-            ).also {
-            logger?.info(
-                "checking whether I should include ${project.path} and my answer is $it"
-            )
-        }
+                (project.isRoot || (
+                        affectedProjects.contains(project) &&
+                                isProjectProvided2(project)
+                        )) && !config.excludedModules.contains(project.name)
+                ).also {
+                logger?.info(
+                    "checking whether I should include ${project.path} and my answer is $it"
+                )
+            }
     }
 
     override fun hasAffectedProjects() = affectedProjects.isNotEmpty()
 
     override fun isProjectProvided2(project: Project): Boolean {
-        if(modules == null ) return true
+        if (modules == null) return true
         return modules.contains(project.path)
     }
 
@@ -416,13 +416,13 @@ class AffectedModuleDetectorImpl constructor(
                 unknownFiles.add(filePath)
                 logger?.info(
                     "Couldn't find containing project for file$filePath. " +
-                        "Adding to unknownFiles."
+                            "Adding to unknownFiles."
                 )
             } else {
                 changedProjects.add(containingProject)
                 logger?.info(
                     "For file $filePath containing project is $containingProject. " +
-                        "Adding to changedProjects."
+                            "Adding to changedProjects."
                 )
             }
         }
@@ -473,7 +473,7 @@ class AffectedModuleDetectorImpl constructor(
         }
         logger?.info(
             "unknownFiles: $unknownFiles, changedProjects: $changedProjects, buildAll: " +
-                "$buildAll"
+                    "$buildAll"
         )
 
         // If we're in a buildAll state, we return allProjects unless it's the changed target,

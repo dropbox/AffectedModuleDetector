@@ -1,6 +1,5 @@
 package com.dropbox.affectedmoduledetector
 
-import com.dropbox.affectedmoduledetector.util.toOsSpecificPath
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNull
 import org.gradle.api.plugins.ExtraPropertiesExtension
@@ -25,7 +24,7 @@ class ProjectGraphTest {
             .withName("root")
             .build()
         // Project Graph expects supportRootFolder.
-        (root.properties.get("ext") as ExtraPropertiesExtension).set("supportRootFolder", tmpDir)
+        (root.properties["ext"] as ExtraPropertiesExtension).set("supportRootFolder", tmpDir)
         val p1 = ProjectBuilder.builder()
             .withProjectDir(tmpDir.resolve("p1"))
             .withName("p1")
