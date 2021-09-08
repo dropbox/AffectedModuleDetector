@@ -67,11 +67,11 @@ class AffectedModuleDetectorImplTest {
                "library modules"              "UI modules"
                root -----------------          root2
               / |  \     |   |   |             /    \
-            p1  p7  p2  p8   p9 p10           p12   p13
+            d1  d7  d2  d8   d9 d10           d12   d13
            /         \
-          p3          p5
+          d3          d5
          /  \
-       p4   p6
+       d4   d6
 
         Dependency forest:
 
@@ -96,31 +96,31 @@ class AffectedModuleDetectorImplTest {
         // Project Graph expects supportRootFolder.
         (root2.properties["ext"] as ExtraPropertiesExtension).set("supportRootFolder", tmpDir2)
         p1 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p1"))
+            .withProjectDir(tmpDir.resolve("d1"))
             .withName("p1")
             .withParent(root)
             .build()
         p2 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p2"))
+            .withProjectDir(tmpDir.resolve("d2"))
             .withName("p2")
             .withParent(root)
             .build()
         p3 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p1/p3"))
+            .withProjectDir(tmpDir.resolve("d1/d3"))
             .withName("p3")
             .withParent(p1)
             .build()
         val p3config = p3.configurations.create("p3config")
         p3config.dependencies.add(p3.dependencies.project(mutableMapOf("path" to ":p1")))
         p4 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p1/p3/p4"))
+            .withProjectDir(tmpDir.resolve("d1/d3/d4"))
             .withName("p4")
             .withParent(p3)
             .build()
         val p4config = p4.configurations.create("p4config")
         p4config.dependencies.add(p4.dependencies.project(mutableMapOf("path" to ":p1:p3")))
         p5 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p2/p5"))
+            .withProjectDir(tmpDir.resolve("d2/d5"))
             .withName("p5")
             .withParent(p2)
             .build()
@@ -128,29 +128,29 @@ class AffectedModuleDetectorImplTest {
         p5config.dependencies.add(p5.dependencies.project(mutableMapOf("path" to ":p2")))
         p5config.dependencies.add(p5.dependencies.project(mutableMapOf("path" to ":p1:p3")))
         p6 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p1/p3/p6"))
+            .withProjectDir(tmpDir.resolve("d1/d3/d6"))
             .withName("p6")
             .withParent(p3)
             .build()
         val p6config = p6.configurations.create("p6config")
         p6config.dependencies.add(p6.dependencies.project(mutableMapOf("path" to ":p2")))
         p7 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p7"))
+            .withProjectDir(tmpDir.resolve("d7"))
             .withName("p7")
             .withParent(root)
             .build()
         p8 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p8"))
+            .withProjectDir(tmpDir.resolve("d8"))
             .withName("cobuilt1")
             .withParent(root)
             .build()
         p9 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p9"))
+            .withProjectDir(tmpDir.resolve("d9"))
             .withName("cobuilt2")
             .withParent(root)
             .build()
         p10 = ProjectBuilder.builder()
-            .withProjectDir(tmpDir.resolve("p10"))
+            .withProjectDir(tmpDir.resolve("d10"))
             .withName("benchmark")
             .withParent(root)
             .build()
@@ -161,7 +161,7 @@ class AffectedModuleDetectorImplTest {
             .build()
         // The existence of this project is a test for the benchmark use case. It is picked up by
         p13 = ProjectBuilder.builder() // allProjects in ui, even though it is in the root1 dir
-            .withProjectDir(tmpDir.resolve("p10")) // and is symlinked as p10
+            .withProjectDir(tmpDir.resolve("d10")) // and is symlinked as p10
             .withName("benchmark")
             .withParent(root2)
             .build()
@@ -243,7 +243,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                changedFiles = listOf(convertToFilePath("p1", "foo.java")),
+                changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
             config = affectedModuleConfiguration
@@ -264,7 +264,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
-                changedFiles = listOf(convertToFilePath("p1", "foo.java")),
+                changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
             config = affectedModuleConfiguration
@@ -285,7 +285,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                changedFiles = listOf(convertToFilePath("p1", "foo.java")),
+                changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
             config = affectedModuleConfiguration
@@ -307,8 +307,8 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
-                    convertToFilePath("p1", "foo.java"),
-                    convertToFilePath("p2", "bar.java")
+                    convertToFilePath("d1", "foo.java"),
+                    convertToFilePath("d2", "bar.java")
                 ),
                 tmpFolder = tmpFolder.root
             ),
@@ -331,8 +331,8 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
-                    convertToFilePath("p1", "foo.java"),
-                    convertToFilePath("p2", "bar.java")
+                    convertToFilePath("d1", "foo.java"),
+                    convertToFilePath("d2", "bar.java")
                 ),
                 tmpFolder = tmpFolder.root
             ),
@@ -355,8 +355,8 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
-                    convertToFilePath("p1", "foo.java"),
-                    convertToFilePath("p2", "bar.java")
+                    convertToFilePath("d1", "foo.java"),
+                    convertToFilePath("d2", "bar.java")
                 ),
                 tmpFolder = tmpFolder.root
             ),
@@ -420,7 +420,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                changedFiles = listOf("foo.java", convertToFilePath("p7", "bar.java")),
+                changedFiles = listOf("foo.java", convertToFilePath("d7", "bar.java")),
                 tmpFolder = tmpFolder.root
             ),
             config = affectedModuleConfiguration
@@ -593,7 +593,7 @@ class AffectedModuleDetectorImplTest {
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
-                        "p8", "foo.java"
+                        "d8", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
@@ -618,7 +618,7 @@ class AffectedModuleDetectorImplTest {
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
-                        "p8", "foo.java"
+                        "d8", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
@@ -643,7 +643,7 @@ class AffectedModuleDetectorImplTest {
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
-                        "p8", "foo.java"
+                        "d8", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
@@ -668,7 +668,7 @@ class AffectedModuleDetectorImplTest {
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
-                        "p8", "foo.java"
+                        "d8", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
@@ -692,7 +692,7 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
-                    convertToFilePath("p7", "foo.java"),
+                    convertToFilePath("d7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
@@ -716,7 +716,7 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
-                    convertToFilePath("p7", "foo.java"),
+                    convertToFilePath("d7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
@@ -740,7 +740,7 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
-                    convertToFilePath("p7", "foo.java"),
+                    convertToFilePath("d7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
@@ -764,7 +764,7 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
-                    convertToFilePath("p7", "foo.java"),
+                    convertToFilePath("d7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
@@ -788,7 +788,7 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
-                    convertToFilePath("p7", "foo.java"),
+                    convertToFilePath("d7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
@@ -812,7 +812,7 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
-                    convertToFilePath("p7", "foo.java"),
+                    convertToFilePath("d7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
@@ -1018,7 +1018,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             injectedGitClient = MockGitClient(
-                changedFiles = listOf(convertToFilePath("p1", "foo.java")),
+                changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
             config = affectedModuleConfiguration
@@ -1061,7 +1061,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
             injectedGitClient = MockGitClient(
-                changedFiles = listOf(convertToFilePath("p1", "foo.java")),
+                changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
             config = affectedModuleConfiguration
@@ -1104,7 +1104,7 @@ class AffectedModuleDetectorImplTest {
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             injectedGitClient = MockGitClient(
-                changedFiles = listOf(convertToFilePath("p1", "foo.java")),
+                changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
             config = affectedModuleConfiguration
@@ -1183,7 +1183,7 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             modules = setOf(":p1"),
             injectedGitClient = MockGitClient(
-                changedFiles = listOf(convertToFilePath("p1", "foo.java")),
+                changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
             config = affectedModuleConfiguration
@@ -1202,7 +1202,7 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             modules = emptySet(),
             injectedGitClient = MockGitClient(
-                changedFiles = listOf(convertToFilePath("p1", "foo.java")),
+                changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
             config = affectedModuleConfiguration
@@ -1222,7 +1222,7 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             modules = null,
             injectedGitClient = MockGitClient(
-                changedFiles = listOf(convertToFilePath("p1", "foo.java")),
+                changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
             config = affectedModuleConfiguration
@@ -1245,7 +1245,7 @@ class AffectedModuleDetectorImplTest {
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             modules = null,
             injectedGitClient = MockGitClient(
-                changedFiles = listOf(convertToFilePath("p1", "foo.java")),
+                changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ),
             config = affectedModuleConfiguration
