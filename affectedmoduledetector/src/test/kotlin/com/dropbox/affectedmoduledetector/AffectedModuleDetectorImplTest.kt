@@ -62,10 +62,10 @@ class AffectedModuleDetectorImplTest {
         /*
 
         Dummy project file tree:
-               "library modules"           "UI modules"
-               root -----------------       root2
-              / |  \     |   |   |   |       /  |  \
-            p1  p7  p2  p8   p9 p10  p11    p12 p13 p14
+               "library modules"              "UI modules"
+               root -----------------          root2
+              / |  \     |   |   |             /    \
+            p1  p7  p2  p8   p9 p10           p12   p13
            /         \
           p3          p5
          /  \
@@ -73,9 +73,9 @@ class AffectedModuleDetectorImplTest {
 
         Dependency forest:
 
-            p1    p2    p7 p8  p9 p10 p11     p12 p14
-           /  \  /  \               \
-          p3   p5   p6               p13
+            p1    p2    p7 p8  p9 p10         p12 p13
+           /     /  \
+          p3 - p5   p6
          /
         p4
 
