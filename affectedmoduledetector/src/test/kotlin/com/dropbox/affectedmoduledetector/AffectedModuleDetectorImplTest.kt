@@ -30,8 +30,13 @@ class AffectedModuleDetectorImplTest {
     @JvmField
     val tmpFolder2 = TemporaryFolder()
 
+    @Rule
+    @JvmField
+    val tmpFolder3 = TemporaryFolder()
+
     private lateinit var root: Project
     private lateinit var root2: Project
+    private lateinit var root3: Project
     private lateinit var p1: Project
     private lateinit var p2: Project
     private lateinit var p3: Project
@@ -44,6 +49,10 @@ class AffectedModuleDetectorImplTest {
     private lateinit var p10: Project
     private lateinit var p12: Project
     private lateinit var p13: Project
+    private lateinit var p16: Project
+    private lateinit var p17: Project
+    private lateinit var p18: Project
+    private lateinit var p19: Project
     private val pathsAffectingAllModules = setOf(
         convertToFilePath("tools", "android", "buildSrc"),
         convertToFilePath("android", "gradlew"),
@@ -56,6 +65,7 @@ class AffectedModuleDetectorImplTest {
     fun init() {
         val tmpDir = tmpFolder.root
         val tmpDir2 = tmpFolder2.root
+        val tmpDir3 = tmpFolder2.root
 
         pathsAffectingAllModules.forEach {
             File(tmpDir, it).mkdirs()
@@ -64,10 +74,10 @@ class AffectedModuleDetectorImplTest {
         /*
 
         Dummy project file tree:
-               "library modules"              "UI modules"
-               root -----------------          root2
-              / |  \     |   |   |             /    \
-            d1  d7  d2  d8   d9 d10           d12   d13
+               "library modules"              "UI modules"        "quixotic project"
+               root -----------------          root2               d14  root3   d15
+              / |  \     |   |   |             /    \              /          /  |  \
+            d1  d7  d2  d8   d9 d10           d12   d13           d16       d17 d18 d19
            /         \
           d3          d5
          /  \
@@ -75,14 +85,15 @@ class AffectedModuleDetectorImplTest {
 
         Dependency forest:
 
-            p1    p2    p7 p8  p9 p10         p12 p13
-           /     /  \
-          p3 - p5   p6
-         /
-        p4
+            p1    p2    p7 p8  p9 p10          p12 p13                  p16
+           /     /  \                                                  /   \
+          p3 - p5   p6                                               p17    p18
+         /                                                                   \
+        p4                                                                   p19
 
          */
 
+        // Root projects
         root = ProjectBuilder.builder()
             .withProjectDir(tmpDir)
             .withName("root")
@@ -95,6 +106,14 @@ class AffectedModuleDetectorImplTest {
             .build()
         // Project Graph expects supportRootFolder.
         (root2.properties["ext"] as ExtraPropertiesExtension).set("supportRootFolder", tmpDir2)
+        root3 = ProjectBuilder.builder()
+            .withProjectDir(tmpDir3.resolve("root3"))
+            .withName("root3")
+            .build()
+        // Project Graph expects supportRootFolder.
+        (root3.properties["ext"] as ExtraPropertiesExtension).set("supportRootFolder", tmpDir3)
+
+        // Library modules
         p1 = ProjectBuilder.builder()
             .withProjectDir(tmpDir.resolve("d1"))
             .withName("p1")
@@ -154,6 +173,8 @@ class AffectedModuleDetectorImplTest {
             .withName("benchmark")
             .withParent(root)
             .build()
+
+        // UI modules
         p12 = ProjectBuilder.builder()
             .withProjectDir(tmpDir2.resolve("compose"))
             .withName("compose")
@@ -165,6 +186,35 @@ class AffectedModuleDetectorImplTest {
             .withName("benchmark")
             .withParent(root2)
             .build()
+
+        // The quixotic project is a valid but highly unusual project set up consisting of common modules and project
+        // flavours all (effectively) at the same level as the root project directory and dependencies between them.
+        p16 = ProjectBuilder.builder()
+            .withProjectDir(tmpDir3.resolve("d14/d16"))
+            .withName("p16")
+            .withParent(root3)
+            .build()
+        p17 = ProjectBuilder.builder()
+            .withProjectDir(tmpDir3.resolve("d15/d17"))
+            .withName("p17")
+            .withParent(root3)
+            .build()
+        val p17config = p17.configurations.create("p17config")
+        p17config.dependencies.add(p17.dependencies.project(mutableMapOf("path" to ":p16")))
+        p18 = ProjectBuilder.builder()
+            .withProjectDir(tmpDir3.resolve("d15/d18"))
+            .withName("p18")
+            .withParent(root3)
+            .build()
+        val p18config = p18.configurations.create("p18config")
+        p18config.dependencies.add(p18.dependencies.project(mutableMapOf("path" to ":p16")))
+        p19 = ProjectBuilder.builder()
+            .withProjectDir(tmpDir3.resolve("d15/d19"))
+            .withName("p19")
+            .withParent(root3)
+            .build()
+        val p19config = p19.configurations.create("p19config")
+        p19config.dependencies.add(p19.dependencies.project(mutableMapOf("path" to ":p18")))
 
         affectedModuleConfiguration = AffectedModuleConfiguration().also {
             it.baseDir = tmpDir.absolutePath
@@ -1135,6 +1185,132 @@ class AffectedModuleDetectorImplTest {
             detector.getSubset(p12),
             CoreMatchers.`is`(
                 ProjectSubset.NONE
+            )
+        )
+    }
+
+    @Test
+    fun noChangeCLs_quixotic() {
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root3,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
+            injectedGitClient = MockGitClient(
+                changedFiles = emptyList(),
+                tmpFolder = root3.projectDir
+            ),
+            config = affectedModuleConfiguration
+        )
+        MatcherAssert.assertThat(
+            detector.affectedProjects,
+            CoreMatchers.`is`(
+                setOf(p16, p17, p18, p19)
+            )
+        )
+    }
+
+    @Test
+    fun noChangeCLsOnlyDependent_quixotic() {
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root3,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
+            injectedGitClient = MockGitClient(
+                changedFiles = emptyList(),
+                tmpFolder = root3.projectDir
+            ),
+            config = affectedModuleConfiguration
+        )
+        MatcherAssert.assertThat(
+            detector.affectedProjects,
+            CoreMatchers.`is`(
+                setOf(p16, p17, p18, p19)
+            )
+        )
+    }
+
+    @Test
+    fun noChangeCLsOnlyChanged_quixotic() {
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root3,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.CHANGED_PROJECTS,
+            injectedGitClient = MockGitClient(
+                changedFiles = emptyList(),
+                tmpFolder = root3.projectDir
+            ),
+            config = affectedModuleConfiguration
+        )
+        MatcherAssert.assertThat(
+            detector.affectedProjects,
+            CoreMatchers.`is`(
+                emptySet()
+            )
+        )
+    }
+
+    @Test
+    fun changeInOne_quixotic_main_module() {
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root3,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
+            injectedGitClient = MockGitClient(
+                changedFiles = listOf(convertToFilePath("d14", "d16", "foo.java")),
+                tmpFolder = root3.projectDir
+            ),
+            config = affectedModuleConfiguration
+        )
+        MatcherAssert.assertThat(
+            detector.affectedProjects,
+            CoreMatchers.`is`(
+                setOf(p16, p17, p18, p19)
+            )
+        )
+    }
+
+    @Test
+    fun changeInOne_quixotic_common_module_with_a_dependency() {
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root3,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
+            injectedGitClient = MockGitClient(
+                changedFiles = listOf(convertToFilePath("d15", "d18", "foo.java")),
+                tmpFolder = root3.projectDir
+            ),
+            config = affectedModuleConfiguration
+        )
+        MatcherAssert.assertThat(
+            detector.affectedProjects,
+            CoreMatchers.`is`(
+                setOf(p18, p19)
+            )
+        )
+    }
+
+    @Test
+    fun changeInOne_quixotic_common_module_without_a_dependency() {
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root3,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
+            injectedGitClient = MockGitClient(
+                changedFiles = listOf(convertToFilePath("d15", "d19", "foo.java")),
+                tmpFolder = root3.projectDir
+            ),
+            config = affectedModuleConfiguration
+        )
+        MatcherAssert.assertThat(
+            detector.affectedProjects,
+            CoreMatchers.`is`(
+                setOf(p19)
             )
         )
     }
