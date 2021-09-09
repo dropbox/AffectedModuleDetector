@@ -26,6 +26,7 @@ import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.DEPEN
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.ENABLE_ARG
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.MODULES_ARG
 import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProvider
+import com.dropbox.affectedmoduledetector.util.toOsSpecificPath
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -508,7 +509,21 @@ class AffectedModuleDetectorImpl constructor(
 
     private fun affectsAllModules(file: String): Boolean {
         logger?.info("Paths affecting all modules: ${config.pathsAffectingAllModules}")
-        return config.pathsAffectingAllModules.any { file.startsWith(it) }
+
+        // TODO: This is the similar to the one in Project Graph maybe extract some logic?
+        val sections = file.toOsSpecificPath().split(File.separatorChar)
+        val realSections = sections.toMutableList()
+        val projectRelativeDir = rootProject.projectDir.toRelativeString(git.getGitRoot()).split(File.separatorChar)
+        for (dir in projectRelativeDir) {
+            if (realSections.isNotEmpty() && dir == realSections.first()) {
+                realSections.removeAt(0)
+            } else {
+                break
+            }
+        }
+        val projectRelativePath = realSections.joinToString(File.separatorChar.toString())
+
+        return config.pathsAffectingAllModules.any { projectRelativePath.startsWith(it) }
     }
 
     private fun findContainingProject(filePath: String): Project? {
