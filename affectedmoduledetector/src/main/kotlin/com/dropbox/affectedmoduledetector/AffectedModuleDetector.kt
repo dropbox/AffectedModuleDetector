@@ -415,7 +415,7 @@ class AffectedModuleDetectorImpl constructor(
             if (containingProject == null) {
                 unknownFiles.add(filePath)
                 logger?.info(
-                    "Couldn't find containing project for file$filePath. " +
+                    "Couldn't find containing project for file $filePath. " +
                             "Adding to unknownFiles."
                 )
             } else {
