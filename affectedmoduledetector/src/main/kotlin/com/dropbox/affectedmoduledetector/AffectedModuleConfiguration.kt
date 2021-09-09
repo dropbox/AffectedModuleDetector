@@ -1,5 +1,6 @@
 package com.dropbox.affectedmoduledetector
 
+import com.dropbox.affectedmoduledetector.util.toOsSpecificPath
 import java.io.File
 
 class AffectedModuleConfiguration {
@@ -26,7 +27,8 @@ class AffectedModuleConfiguration {
             requireNotNull(baseDir) {
                 "baseDir must be set to use pathsAffectingAllModules"
             }
-            field = value
+            // Protect against users specifying the wrong path separator for their OS.
+            field = value.map { it.toOsSpecificPath() }.toSet()
         }
         get() {
             field.forEach { path ->
