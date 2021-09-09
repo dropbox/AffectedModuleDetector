@@ -160,7 +160,7 @@ abstract class AffectedModuleDetector {
                         }
                         val outputFile =
                             distDir.resolve(config.logFilename)
-                        outputFile.appendText(log)
+                        outputFile.writeText(log)
                         println("Wrote dependency log to ${outputFile.absolutePath}")
                     }
                 }
