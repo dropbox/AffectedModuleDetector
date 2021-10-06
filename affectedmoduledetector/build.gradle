@@ -8,10 +8,6 @@ plugins {
     id 'signing'
 }
 
-affectedTestConfiguration {
-    jvmTestTask = "test"
-}
-
 apply from: rootProject.file("gradle/jacoco.gradle")
 apply from: rootProject.file("gradle/releasing.gradle")
 
