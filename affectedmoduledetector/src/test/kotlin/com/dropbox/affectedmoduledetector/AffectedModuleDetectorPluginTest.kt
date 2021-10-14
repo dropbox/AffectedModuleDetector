@@ -1,13 +1,14 @@
 package com.dropbox.affectedmoduledetector
 
 import com.google.common.truth.Truth.assertThat
-import junit.framework.Assert.fail
 import org.gradle.api.Project
+import org.gradle.api.internal.plugins.PluginApplicationException
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.lang.IllegalStateException
 
 class AffectedModuleDetectorPluginTest {
 
@@ -39,8 +40,8 @@ class AffectedModuleDetectorPluginTest {
         try {
             // WHEN
             childProject.pluginManager.apply(AffectedModuleDetectorPlugin::class.java)
-            fail("Expected exception not thrown")
-        } catch (e: Exception) {
+            throw IllegalStateException("Expected to throw exception")
+        } catch (e: PluginApplicationException) {
             // THEN
             assertThat(e.message).isEqualTo("Failed to apply plugin [class 'com.dropbox.affectedmoduledetector.AffectedModuleDetectorPlugin']")
         }
