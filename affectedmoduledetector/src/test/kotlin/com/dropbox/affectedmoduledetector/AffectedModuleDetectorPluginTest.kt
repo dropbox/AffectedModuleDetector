@@ -43,7 +43,7 @@ class AffectedModuleDetectorPluginTest {
             throw IllegalStateException("Expected to throw exception")
         } catch (e: PluginApplicationException) {
             // THEN
-            assertThat(e.message).isEqualTo("Failed to apply plugin class 'com.dropbox.affectedmoduledetector.AffectedModuleDetectorPlugin'.q")
+            assertThat(e.message).isEqualTo("Failed to apply plugin class 'com.dropbox.affectedmoduledetector.AffectedModuleDetectorPlugin'")
         }
     }
 
