@@ -21,7 +21,7 @@ git commit -am "Prepare 0.1.0 release"
 * Create a tag and push it
 ```bash
 git tag v0.1.0
-git push origin v0.1.0
+git push origin v0.1.0 --follow-tags
 ```
 
 * Upload to Maven Central

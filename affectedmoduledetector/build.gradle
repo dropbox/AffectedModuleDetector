@@ -2,13 +2,10 @@ plugins {
     id 'java-library'
     id 'kotlin'
     id 'java-gradle-plugin'
-    id 'maven-publish'
-    id 'signing'
+    id "com.vanniktech.maven.publish" version "0.18.0"
 }
 
-
 apply from: rootProject.file("gradle/jacoco.gradle")
-apply from: rootProject.file("gradle/releasing.gradle")
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_7
