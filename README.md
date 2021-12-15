@@ -89,10 +89,12 @@ affectedModuleDetector {
  
  
  
- Modules can specify a configuration block to specify which variant tests to run
+ By default, the Detector will look for `assembleAndroidDebugTest`, `connectedAndroidDebugTest`, and `testDebug`.  Modules can specify a configuration block to specify which variant tests to run:
  ```groovy
- affectedTestConfiguration{
-    variantToTest = "debug" //default is debug
+ affectedTestConfiguration {
+    assembleAndroidTestTask = "assmebleAndroidReleaseTest"
+    runAndroidTestTask = "connectedAndroidReleaseTest"
+    jvmTestTask = "testRelease"
 }
 ```
  

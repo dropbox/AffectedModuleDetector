@@ -11,10 +11,9 @@ import java.util.*
 var TEST_TASK_TO_RUN_EXTENSION = "TestTasks"
 
 open class TestTasks {
-    var variantToTest = "debug"
-    val assembleAndroidTestTask = "assemble${variantToTest.capitalize()}AndroidTest"
-    val runAndroidTestTask = "connected${variantToTest.capitalize()}AndroidTest"
-    val jvmTest = "test${variantToTest.capitalize()}UnitTest"
+    val assembleAndroidTestTask = "assembleDebugAndroidTest"
+    val runAndroidTestTask = "connectedDebugAndroidTest"
+    val jvmTest = "testDebugUnitTest"
     val jvmTestBackup = "test"
 }
 
