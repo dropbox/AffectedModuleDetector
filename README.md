@@ -43,7 +43,7 @@ Apply the project to the root `build.gradle`:
 ```groovy
 buildscript {
   repositories {
-    maven()
+    mavenCental()
   }
   dependencies {
     classpath "com.dropbox.affectedmoduledetector:affectedmoduledetector:<LATEST_VERSION>"
