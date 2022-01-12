@@ -4,7 +4,6 @@ import com.dropbox.sample.Dependencies
 buildscript {
     repositories {
         google()
-        jcenter()
         maven {
             url "https://plugins.gradle.org/m2/"
         }
@@ -37,7 +36,6 @@ affectedModuleDetector {
 allprojects {
     repositories {
         google()
-        jcenter()
     }
 }
 

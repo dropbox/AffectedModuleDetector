@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'kotlin'
     id 'java-gradle-plugin'
-    id "com.vanniktech.maven.publish" version "0.18.0"
+    id "com.vanniktech.maven.publish"
 }
 
 apply from: rootProject.file("gradle/jacoco.gradle")
