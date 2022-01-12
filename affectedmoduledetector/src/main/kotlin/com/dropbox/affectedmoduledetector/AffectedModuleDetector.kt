@@ -402,11 +402,14 @@ class AffectedModuleDetectorImpl constructor(
      * Also populates the unknownFiles var which is used in findAffectedProjects
      */
     private fun findChangedProjects(): Set<Project> {
-        changedFiles.addAll(
-            git.findChangedFiles(
-                includeUncommitted = true
-            )
-        )
+        git.findChangedFiles(
+            includeUncommitted = true
+        ).forEach { fileName ->
+            if (affectsAllModules(fileName)) {
+                return allProjects
+            }
+            changedFiles.add(fileName)
+        }
 
         val changedProjects = mutableSetOf<Project>()
 
@@ -465,11 +468,6 @@ class AffectedModuleDetectorImpl constructor(
         // Should only trigger if there are no changedFiles
         if (changedProjects.isEmpty() && unknownFiles.isEmpty()) {
             buildAll = true
-        }
-        changedFiles.forEach {
-            if (affectsAllModules(it)) {
-                buildAll = true
-            }
         }
         logger?.info(
             "unknownFiles: $unknownFiles, changedProjects: $changedProjects, buildAll: " +
