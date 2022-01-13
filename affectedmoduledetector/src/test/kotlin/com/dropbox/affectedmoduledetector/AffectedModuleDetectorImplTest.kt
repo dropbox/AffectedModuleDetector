@@ -1252,6 +1252,57 @@ class AffectedModuleDetectorImplTest {
         Truth.assertThat(detector.shouldInclude(p5)).isTrue()
     }
 
+    @Test
+    fun `GIVEN a file that effects all changes has a change WHEN projectSubset is CHANGED_PROJECTS THEN all modules should be in this`() {
+        val changedFile = convertToFilePath("android", "gradle", "test.java")
+
+        affectedModuleConfiguration = affectedModuleConfiguration.also {
+            it.pathsAffectingAllModules.toMutableSet().add(changedFile)
+        }
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.CHANGED_PROJECTS,
+            modules = null,
+            injectedGitClient = MockGitClient(
+                changedFiles = listOf(changedFile),
+                tmpFolder = tmpFolder.root
+            ),
+            config = affectedModuleConfiguration
+        )
+        MatcherAssert.assertThat(
+            detector.affectedProjects,
+            CoreMatchers.`is`(
+                setOf(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10)
+            )
+        )
+    }
+
+    @Test
+    fun `GIVEN a file that does not affect all projects has a change WHEN projectSubset is CHANGED_PROJECTS THEN affected projects is empty`() {
+        val changedFile = convertToFilePath("android", "notgradle", "test.java")
+
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.CHANGED_PROJECTS,
+            modules = null,
+            injectedGitClient = MockGitClient(
+                changedFiles = listOf(changedFile),
+                tmpFolder = tmpFolder.root
+            ),
+            config = affectedModuleConfiguration
+        )
+        MatcherAssert.assertThat(
+            detector.affectedProjects,
+            CoreMatchers.`is`(
+                setOf()
+            )
+        )
+    }
+
     // For both Linux/Windows
     fun convertToFilePath(vararg list: String): String {
         return list.toList().joinToString(File.separator)

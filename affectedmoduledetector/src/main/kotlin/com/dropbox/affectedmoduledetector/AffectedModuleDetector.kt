@@ -402,11 +402,14 @@ class AffectedModuleDetectorImpl constructor(
      * Also populates the unknownFiles var which is used in findAffectedProjects
      */
     private fun findChangedProjects(): Set<Project> {
-        changedFiles.addAll(
-            git.findChangedFiles(
-                includeUncommitted = true
-            )
-        )
+        git.findChangedFiles(
+            includeUncommitted = true
+        ).forEach { fileName ->
+            if (affectsAllModules(fileName)) {
+                return allProjects
+            }
+            changedFiles.add(fileName)
+        }
 
         val changedProjects = mutableSetOf<Project>()
 
@@ -466,11 +469,6 @@ class AffectedModuleDetectorImpl constructor(
         if (changedProjects.isEmpty() && unknownFiles.isEmpty()) {
             buildAll = true
         }
-        changedFiles.forEach {
-            if (affectsAllModules(it)) {
-                buildAll = true
-            }
-        }
         logger?.info(
             "unknownFiles: $unknownFiles, changedProjects: $changedProjects, buildAll: " +
                 "$buildAll"
@@ -479,18 +477,7 @@ class AffectedModuleDetectorImpl constructor(
         // If we're in a buildAll state, we return allProjects unless it's the changed target,
         // Since the changed target runs all tests and we don't want 3+ hour presubmit runs
         if (buildAll) {
-            logger?.info("Building all projects")
-            if (unknownFiles.isEmpty()) {
-                logger?.info("because no changed files were detected")
-            } else {
-                logger?.info("because one of the unknown files affects everything in the build")
-                logger?.info(
-                    """
-                    The modules detected as affected by changed files are
-                    ${changedProjects + dependentProjects}
-                    """.trimIndent()
-                )
-            }
+            logger?.info("Building all projects because no changed files were detected")
             when (projectSubset) {
                 ProjectSubset.DEPENDENT_PROJECTS -> return allProjects
                 ProjectSubset.ALL_AFFECTED_PROJECTS -> return allProjects
