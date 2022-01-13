@@ -477,18 +477,7 @@ class AffectedModuleDetectorImpl constructor(
         // If we're in a buildAll state, we return allProjects unless it's the changed target,
         // Since the changed target runs all tests and we don't want 3+ hour presubmit runs
         if (buildAll) {
-            logger?.info("Building all projects")
-            if (unknownFiles.isEmpty()) {
-                logger?.info("because no changed files were detected")
-            } else {
-                logger?.info("because one of the unknown files affects everything in the build")
-                logger?.info(
-                    """
-                    The modules detected as affected by changed files are
-                    ${changedProjects + dependentProjects}
-                    """.trimIndent()
-                )
-            }
+            logger?.info("Building all projects because no changed files were detected")
             when (projectSubset) {
                 ProjectSubset.DEPENDENT_PROJECTS -> return allProjects
                 ProjectSubset.ALL_AFFECTED_PROJECTS -> return allProjects
