@@ -1280,7 +1280,7 @@ class AffectedModuleDetectorImplTest {
     }
 
     @Test
-    fun `GIVEN a file that does not effects all changes has a change WHEN projectSubset is CHANGED_PROJECTS THEN all modules should be in this`() {
+    fun `GIVEN a file that does not affect all projects has a change WHEN projectSubset is CHANGED_PROJECTS THEN affected projects is empty`() {
         val changedFile = convertToFilePath("android", "notgradle", "test.java")
 
         val detector = AffectedModuleDetectorImpl(
