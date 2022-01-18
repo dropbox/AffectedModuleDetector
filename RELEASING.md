@@ -3,7 +3,7 @@ Releasing
 
  1. Change the version in the `gradle.properties` file to a non-SNAPSHOT verson.
  2. `git commit -am "Prepare for release X.Y.Z."` (where X.Y.Z is the new version)
- 3. `git tag -a X.Y.X -m "Version X.Y.Z"` (where X.Y.Z is the new version)
+ 3. `git tag -a vX.Y.X -m "Version X.Y.Z"` (where X.Y.Z is the new version)
     * Run `git tag` to verify it.
  4. `git push && git push --tags`
     * This should be pushed to your fork.
