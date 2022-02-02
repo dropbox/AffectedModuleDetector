@@ -216,4 +216,47 @@ class AffectedModuleConfigurationTest {
             assertThat(config.compareFrom).isEqualTo("PreviousCommit")
         }
     }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN top THEN is HEAD`() {
+        val actual = config.top
+
+        assertThat(actual).isEqualTo("HEAD")
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN includeUncommitted is true top is set to sha THEN exception thrown and value not set`() {
+        val includeUncommitted = true
+        val sha = "12345"
+
+        try {
+            config.includeUncommitted = includeUncommitted
+            config.top = sha
+        } catch (e: IllegalArgumentException) {
+            // THEN
+            assertThat(e.message).isEqualTo("Set includeUncommitted to false to set a custom top")
+            return
+        }
+
+        fail("Expected to catch an exception")
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN includeUncommitted is false and top is set to sha THEN top is sha`() {
+        val includeUncommitted = false
+        val sha = "12345"
+
+        config.includeUncommitted = includeUncommitted
+        config.top = sha
+
+        val actual = config.top
+        assertThat(actual).isEqualTo(sha)
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN includeUncommitted THEN is true`() {
+        val actual = config.includeUncommitted
+
+        assertThat(actual).isTrue()
+    }
 }

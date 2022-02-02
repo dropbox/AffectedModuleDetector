@@ -58,6 +58,22 @@ class AffectedModuleConfiguration {
      */
     var excludedModules = emptySet<String>()
 
+    /**
+     * If uncommitted files should be considered affected
+     */
+    var includeUncommitted: Boolean = true
+
+    /**
+     * The top of the git log to use, only used when [includeUncommitted] is false
+     */
+    var top: String = "HEAD"
+        set(value) {
+            require(!includeUncommitted) {
+                "Set includeUncommitted to false to set a custom top"
+            }
+            field = value
+        }
+
     companion object {
         const val name = "affectedModuleDetector"
     }

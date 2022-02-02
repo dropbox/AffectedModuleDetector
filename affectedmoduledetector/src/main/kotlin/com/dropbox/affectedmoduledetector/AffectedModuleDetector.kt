@@ -351,7 +351,7 @@ class AffectedModuleDetectorImpl constructor(
     }
 
     private val changedProjects by lazy {
-        findChangedProjects()
+        findChangedProjects(config.top, config.includeUncommitted)
     }
 
     private val dependentProjects by lazy {
@@ -401,9 +401,13 @@ class AffectedModuleDetectorImpl constructor(
      *
      * Also populates the unknownFiles var which is used in findAffectedProjects
      */
-    private fun findChangedProjects(): Set<Project> {
+    private fun findChangedProjects(
+        top: Sha,
+        includeUncommitted: Boolean = true
+    ): Set<Project> {
         git.findChangedFiles(
-            includeUncommitted = true
+            top = top,
+            includeUncommitted = includeUncommitted
         ).forEach { fileName ->
             if (affectsAllModules(fileName)) {
                 return allProjects
