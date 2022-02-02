@@ -61,7 +61,7 @@ class GitClientImplTest {
                 convertToFilePath("a", "b", "c.java"),
                 convertToFilePath("d", "e", "f.java"))
         commandRunner.addReply(
-                "$CHANGED_FILES_CMD_PREFIX otherSha mySha",
+                "$CHANGED_FILES_CMD_PREFIX otherSha..mySha",
                 changes.joinToString(System.lineSeparator())
         )
         commitShaProvider.addReply("mySha")

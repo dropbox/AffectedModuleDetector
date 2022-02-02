@@ -73,6 +73,8 @@ affectedModuleDetector {
     excludedModules = [
         "sample-util"
     ]
+    includeUncommitted = true
+    top = "HEAD"
 }
 ```
 
@@ -85,14 +87,16 @@ affectedModuleDetector {
     - PreviousCommit: compare against the previous commit
     - ForkCommit: compare against the commit the branch was forked from
     - SpecifiedBranchCommit: specify the branch to compare changes against using the `specifiedBranch` configuration before the `compareFrom` configuration
- - `excludedModules` : A list of modules that will be excluded from the build process
- 
- 
- 
+ - `excludedModules`: A list of modules that will be excluded from the build process
+ - `includeUncommitted`: If uncommitted files should be considered affected
+ - `top`: The top of the git log to use. Must be used in combination with configuration `includeUncommitted = false`
+
+
+
  By default, the Detector will look for `assembleAndroidDebugTest`, `connectedAndroidDebugTest`, and `testDebug`.  Modules can specify a configuration block to specify which variant tests to run:
  ```groovy
  affectedTestConfiguration {
-    assembleAndroidTestTask = "assmebleAndroidReleaseTest"
+    assembleAndroidTestTask = "assembleAndroidReleaseTest"
     runAndroidTestTask = "connectedAndroidReleaseTest"
     jvmTestTask = "testRelease"
 }
