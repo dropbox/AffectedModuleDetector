@@ -91,7 +91,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
     private fun withPlugin(pluginId: String, task: Task, testType: TestType, project: Project) {
         project.pluginManager.withPlugin(pluginId) {
-            getAffectedPath(testType, project)?.let {path ->
+            getAffectedPath(testType, project)?.let { path ->
                 task.dependsOn(path)
                 project.afterEvaluate {
                     project.tasks.findByPath(path)?.onlyIf {
@@ -129,7 +129,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
     private fun filterAndroidTests(project: Project) {
         val tracker = DependencyTracker(project, null)
-        project.tasks.all { task ->
+        project.tasks.configureEach { task ->
             if (task.name.contains("AndroidTest")) {
                 tracker.findAllDependents(project).forEach { dependentProject ->
                     dependentProject.tasks.forEach { dependentTask ->
@@ -143,7 +143,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
     // Only allow unit tests to run if the AffectedModuleDetector says to include them
     private fun filterJvmTests(project: Project) {
-        project.tasks.withType(Test::class.java) { task ->
+        project.tasks.withType(Test::class.java).configureEach { task ->
             AffectedModuleDetector.configureTaskGuard(task)
         }
     }
