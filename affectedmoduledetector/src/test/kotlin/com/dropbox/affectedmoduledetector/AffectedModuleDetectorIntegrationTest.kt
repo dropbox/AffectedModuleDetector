@@ -60,7 +60,7 @@ class AffectedModuleDetectorIntegrationTest {
                 |   }
                 |   dependencies {
                 |       classpath "com.android.tools.build:gradle:4.1.0"
-                |       classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.10"
+                |       classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10"
                 |   }    
                 |}
                 |plugins {
