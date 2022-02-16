@@ -109,7 +109,7 @@ class AffectedTasksPlugin : Plugin<Project> {
 
     private fun filterAndroidTests(project: Project) {
         val tracker = DependencyTracker(project, null)
-        project.tasks.all { task ->
+        project.tasks.configureEach { task ->
             if (task.name.contains(ANDROID_TEST_BUILD_VARIANT)) {
                 tracker.findAllDependents(project).forEach { dependentProject ->
                     dependentProject.tasks.forEach { dependentTask ->
