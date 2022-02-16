@@ -2,7 +2,7 @@ package com.dropbox.sample
 
 object Dependencies {
     private object Versions {
-        const val KOTLIN_VERSION = "1.4.10"
+        const val KOTLIN_VERSION = "1.6.10"
     }
 
     object Libs {
