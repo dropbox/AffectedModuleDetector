@@ -107,7 +107,7 @@ abstract class AffectedModuleDetector {
 
     companion object {
         private const val ROOT_PROP_NAME = "AffectedModuleDetectorPlugin"
-        internal const val MODULES_ARG = "affected_module_detector.modules"
+        private const val MODULES_ARG = "affected_module_detector.modules"
         private const val DEPENDENT_PROJECTS_ARG = "affected_module_detector.dependentProjects"
         private const val CHANGED_PROJECTS_ARG = "affected_module_detector.changedProjects"
         private const val ENABLE_ARG = "affected_module_detector.enable"
@@ -119,7 +119,7 @@ abstract class AffectedModuleDetector {
                 "Project provided must be root, project was ${rootProject.path}"
             }
             
-            val enabled = rootProject.hasProperty(ENABLE_ARG)
+            val enabled = getEnabledProperty(rootProject)
             if (!enabled) {
                 setInstance(
                     rootProject,
@@ -216,6 +216,10 @@ abstract class AffectedModuleDetector {
             )
         }
 
+        private fun isProjectEnabled(project: Project): Boolean {
+            return project.hasProperty(ENABLE_ARG)
+        }
+
         private fun getModulesProperty(project: Project): Set<String>? {
             return if (project.hasProperty(MODULES_ARG)) {
                 val commaDelimited = project.properties[MODULES_ARG] as String
@@ -273,9 +277,12 @@ abstract class AffectedModuleDetector {
          */
         @JvmStatic
         fun isProjectProvided(project: Project): Boolean {
-            return getOrThrow(
-                project
-            ).isProjectProvided2(project)
+            if (!isProjectEnabled(project)) {
+                // if we do not want to use affected module detector property then assume every project is provided
+                return true
+            }
+            val modules = getModulesProperty(project)
+            return modules?.contains(project.path) ?: true
         }
     }
 }

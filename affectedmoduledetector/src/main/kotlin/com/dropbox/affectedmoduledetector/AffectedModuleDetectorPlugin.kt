@@ -92,7 +92,9 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     private fun withPlugin(pluginId: String, task: Task, testType: TestType, project: Project) {
         project.pluginManager.withPlugin(pluginId) {
             getAffectedPath(testType, project)?.let { path ->
-                task.dependsOn(path)
+                if (AffectedModuleDetector.isProjectProvided(project)) {
+                    task.dependsOn(path)
+                }
                 project.afterEvaluate {
                     project.tasks.findByPath(path)?.onlyIf {
                         AffectedModuleDetector.isProjectAffected(project)
