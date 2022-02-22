@@ -119,7 +119,7 @@ abstract class AffectedModuleDetector {
                 "Project provided must be root, project was ${rootProject.path}"
             }
             
-            val enabled = getEnabledProperty(rootProject)
+            val enabled = isProjectEnabled(rootProject)
             if (!enabled) {
                 setInstance(
                     rootProject,
