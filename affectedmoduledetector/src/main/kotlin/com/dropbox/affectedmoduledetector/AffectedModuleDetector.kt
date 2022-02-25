@@ -277,11 +277,12 @@ abstract class AffectedModuleDetector {
          */
         @JvmStatic
         fun isProjectProvided(project: Project): Boolean {
-            if (!isProjectEnabled(project)) {
+            val rootProject = project.rootProject
+            if (!isProjectEnabled(rootProject)) {
                 // if we do not want to use affected module detector property then assume every project is provided
                 return true
             }
-            val modules = getModulesProperty(project)
+            val modules = getModulesProperty(rootProject)
             return modules?.contains(project.path) ?: true
         }
     }
