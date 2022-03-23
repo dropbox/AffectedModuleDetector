@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
       - name: Set up our JDK environment
         uses: actions/setup-java@v1.4.3
         with:
@@ -24,7 +26,6 @@ jobs:
         run: |
           ./gradlew :affectedmoduledetector:publishToMavenLocal
           cd sample
-          ./gradlew build
           ./gradlew runAffectedUnitTests -Paffected_module_detector.enable --stacktrace --rerun-tasks
           ./gradlew assembleAffectedAndroidTests -Paffected_module_detector.enable --stacktrace --rerun-tasks
       - name: Run tests
