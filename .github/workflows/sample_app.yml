@@ -25,4 +25,13 @@ jobs:
           ./gradlew :affectedmoduledetector:publishToMavenLocal
           cd sample
           ./gradlew build
+          ./gradle runAffectedUnitTests -Paffected_module_detector.enable
+          ./gradlew assembleAffectedAndroidTests -Paffected_module_detector.enable
+      - name: Run tests
+          uses: reactivecircus/android-emulator-runner@v2
+          with:
+            api-level: 29
+            script: ./gradlew runAffectedAndroidTests -Paffected_module_detector.enable
+          env:
+            API_LEVEL: 29
 
