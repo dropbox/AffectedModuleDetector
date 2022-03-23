@@ -25,7 +25,7 @@ jobs:
           ./gradlew :affectedmoduledetector:publishToMavenLocal
           cd sample
           ./gradlew build
-          ./gradle runAffectedUnitTests -Paffected_module_detector.enable
+          ./gradlew runAffectedUnitTests -Paffected_module_detector.enable
           ./gradlew assembleAffectedAndroidTests -Paffected_module_detector.enable
       - name: Run tests
         uses: reactivecircus/android-emulator-runner@v2
