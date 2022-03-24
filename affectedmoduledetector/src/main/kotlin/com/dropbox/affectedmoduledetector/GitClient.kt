@@ -159,6 +159,8 @@ internal class GitClientImpl(
             } else {
                 logger?.info("Response: $message")
             }
+            println("running command $command in $workingDir")
+            println(message)
             check(proc.exitValue() == 0) { "Nonzero exit value running git command." }
             return stdout
         }
