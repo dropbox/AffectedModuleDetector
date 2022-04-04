@@ -1,5 +1,7 @@
 package com.dropbox.affectedmoduledetector
 
+import com.dropbox.affectedmoduledetector.plugin.AffectedModuleDetectorPlugin
+import com.dropbox.affectedmoduledetector.plugin.AffectedModuleTaskType
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Project
 import org.gradle.api.internal.plugins.PluginApplicationException
@@ -12,12 +14,32 @@ import java.lang.IllegalStateException
 
 class AffectedModuleDetectorPluginTest {
 
+    private companion object {
+
+        const val FAKE_COMMAND_BY_IMPACT = "fake_command"
+        const val FAKE_ORIGINAL_COMMAND = "fake_original_gradle_command"
+        const val FAKE_TASK_DESCRIPTION = "fake_description"
+    }
+
+    private enum class FakeTaskType(
+        override val commandByImpact: String,
+        override val originalGradleCommand: String,
+        override val taskDescription: String
+    ): AffectedModuleTaskType {
+
+        FAKE_TASK(
+            commandByImpact = FAKE_COMMAND_BY_IMPACT,
+            originalGradleCommand = FAKE_ORIGINAL_COMMAND,
+            taskDescription = FAKE_TASK_DESCRIPTION
+        )
+    }
+
     @Rule
     @JvmField
     val tmpFolder = TemporaryFolder()
 
     lateinit var rootProject: Project
-    lateinit var childProject : Project
+    lateinit var childProject: Project
 
     @Before
     fun setup() {
@@ -43,7 +65,7 @@ class AffectedModuleDetectorPluginTest {
             throw IllegalStateException("Expected to throw exception")
         } catch (e: PluginApplicationException) {
             // THEN
-            assertThat(e.message).isEqualTo("Failed to apply plugin class 'com.dropbox.affectedmoduledetector.AffectedModuleDetectorPlugin'.")
+            assertThat(e.message).isEqualTo("Failed to apply plugin class 'com.dropbox.affectedmoduledetector.plugin.AffectedModuleDetectorPlugin'.")
         }
     }
 
@@ -64,18 +86,21 @@ class AffectedModuleDetectorPluginTest {
     @Test
     fun `GIVEN affected module detector plugin WHEN register task is called THEN task is added`() {
         // GIVEN
-        val task = AffectedModuleDetectorPlugin.TestType.AssembleAndroidTest("fakeTask", "fakeGroup", "fakeDescription")
+        val task = FakeTaskType.FAKE_TASK
         val plugin = AffectedModuleDetectorPlugin()
 
         // WHEN
-        plugin.registerAffectedTestTask(task, rootProject)
-        val result = rootProject.tasks.findByPath(task.name)
-
+        plugin.registerAffectedTestTask(
+            rootProject = rootProject,
+            taskType = task,
+            groupName = "fakeGroup"
+        )
+        val result = rootProject.tasks.findByPath(task.commandByImpact)
 
         // THEN
         assertThat(result).isNotNull()
-        assertThat(result?.name).isEqualTo("fakeTask")
+        assertThat(result?.name).isEqualTo(FakeTaskType.FAKE_TASK.commandByImpact)
         assertThat(result?.group).isEqualTo("fakeGroup")
-        assertThat(result?.description).isEqualTo("fakeDescription")
+        assertThat(result?.description).isEqualTo(FakeTaskType.FAKE_TASK.taskDescription)
     }
 }

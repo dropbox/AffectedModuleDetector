@@ -1,8 +1,15 @@
 package com.dropbox.affectedmoduledetector
 
+import com.dropbox.affectedmoduledetector.plugin.AffectedModuleTaskType
 import java.io.File
 
 class AffectedModuleConfiguration {
+
+    companion object {
+
+        const val name = "affectedModuleDetector"
+    }
+
     /**
      * Folder to place the log in
      */
@@ -64,6 +71,27 @@ class AffectedModuleConfiguration {
     var includeUncommitted: Boolean = true
 
     /**
+     * If you want to add a custom task for impact analysis you must set the list of enum's fields
+     *
+     * Example:
+     * `build.gradle
+     *
+     *  affectedModuleDetector {
+     *       baseDir = "${project.rootDir}"
+     *       pathsAffectingAllModules = ["buildSrc/"]
+     *       specifiedBranch = "dev"
+     *       customTasks = [MyCustomTask.DETEKT_TASK] // <- list of enum fields
+     *       compareFrom = "SpecifiedBranchCommit"
+     *       includeUncommitted = false
+     *  }
+     * `
+     *
+     * @see AffectedModuleTaskType
+     * @see AffectedModuleDetectorPlugin
+     */
+    var customTasks = emptySet<AffectedModuleTaskType>()
+
+    /**
      * The top of the git log to use, only used when [includeUncommitted] is false
      */
     var top: String = "HEAD"
@@ -73,8 +101,4 @@ class AffectedModuleConfiguration {
             }
             field = value
         }
-
-    companion object {
-        const val name = "affectedModuleDetector"
-    }
 }

@@ -90,15 +90,14 @@ affectedModuleDetector {
  - `excludedModules`: A list of modules that will be excluded from the build process
  - `includeUncommitted`: If uncommitted files should be considered affected
  - `top`: The top of the git log to use. Must be used in combination with configuration `includeUncommitted = false`
-
-
+ - `customTasks`: set of enum fields which implemented [AffectedModuleTaskType]()
 
  By default, the Detector will look for `assembleAndroidDebugTest`, `connectedAndroidDebugTest`, and `testDebug`.  Modules can specify a configuration block to specify which variant tests to run:
  ```groovy
  affectedTestConfiguration {
-    assembleAndroidTestTask = "assembleAndroidReleaseTest"
-    runAndroidTestTask = "connectedAndroidReleaseTest"
-    jvmTestTask = "testRelease"
+      assembleAndroidTestTask = "assembleAndroidReleaseTest"
+      runAndroidTestTask = "connectedAndroidReleaseTest"
+      jvmTestTask = "testRelease"
 }
 ```
  
@@ -148,12 +147,49 @@ To run this on the sample app:
 ```
 
 2. Try running the following command:
-
 ```
  ./gradlew runAffectedUnitTests -Paffected_module_detector.enable
 ```
 
 You should see zero tests run. Make a change within one of the modules and commit it. Rerunning the command should execute tests in that module and its dependent modules.
+
+## Custom tasks 
+
+If you want to add a custom gradle command to execute with impact analysis 
+you must create enum which implementing [AffectedModuleTaskType](). 
+
+Example:
+```kotlin
+
+enum class CustomImpactAnalysisTaskType(
+    override val commandByImpact: String,
+    override val originalGradleCommand: String,
+    override val taskDescription: String
+): AffectedModuleTaskType {
+
+    DETEKT_TASK(
+        commandByImpact = "runDetektByImpact",
+        originalGradleCommand = "detekt",
+        taskDescription = "Run static analysis tool without auto-correction by Impact analysis"
+    )
+}
+```
+
+And then you must add your custom enum fields to configuration in `build.gradle` of your project: 
+
+```groovy
+affectedModuleDetector {
+     baseDir = "${project.rootDir}"
+     pathsAffectingAllModules = ["buildSrc/"]
+     specifiedBranch = "dev"
+     customTasks = [CustomImpactAnalysisTaskType.DETEKT_TASK] // <- list of enum fields
+     compareFrom = "SpecifiedBranchCommit"
+     includeUncommitted = false
+}
+```
+
+**NOTE:** Your task might be complex and doesn't work correctly, if it is true 
+you must create `buildSrc` module and write custom plugin manually like [AffectedModuleDetectorPlugin](https://github.com/RomanAimaletdinov/TestImpactAnalysisLib/blob/dev/buildSrc/src/main/java/AffectedModuleDetectorPlugin.kt)
 
 ## Notes
 
