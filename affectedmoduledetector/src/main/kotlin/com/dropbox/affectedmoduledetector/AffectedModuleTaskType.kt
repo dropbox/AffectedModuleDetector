@@ -9,13 +9,13 @@ package com.dropbox.affectedmoduledetector
 interface AffectedModuleTaskType {
 
     /**
-     * Console command `./gradlew commandByImpact` which will run the original
+     * Console command `./gradlew [commandByImpact]` which will run the original
      * command `./gradlew originalCommand` on modules affected by diff changes.
      */
     val commandByImpact: String
 
     /**
-     * The original console command `./gradlew originalCommand` that does something.
+     * The original console command `./gradlew [originalGradleCommand]` that does something.
      * Example:
      *     - :connectedDebugAndroidTest
      *     - :assembleDebugAndroidTest

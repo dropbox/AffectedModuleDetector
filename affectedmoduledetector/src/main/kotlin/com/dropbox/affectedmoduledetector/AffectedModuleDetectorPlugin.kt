@@ -45,9 +45,9 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             }
         )
 
-        val mainConfiguration = registerMainConfiguration(project)
-        registerCustomTasks(project, mainConfiguration)
         registerSubprojectConfiguration(project)
+        registerMainConfiguration(project)
+        registerCustomTasks(project)
         registerTestTasks(project)
 
         project.gradle.projectsEvaluated {
@@ -59,13 +59,11 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         }
     }
 
-    private fun registerMainConfiguration(project: Project): AffectedModuleConfiguration {
-        val configuration = AffectedModuleConfiguration()
+    private fun registerMainConfiguration(project: Project) {
         project.extensions.add(
             AffectedModuleConfiguration.name,
-            configuration
+            AffectedModuleConfiguration()
         )
-        return configuration
     }
 
     private fun registerSubprojectConfiguration(project: Project) {
@@ -77,37 +75,39 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         }
     }
 
-    private fun registerCustomTasks(
-        rootProject: Project,
-        mainConfiguration: AffectedModuleConfiguration
-    ) {
-        rootProject.afterEvaluate {
-            mainConfiguration
-                .customTasks
-                .forEach { taskType ->
-                    registerAffectedTestTask(
-                        rootProject = rootProject,
-                        taskType = taskType,
-                        groupName = CUSTOM_TASK_GROUP_NAME
-                    )
-                }
-        }
+    @VisibleForTesting
+    internal fun registerCustomTasks(rootProject: Project) {
+        val mainConfiguration = requireNotNull(
+            value = rootProject.extensions.findByName(AffectedModuleConfiguration.name),
+            lazyMessage = {  "Unable to find ${AffectedTestConfiguration.name} in $rootProject" }
+        ) as AffectedModuleConfiguration
+
+        mainConfiguration
+            .customTasks
+            .forEach { taskType ->
+                registerImpactAnalysisTask(
+                    rootProject = rootProject,
+                    taskType = taskType,
+                    groupName = CUSTOM_TASK_GROUP_NAME
+                )
+            }
     }
 
-    private fun registerTestTasks(rootProject: Project) {
-        registerAffectedTestTask(
+    @VisibleForTesting
+    internal fun registerTestTasks(rootProject: Project) {
+        registerImpactAnalysisTask(
             rootProject = rootProject,
             taskType = InternalTaskType.JVM_TEST,
             groupName = TEST_TASK_GROUP_NAME
         )
 
-        registerAffectedTestTask(
+        registerImpactAnalysisTask(
             rootProject = rootProject,
             taskType = InternalTaskType.ANDROID_TEST,
             groupName = TEST_TASK_GROUP_NAME
         )
 
-        registerAffectedTestTask(
+        registerImpactAnalysisTask(
             rootProject = rootProject,
             taskType = InternalTaskType.ASSEMBLE_ANDROID_TEST,
             groupName = TEST_TASK_GROUP_NAME
@@ -115,7 +115,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     @VisibleForTesting
-    internal fun registerAffectedTestTask(
+    internal fun registerImpactAnalysisTask(
         rootProject: Project,
         taskType: AffectedModuleTaskType,
         groupName: String
@@ -218,17 +218,19 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         }
     }
 
-    private companion object {
+    companion object {
 
-        const val TEST_TASK_GROUP_NAME = "Affected Module Detector"
-        const val CUSTOM_TASK_GROUP_NAME = "Affected Module Detector custom tasks"
+        @VisibleForTesting
+        internal const val TEST_TASK_GROUP_NAME = "Affected Module Detector"
+        @VisibleForTesting
+        internal const val CUSTOM_TASK_GROUP_NAME = "Affected Module Detector custom tasks"
 
-        const val PLUGIN_ANDROID_APPLICATION = "com.android.application"
-        const val PLUGIN_ANDROID_LIBRARY = "java-library"
-        const val PLUGIN_JAVA_LIBRARY = "com.android.library"
-        const val PLUGIN_KOTLIN = "kotlin"
+        private const val PLUGIN_ANDROID_APPLICATION = "com.android.application"
+        private const val PLUGIN_ANDROID_LIBRARY = "java-library"
+        private const val PLUGIN_JAVA_LIBRARY = "com.android.library"
+        private const val PLUGIN_KOTLIN = "kotlin"
 
-        val pluginIds = listOf(
+        private val pluginIds = listOf(
             PLUGIN_ANDROID_APPLICATION,
             PLUGIN_ANDROID_LIBRARY,
             PLUGIN_JAVA_LIBRARY,

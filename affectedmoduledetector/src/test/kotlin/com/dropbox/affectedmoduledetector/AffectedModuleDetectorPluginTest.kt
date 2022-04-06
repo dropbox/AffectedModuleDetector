@@ -88,7 +88,7 @@ class AffectedModuleDetectorPluginTest {
         val plugin = AffectedModuleDetectorPlugin()
 
         // WHEN
-        plugin.registerAffectedTestTask(
+        plugin.registerImpactAnalysisTask(
             rootProject = rootProject,
             taskType = task,
             groupName = "fakeGroup"
@@ -100,5 +100,107 @@ class AffectedModuleDetectorPluginTest {
         assertThat(result?.name).isEqualTo(FakeTaskType.FAKE_TASK.commandByImpact)
         assertThat(result?.group).isEqualTo("fakeGroup")
         assertThat(result?.description).isEqualTo(FakeTaskType.FAKE_TASK.taskDescription)
+    }
+
+    @Test
+    fun `GIVEN affected module detector plugin WHEN register custom task is called AND AffectedModuleConfiguration customTask is not empty THEN task is added`() {
+        // GIVEN
+        val configuration = AffectedModuleConfiguration()
+        configuration.customTasks = setOf(FakeTaskType.FAKE_TASK)
+        rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+
+        val plugin = AffectedModuleDetectorPlugin()
+
+        // WHEN
+        plugin.registerCustomTasks(rootProject)
+        val result = rootProject.tasks.findByPath(FakeTaskType.FAKE_TASK.commandByImpact)
+
+        // THEN
+        assertThat(result).isNotNull()
+        assertThat(result?.name).isEqualTo(FakeTaskType.FAKE_TASK.commandByImpact)
+        assertThat(result?.group).isEqualTo(AffectedModuleDetectorPlugin.CUSTOM_TASK_GROUP_NAME)
+        assertThat(result?.description).isEqualTo(FakeTaskType.FAKE_TASK.taskDescription)
+    }
+
+    @Test
+    fun `GIVEN affected module detector plugin WHEN registerCustomTasks is called AND AffectedModuleConfiguration customTask is empty THEN task isn't added`() {
+        // GIVEN
+        val configuration = AffectedModuleConfiguration()
+        rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+        val plugin = AffectedModuleDetectorPlugin()
+
+        // WHEN
+        plugin.registerCustomTasks(rootProject)
+        val result = rootProject
+            .tasks
+            .filter { it.group == AffectedModuleDetectorPlugin.CUSTOM_TASK_GROUP_NAME }
+
+        // THEN
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleDetectorPlugin WHEN CUSTOM_TASK_GROUP_NAME compared with TEST_TASK_GROUP_NAME THEN they isn't equal`() {
+        assert(AffectedModuleDetectorPlugin.CUSTOM_TASK_GROUP_NAME != AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME)
+    }
+
+    @Test
+    fun `GIVEN affected module detector plugin WHEN registerTestTasks THEN task all task added`() {
+        // GIVEN
+        val configuration = AffectedModuleConfiguration()
+        rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+        val plugin = AffectedModuleDetectorPlugin()
+
+        // WHEN
+        plugin.registerTestTasks(rootProject)
+        val androidTestTask = rootProject.tasks.findByPath(InternalTaskType.ANDROID_TEST.commandByImpact)
+        val assembleAndroidTestTask = rootProject.tasks.findByPath(InternalTaskType.ASSEMBLE_ANDROID_TEST.commandByImpact)
+        val jvmTestTask = rootProject.tasks.findByPath(InternalTaskType.JVM_TEST.commandByImpact)
+
+        // THEN
+        assertThat(androidTestTask).isNotNull()
+        assertThat(androidTestTask?.group).isEqualTo(AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME)
+
+        assertThat(assembleAndroidTestTask).isNotNull()
+        assertThat(assembleAndroidTestTask?.group).isEqualTo(AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME)
+
+        assertThat(jvmTestTask).isNotNull()
+        assertThat(jvmTestTask?.group).isEqualTo(AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME)
+    }
+
+    @Test
+    fun `GIVEN affected module detector plugin WHEN registerTestTasks called THEN added all tasks from InternalTaskType`() {
+        // GIVEN
+        val configuration = AffectedModuleConfiguration()
+        rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+        val plugin = AffectedModuleDetectorPlugin()
+
+        // WHEN
+        plugin.registerTestTasks(rootProject)
+        val testTasks = rootProject
+            .tasks
+            .filter { it.group == AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME }
+
+        // THEN
+        assert(testTasks.size == InternalTaskType.values().size)
+    }
+
+    @Test
+    fun `GIVEN affected module detector plugin WHEN registerCustomTasks called THEN added all tasks from FakeTaskType`() {
+        // GIVEN
+        val configuration = AffectedModuleConfiguration()
+        configuration.customTasks = setOf(FakeTaskType.FAKE_TASK)
+        rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+        val plugin = AffectedModuleDetectorPlugin()
+
+        // WHEN
+        plugin.registerCustomTasks(rootProject)
+
+        val customTasks = rootProject
+            .tasks
+            .filter { it.group == AffectedModuleDetectorPlugin.CUSTOM_TASK_GROUP_NAME  }
+
+        // THEN
+        assert(customTasks.size == FakeTaskType.values().size)
     }
 }

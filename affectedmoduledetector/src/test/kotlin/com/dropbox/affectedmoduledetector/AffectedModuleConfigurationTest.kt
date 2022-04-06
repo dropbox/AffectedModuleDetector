@@ -19,6 +19,19 @@ class AffectedModuleConfigurationTest {
 
     private lateinit var config : AffectedModuleConfiguration
 
+    private enum class CustomImpactAnalysisTaskType(
+        override val commandByImpact: String,
+        override val originalGradleCommand: String,
+        override val taskDescription: String
+    ): AffectedModuleTaskType {
+
+        FAKE_TASK(
+            commandByImpact = "runFakeTask",
+            originalGradleCommand = "fakeOriginalGradleCommand",
+            taskDescription = "Description of fake task"
+        )
+    }
+
     @Before
     fun setup() {
         config = AffectedModuleConfiguration()
@@ -258,5 +271,44 @@ class AffectedModuleConfigurationTest {
         val actual = config.includeUncommitted
 
         assertThat(actual).isTrue()
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN customTasks THEN is empty`() {
+        val actual = config.customTasks
+
+        assertThat(actual).isEmpty()
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN customTasks contains task THEN is not empty`() {
+        config.customTasks = setOf(CustomImpactAnalysisTaskType.FAKE_TASK)
+        val actual = config.customTasks
+
+        assertThat(actual).contains(CustomImpactAnalysisTaskType.FAKE_TASK)
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN customTasks contains task THEN task contains commandByImpact field`() {
+        config.customTasks = setOf(CustomImpactAnalysisTaskType.FAKE_TASK)
+        val actual = config.customTasks
+
+        assert(actual.first().commandByImpact == "runFakeTask")
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN customTasks contains task THEN task contains originalGradleCommand field`() {
+        config.customTasks = setOf(CustomImpactAnalysisTaskType.FAKE_TASK)
+        val actual = config.customTasks
+
+        assert(actual.first().originalGradleCommand == "fakeOriginalGradleCommand")
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN customTasks contains task THEN task contains taskDescription field`() {
+        config.customTasks = setOf(CustomImpactAnalysisTaskType.FAKE_TASK)
+        val actual = config.customTasks
+
+        assert(actual.first().taskDescription == "Description of fake task")
     }
 }
