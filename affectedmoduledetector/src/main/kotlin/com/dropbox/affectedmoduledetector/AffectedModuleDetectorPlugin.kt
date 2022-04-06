@@ -2,13 +2,8 @@
  * Copyright (c) 2020, Dropbox, Inc. All rights reserved.
  */
 
-package com.dropbox.affectedmoduledetector.plugin
+package com.dropbox.affectedmoduledetector
 
-import com.dropbox.affectedmoduledetector.AffectedModuleConfiguration
-import com.dropbox.affectedmoduledetector.AffectedModuleDetector
-import com.dropbox.affectedmoduledetector.AffectedTestConfiguration
-import com.dropbox.affectedmoduledetector.DependencyTracker
-import com.dropbox.affectedmoduledetector.isRoot
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -41,24 +36,6 @@ import org.gradle.internal.impldep.org.jetbrains.annotations.VisibleForTesting
  * See [AffectedModuleDetector] for additional flags.
  */
 class AffectedModuleDetectorPlugin : Plugin<Project> {
-
-    private companion object {
-
-        const val TEST_TASK_GROUP_NAME = "Affected Module Detector"
-        const val CUSTOM_TASK_GROUP_NAME = "Affected Module Detector custom tasks"
-
-        const val PLUGIN_ANDROID_APPLICATION = "com.android.application"
-        const val PLUGIN_ANDROID_LIBRARY = "java-library"
-        const val PLUGIN_JAVA_LIBRARY = "com.android.library"
-        const val PLUGIN_KOTLIN = "kotlin"
-
-        val pluginIds = listOf(
-            PLUGIN_ANDROID_APPLICATION,
-            PLUGIN_ANDROID_LIBRARY,
-            PLUGIN_JAVA_LIBRARY,
-            PLUGIN_KOTLIN
-        )
-    }
 
     override fun apply(project: Project) {
         require(
@@ -239,5 +216,23 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         project.tasks.withType(Test::class.java).configureEach { task ->
             AffectedModuleDetector.configureTaskGuard(task)
         }
+    }
+
+    private companion object {
+
+        const val TEST_TASK_GROUP_NAME = "Affected Module Detector"
+        const val CUSTOM_TASK_GROUP_NAME = "Affected Module Detector custom tasks"
+
+        const val PLUGIN_ANDROID_APPLICATION = "com.android.application"
+        const val PLUGIN_ANDROID_LIBRARY = "java-library"
+        const val PLUGIN_JAVA_LIBRARY = "com.android.library"
+        const val PLUGIN_KOTLIN = "kotlin"
+
+        val pluginIds = listOf(
+            PLUGIN_ANDROID_APPLICATION,
+            PLUGIN_ANDROID_LIBRARY,
+            PLUGIN_JAVA_LIBRARY,
+            PLUGIN_KOTLIN
+        )
     }
 }

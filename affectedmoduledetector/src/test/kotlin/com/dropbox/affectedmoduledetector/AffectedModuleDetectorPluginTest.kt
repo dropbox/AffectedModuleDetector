@@ -1,7 +1,5 @@
 package com.dropbox.affectedmoduledetector
 
-import com.dropbox.affectedmoduledetector.plugin.AffectedModuleDetectorPlugin
-import com.dropbox.affectedmoduledetector.plugin.AffectedModuleTaskType
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Project
 import org.gradle.api.internal.plugins.PluginApplicationException
@@ -65,7 +63,7 @@ class AffectedModuleDetectorPluginTest {
             throw IllegalStateException("Expected to throw exception")
         } catch (e: PluginApplicationException) {
             // THEN
-            assertThat(e.message).isEqualTo("Failed to apply plugin class 'com.dropbox.affectedmoduledetector.plugin.AffectedModuleDetectorPlugin'.")
+            assertThat(e.message).isEqualTo("Failed to apply plugin class 'com.dropbox.affectedmoduledetector.AffectedModuleDetectorPlugin'.")
         }
     }
 

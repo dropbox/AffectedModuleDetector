@@ -1,14 +1,8 @@
 package com.dropbox.affectedmoduledetector
 
-import com.dropbox.affectedmoduledetector.plugin.AffectedModuleTaskType
 import java.io.File
 
 class AffectedModuleConfiguration {
-
-    companion object {
-
-        const val name = "affectedModuleDetector"
-    }
 
     /**
      * Folder to place the log in
@@ -71,7 +65,8 @@ class AffectedModuleConfiguration {
     var includeUncommitted: Boolean = true
 
     /**
-     * If you want to add a custom task for impact analysis you must set the list of enum's fields
+     * If you want to add a custom task for impact analysis you must set the list
+     * of [AffectedModuleTaskType] implementations.
      *
      * Example:
      * `build.gradle
@@ -101,4 +96,9 @@ class AffectedModuleConfiguration {
             }
             field = value
         }
+
+    companion object {
+
+        const val name = "affectedModuleDetector"
+    }
 }

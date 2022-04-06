@@ -1,10 +1,10 @@
-package com.dropbox.affectedmoduledetector.plugin
+package com.dropbox.affectedmoduledetector
 
 /**
  * For creating a custom task which will be run only if module was affected
- * just create enum which implements this interface.
+ * just override fields in your data structure which implements this interface.
  *
- * Your enum must override all this variable
+ * Your data structure must override all this variable
  */
 interface AffectedModuleTaskType {
 

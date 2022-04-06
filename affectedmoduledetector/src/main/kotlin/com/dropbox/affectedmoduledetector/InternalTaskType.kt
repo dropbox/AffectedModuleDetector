@@ -1,4 +1,4 @@
-package com.dropbox.affectedmoduledetector.plugin
+package com.dropbox.affectedmoduledetector
 
 internal enum class InternalTaskType(
     override val commandByImpact: String,

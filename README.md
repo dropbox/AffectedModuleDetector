@@ -156,11 +156,13 @@ You should see zero tests run. Make a change within one of the modules and commi
 ## Custom tasks 
 
 If you want to add a custom gradle command to execute with impact analysis 
-you must create enum which implementing [AffectedModuleTaskType](). 
+you must create data structure which implementing [AffectedModuleTaskType](). 
+
+**NOTE1:** Your declared data structure might be in any place of your project.<br/>
+**NOTE2:** In example bottom we using ENUM, but it not necessary. You can use any way for overriding fields of interface. 
 
 Example:
 ```kotlin
-
 enum class CustomImpactAnalysisTaskType(
     override val commandByImpact: String,
     override val originalGradleCommand: String,
@@ -172,24 +174,33 @@ enum class CustomImpactAnalysisTaskType(
         originalGradleCommand = "detekt",
         taskDescription = "Run static analysis tool without auto-correction by Impact analysis"
     )
+   
+   // other tasks
 }
 ```
 
 And then you must add your custom enum fields to configuration in `build.gradle` of your project: 
 
 ```groovy
+// some code 
+
 affectedModuleDetector {
      baseDir = "${project.rootDir}"
      pathsAffectingAllModules = ["buildSrc/"]
      specifiedBranch = "dev"
-     customTasks = [CustomImpactAnalysisTaskType.DETEKT_TASK] // <- list of enum fields
+     customTasks = [ // <- list of enum fields
+             CustomImpactAnalysisTaskType.DETEKT_TASK, 
+             CustomImpactAnalysisTaskType.OTHER_TASK
+     ]
      compareFrom = "SpecifiedBranchCommit"
      includeUncommitted = false
 }
 ```
 
-**NOTE:** Your task might be complex and doesn't work correctly, if it is true 
-you must create `buildSrc` module and write custom plugin manually like [AffectedModuleDetectorPlugin](https://github.com/RomanAimaletdinov/TestImpactAnalysisLib/blob/dev/buildSrc/src/main/java/AffectedModuleDetectorPlugin.kt)
+**NOTE:** Please, test all your custom commands.
+If your custom task doesn't work correctly after testing, might be your task quite complex 
+and for correct working must using more gradle's api. 
+Hence, you must create `buildSrc` module and write custom plugin manually like [AffectedModuleDetectorPlugin](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleDetectorPlugin.kt)
 
 ## Notes
 
