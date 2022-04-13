@@ -10,9 +10,10 @@ open class AffectedTestConfiguration {
 
     var assembleAndroidTestTask : String? = "assembleDebugAndroidTest"
     var runAndroidTestTask : String?  = "connectedDebugAndroidTest"
-    var jvmTestTask : String? = "testDebugUnitTest"
+    var jvmTestTask : String? = DEFAULT_JVM_TEST_TASK
 
     companion object {
         const val name = "affectedTestConfiguration"
+        internal const val DEFAULT_JVM_TEST_TASK = "testDebugUnitTest"
     }
 }

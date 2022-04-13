@@ -53,7 +53,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     private fun registerJvmTests(project: Project) {
-        registerAffectedTestTask(TestType.JvmTest("runAffectedUnitTests", TASK_GROUP_NAME, "Runs all affected unit tests"), project)
+        registerAffectedTestTask(TestType.AndroidJvmTest("runAffectedUnitTests", TASK_GROUP_NAME, "Runs all affected unit tests"), project)
     }
 
     private fun registerAffectedConnectedTestTask(rootProject: Project) {
@@ -74,11 +74,11 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
         rootProject.subprojects { project ->
             project.afterEvaluate {
-                val pluginIds = setOf("com.android.application", "com.android.library", "java-library", "kotlin")
+                val pluginIds = setOf("com.android.application", "com.android.library", "java", "kotlin")
                 pluginIds.forEach { pluginId ->
-                    if (pluginId == "java-library" || pluginId == "kotlin") {
-                        if (testType is TestType.JvmTest ) {
-                            withPlugin(pluginId, task, testType, project)
+                    if (pluginId == "java" || pluginId == "kotlin") {
+                        if (testType is TestType.AndroidJvmTest ) {
+                            withPlugin(pluginId, task, TestType.JvmTest(testType.name, testType.group, testType.description), project)
                         }
                     } else {
                         withPlugin(pluginId, task, testType, project)
@@ -117,7 +117,15 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         return when (testType) {
             is TestType.RunAndroidTest -> getPathAndTask(project, tasks.runAndroidTestTask)
             is TestType.AssembleAndroidTest -> getPathAndTask(project, tasks.assembleAndroidTestTask)
-            is TestType.JvmTest -> getPathAndTask(project, tasks.jvmTestTask)
+            is TestType.AndroidJvmTest -> getPathAndTask(project, tasks.jvmTestTask)
+            is TestType.JvmTest -> {
+                // if we are a jvm only module, run the "test" command by default unless a custom one is set
+                if (tasks.jvmTestTask != AffectedTestConfiguration.DEFAULT_JVM_TEST_TASK) {
+                    getPathAndTask(project, tasks.jvmTestTask)
+                } else {
+                    getPathAndTask(project, "test")
+                }
+            }
         }
     }
 
@@ -166,6 +174,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     internal sealed class TestType(open val name: String, open val group: String, open val description: String) {
         data class RunAndroidTest(override val name: String, override val group: String, override val  description: String) : TestType(name, group, description)
         data class AssembleAndroidTest(override val name: String, override val group: String, override val  description: String) : TestType(name, group, description)
+        data class AndroidJvmTest(override val name: String, override val group: String, override val  description: String) : TestType(name, group, description)
         data class JvmTest(override val name: String, override val group: String, override val  description: String) : TestType(name, group, description)
     }
 
