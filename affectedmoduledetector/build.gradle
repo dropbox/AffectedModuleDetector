@@ -8,17 +8,17 @@ plugins {
 apply from: rootProject.file("gradle/jacoco.gradle")
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_7
-    targetCompatibility = JavaVersion.VERSION_1_7
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = "0.8.8"
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     testImplementation("junit:junit:4.13.2")
-    testImplementation("com.nhaarman:mockito-kotlin:1.5.0")
-    testImplementation("com.google.truth:truth:1.0.1")
+    testImplementation("com.nhaarman:mockito-kotlin:1.6.0")
+    testImplementation("com.google.truth:truth:1.1.3")
 }
