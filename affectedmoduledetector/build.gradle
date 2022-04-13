@@ -20,5 +20,5 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.nhaarman:mockito-kotlin:1.5.0")
-    testImplementation("com.google.truth:truth:1.0.1")
+    testImplementation("com.google.truth:truth:1.1.3")
 }
