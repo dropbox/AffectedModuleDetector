@@ -18,9 +18,15 @@ internal enum class InternalTaskType(
         taskDescription = "Assembles all affected Android Tests. Useful when working with device labs."
     ),
 
-    JVM_TEST(
+    ANDROID_JVM_TEST(
         commandByImpact = "runAffectedUnitTests",
         originalGradleCommand = "testDebugUnitTest",
         taskDescription = "Runs all affected unit tests."
+    ),
+
+    JVM_TEST(
+        commandByImpact = "runAffectedUnitTests",
+        originalGradleCommand = "test",
+        taskDescription = "Runs all affected unit tests for non Android modules."
     )
 }

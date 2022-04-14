@@ -155,7 +155,7 @@ class AffectedModuleDetectorPluginTest {
         plugin.registerTestTasks(rootProject)
         val androidTestTask = rootProject.tasks.findByPath(InternalTaskType.ANDROID_TEST.commandByImpact)
         val assembleAndroidTestTask = rootProject.tasks.findByPath(InternalTaskType.ASSEMBLE_ANDROID_TEST.commandByImpact)
-        val jvmTestTask = rootProject.tasks.findByPath(InternalTaskType.JVM_TEST.commandByImpact)
+        val jvmTestTask = rootProject.tasks.findByPath(InternalTaskType.ANDROID_JVM_TEST.commandByImpact)
 
         // THEN
         assertThat(androidTestTask).isNotNull()
@@ -167,6 +167,8 @@ class AffectedModuleDetectorPluginTest {
         assertThat(jvmTestTask).isNotNull()
         assertThat(jvmTestTask?.group).isEqualTo(AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME)
     }
+
+
 
     @Test
     fun `GIVEN affected module detector plugin WHEN registerTestTasks called THEN added all tasks from InternalTaskType`() {

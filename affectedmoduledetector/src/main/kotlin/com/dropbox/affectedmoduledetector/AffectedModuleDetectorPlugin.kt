@@ -97,7 +97,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     internal fun registerTestTasks(rootProject: Project) {
         registerImpactAnalysisTask(
             rootProject = rootProject,
-            taskType = InternalTaskType.JVM_TEST,
+            taskType = InternalTaskType.ANDROID_JVM_TEST,
             groupName = TEST_TASK_GROUP_NAME
         )
 
@@ -128,8 +128,8 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             project.afterEvaluate {
                 pluginIds.forEach { pluginId ->
                     if (pluginId == PLUGIN_JAVA_LIBRARY || pluginId == PLUGIN_KOTLIN) {
-                        if (taskType == InternalTaskType.JVM_TEST) {
-                            withPlugin(pluginId, task, taskType, project)
+                        if (taskType == InternalTaskType.ANDROID_JVM_TEST) {
+                            withPlugin(pluginId, task, InternalTaskType.JVM_TEST, project)
                         }
                     } else {
                         withPlugin(pluginId, task, taskType, project)
@@ -176,8 +176,15 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             InternalTaskType.ASSEMBLE_ANDROID_TEST -> {
                 getPathAndTask(project, tasks.assembleAndroidTestTask)
             }
-            InternalTaskType.JVM_TEST -> {
+            InternalTaskType.ANDROID_JVM_TEST -> {
                 getPathAndTask(project, tasks.jvmTestTask)
+            }
+            InternalTaskType.JVM_TEST -> {
+                if (tasks.jvmTestTask != AffectedTestConfiguration.DEFAULT_JVM_TEST_TASK) {
+                    getPathAndTask(project, tasks.jvmTestTask)
+                } else {
+                    getPathAndTask(project, taskType.originalGradleCommand)
+                }
             }
             else -> {
                 getPathAndTask(project, taskType.originalGradleCommand)
@@ -226,7 +233,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         internal const val CUSTOM_TASK_GROUP_NAME = "Affected Module Detector custom tasks"
 
         private const val PLUGIN_ANDROID_APPLICATION = "com.android.application"
-        private const val PLUGIN_ANDROID_LIBRARY = "java-library"
+        private const val PLUGIN_ANDROID_LIBRARY = "java"
         private const val PLUGIN_JAVA_LIBRARY = "com.android.library"
         private const val PLUGIN_KOTLIN = "kotlin"
 
