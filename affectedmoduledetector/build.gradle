@@ -16,6 +16,15 @@ jacoco {
     toolVersion = "0.8.8"
 }
 
+gradlePlugin {
+    plugins {
+        affectedModuleDetectorPlugin {
+            id = GROUP
+            implementationClass = "com.dropbox.affectedmoduledetector.AffectedModuleDetectorPlugin"
+        }
+    }
+}
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     testImplementation("junit:junit:4.13.2")
