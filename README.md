@@ -39,6 +39,25 @@ In the example below, we're showing a hypothetical project graph and what projec
 
 ## Installation
 
+```groovy
+// settings.gradle(.kts)
+pluginManagement {
+  repositories {
+    mavenCentral()
+    gradlePluginPortal()
+  }
+}
+
+// root build.gradle(.kts)
+plugins {
+  id("com.dropbox.affectedmoduledetector") version "<latest-version>"
+}
+```
+
+Note that the plugin is currently published to Maven Central, so you need to add it to the repositories list in the `pluginsManagement` block.
+
+Alternatively, it can be consumed via manual buildscript dependency + plugin application.
+
 Apply the project to the root `build.gradle`:
 ```groovy
 buildscript {
