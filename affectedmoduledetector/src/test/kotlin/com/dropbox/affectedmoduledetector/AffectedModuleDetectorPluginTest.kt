@@ -9,7 +9,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.lang.IllegalStateException
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
 
+@RunWith(JUnit4::class)
 class AffectedModuleDetectorPluginTest {
 
     private companion object {
@@ -168,14 +171,13 @@ class AffectedModuleDetectorPluginTest {
         assertThat(jvmTestTask?.group).isEqualTo(AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME)
     }
 
-
-
     @Test
     fun `GIVEN affected module detector plugin WHEN registerTestTasks called THEN added all tasks from InternalTaskType`() {
         // GIVEN
         val configuration = AffectedModuleConfiguration()
         rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
         val plugin = AffectedModuleDetectorPlugin()
+        val availableTaskVariants = 3 // runAffectedAndroidTests, assembleAffectedAndroidTests and runAffectedUnitTests
 
         // WHEN
         plugin.registerTestTasks(rootProject)
@@ -184,7 +186,7 @@ class AffectedModuleDetectorPluginTest {
             .filter { it.group == AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME }
 
         // THEN
-        assert(testTasks.size == InternalTaskType.values().size)
+        assert(testTasks.size == availableTaskVariants)
     }
 
     @Test

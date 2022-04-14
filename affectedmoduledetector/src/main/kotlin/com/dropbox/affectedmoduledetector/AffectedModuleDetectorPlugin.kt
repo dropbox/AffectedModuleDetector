@@ -199,7 +199,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     private fun filterAndroidTests(project: Project) {
         val tracker = DependencyTracker(project, null)
         project.tasks.configureEach { task ->
-            if (task.name.contains("AndroidTest")) {
+            if (task.name.contains(ANDROID_TEST_PATTERN)) {
                 tracker.findAllDependents(project).forEach { dependentProject ->
                     dependentProject.tasks.forEach { dependentTask ->
                         AffectedModuleDetector.configureTaskGuard(dependentTask)
@@ -236,6 +236,8 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         private const val PLUGIN_ANDROID_LIBRARY = "java"
         private const val PLUGIN_JAVA_LIBRARY = "com.android.library"
         private const val PLUGIN_KOTLIN = "kotlin"
+
+        private const val ANDROID_TEST_PATTERN = "AndroidTest"
 
         private val pluginIds = listOf(
             PLUGIN_ANDROID_APPLICATION,

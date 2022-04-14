@@ -25,7 +25,7 @@ internal enum class InternalTaskType(
     ),
 
     JVM_TEST(
-        commandByImpact = "runAffectedUnitTests",
+        commandByImpact = "", // inner type. This type doesn't registered in gradle
         originalGradleCommand = "test",
         taskDescription = "Runs all affected unit tests for non Android modules."
     )
