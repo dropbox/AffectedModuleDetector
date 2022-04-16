@@ -233,8 +233,8 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         internal const val CUSTOM_TASK_GROUP_NAME = "Affected Module Detector custom tasks"
 
         private const val PLUGIN_ANDROID_APPLICATION = "com.android.application"
-        private const val PLUGIN_ANDROID_LIBRARY = "java"
-        private const val PLUGIN_JAVA_LIBRARY = "com.android.library"
+        private const val PLUGIN_ANDROID_LIBRARY = "com.android.library"
+        private const val PLUGIN_JAVA_LIBRARY = "java"
         private const val PLUGIN_KOTLIN = "kotlin"
 
         private const val ANDROID_TEST_PATTERN = "AndroidTest"
