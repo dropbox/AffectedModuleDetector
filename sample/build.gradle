@@ -1,3 +1,4 @@
+import com.dropbox.affectedmoduledetector.AffectedModuleConfiguration
 import com.dropbox.sample.Dependencies
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
@@ -27,11 +28,25 @@ affectedModuleDetector {
     ]
     specifiedBranch = "main"
     compareFrom = "SpecifiedBranchCommit"
-
+    customTasks = [
+            new AffectedModuleConfiguration.CustomTask(
+                    "runSomeCustomTaskByImpact",
+                    "someTaskForExample",
+                    "Command someTaskForExample is just an example task for demonstration of" +
+                            "how to add custom commands to impact analysis"
+            )
+    ]
     logFolder = "${project.rootDir}"
     excludedModules = [
             "sample-util"
     ]
+}
+
+// just for example; Do not add to you project.
+allprojects {
+    tasks.register("someTaskForExample") {task ->
+        println("someTaskForExample on path: ${task.path} was called")
+    }
 }
 
 allprojects {

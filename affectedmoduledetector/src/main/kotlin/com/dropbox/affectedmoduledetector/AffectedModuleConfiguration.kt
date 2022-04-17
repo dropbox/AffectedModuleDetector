@@ -5,6 +5,45 @@ import java.io.File
 class AffectedModuleConfiguration {
 
     /**
+     * Implementation of [AffectedModuleTaskType] for easy adding of custom gradle task to
+     * AffectedModuleDetector. You can declare a new instance of it in build.gradle.
+     *
+     * @see AffectedModuleTaskType - interface
+     * @see customTasks - configuration field
+     */
+    data class CustomTask(
+        override val commandByImpact: String,
+        override val originalGradleCommand: String,
+        override val taskDescription: String
+    ) : AffectedModuleTaskType
+
+    /**
+     * If you want to add a custom task for impact analysis you must set the list
+     * of [AffectedModuleTaskType] implementations.
+     *
+     * Example:
+     * `build.gradle
+     *
+     *  affectedModuleDetector {
+     *       ...
+     *       customTasks = [ // <- list of custom gradle invokes
+     *           new AffectedModuleConfiguration.CustomTask(
+     *                "runSomeCustomTaskByImpact",
+     *                "someTaskForExample",
+     *                "Task description."
+     *            )
+     *       ]
+     *       ...
+     *  }
+     * `
+     *
+     * @see AffectedModuleTaskType - interface
+     * @see CustomTask - Implementation class
+     * @see AffectedModuleDetectorPlugin - gradle plugin
+     */
+    var customTasks = emptySet<AffectedModuleConfiguration.CustomTask>()
+
+    /**
      * Folder to place the log in
      */
     var logFolder: String? = null
@@ -63,28 +102,6 @@ class AffectedModuleConfiguration {
      * If uncommitted files should be considered affected
      */
     var includeUncommitted: Boolean = true
-
-    /**
-     * If you want to add a custom task for impact analysis you must set the list
-     * of [AffectedModuleTaskType] implementations.
-     *
-     * Example:
-     * `build.gradle
-     *
-     *  affectedModuleDetector {
-     *       baseDir = "${project.rootDir}"
-     *       pathsAffectingAllModules = ["buildSrc/"]
-     *       specifiedBranch = "dev"
-     *       customTasks = [MyCustomTask.DETEKT_TASK] // <- list of enum fields
-     *       compareFrom = "SpecifiedBranchCommit"
-     *       includeUncommitted = false
-     *  }
-     * `
-     *
-     * @see AffectedModuleTaskType
-     * @see AffectedModuleDetectorPlugin
-     */
-    var customTasks = emptySet<AffectedModuleTaskType>()
 
     /**
      * The top of the git log to use, only used when [includeUncommitted] is false

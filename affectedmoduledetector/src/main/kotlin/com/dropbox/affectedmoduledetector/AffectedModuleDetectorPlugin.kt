@@ -82,15 +82,17 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             lazyMessage = {  "Unable to find ${AffectedTestConfiguration.name} in $rootProject" }
         ) as AffectedModuleConfiguration
 
-        mainConfiguration
-            .customTasks
-            .forEach { taskType ->
-                registerImpactAnalysisTask(
-                    rootProject = rootProject,
-                    taskType = taskType,
-                    groupName = CUSTOM_TASK_GROUP_NAME
-                )
-            }
+        rootProject.afterEvaluate {
+            mainConfiguration
+                .customTasks
+                .forEach { taskType ->
+                    registerImpactAnalysisTask(
+                        rootProject = rootProject,
+                        taskType = taskType,
+                        groupName = CUSTOM_TASK_GROUP_NAME
+                    )
+                }
+        }
     }
 
     @VisibleForTesting
