@@ -94,6 +94,13 @@ affectedModuleDetector {
     ]
     includeUncommitted = true
     top = "HEAD"
+    customTasks = [
+        new AffectedModuleConfiguration.CustomTask(
+            "runDetektByImpact",
+            "detekt",
+            "Run static analysis tool without auto-correction by Impact analysis"
+        )
+    ]
 }
 ```
 
@@ -109,7 +116,7 @@ affectedModuleDetector {
  - `excludedModules`: A list of modules that will be excluded from the build process
  - `includeUncommitted`: If uncommitted files should be considered affected
  - `top`: The top of the git log to use. Must be used in combination with configuration `includeUncommitted = false`
- - `customTasks`: set of enum fields which implemented [AffectedModuleTaskType]()
+ - `customTasks`: set of [CustomTask](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleConfiguration.kt)
 
  By default, the Detector will look for `assembleAndroidDebugTest`, `connectedAndroidDebugTest`, and `testDebug`.  Modules can specify a configuration block to specify which variant tests to run:
  ```groovy
@@ -175,44 +182,22 @@ You should see zero tests run. Make a change within one of the modules and commi
 ## Custom tasks 
 
 If you want to add a custom gradle command to execute with impact analysis 
-you must create data structure which implementing [AffectedModuleTaskType](). 
-
-**NOTE1:** Your declared data structure might be in any place of your project.<br/>
-**NOTE2:** In example bottom we using ENUM, but it not necessary. You can use any way for overriding fields of interface. 
-
-Example:
-```kotlin
-enum class CustomImpactAnalysisTaskType(
-    override val commandByImpact: String,
-    override val originalGradleCommand: String,
-    override val taskDescription: String
-): AffectedModuleTaskType {
-
-    DETEKT_TASK(
-        commandByImpact = "runDetektByImpact",
-        originalGradleCommand = "detekt",
-        taskDescription = "Run static analysis tool without auto-correction by Impact analysis"
-    )
-   
-   // other tasks
-}
-```
-
-And then you must add your custom enum fields to configuration in `build.gradle` of your project: 
+you must declare [AffectedModuleConfiguration.CustomTask](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleConfiguration.kt) 
+which is implementing [AffectedModuleTaskType]() in the configuration in `build.gradle` of your project:
 
 ```groovy
-// some code 
+// ... 
 
 affectedModuleDetector {
-     baseDir = "${project.rootDir}"
-     pathsAffectingAllModules = ["buildSrc/"]
-     specifiedBranch = "dev"
-     customTasks = [ // <- list of enum fields
-             CustomImpactAnalysisTaskType.DETEKT_TASK, 
-             CustomImpactAnalysisTaskType.OTHER_TASK
+     // ...
+     customTasks = [
+           new AffectedModuleConfiguration.CustomTask(
+                   "runDetektByImpact", 
+                   "detekt",
+                   "Run static analysis tool without auto-correction by Impact analysis"
+           )
      ]
-     compareFrom = "SpecifiedBranchCommit"
-     includeUncommitted = false
+     // ...
 }
 ```
 
