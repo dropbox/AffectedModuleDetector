@@ -75,41 +75,50 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         }
     }
 
-    @VisibleForTesting
-    internal fun registerCustomTasks(rootProject: Project) {
+    private fun registerCustomTasks(rootProject: Project) {
         val mainConfiguration = requireNotNull(
             value = rootProject.extensions.findByName(AffectedModuleConfiguration.name),
             lazyMessage = {  "Unable to find ${AffectedTestConfiguration.name} in $rootProject" }
         ) as AffectedModuleConfiguration
 
         rootProject.afterEvaluate {
-            mainConfiguration
-                .customTasks
-                .forEach { taskType ->
-                    registerImpactAnalysisTask(
-                        rootProject = rootProject,
-                        taskType = taskType,
-                        groupName = CUSTOM_TASK_GROUP_NAME
-                    )
+            registerCustomTasks(rootProject, mainConfiguration.customTasks)
+        }
+    }
+
+    @VisibleForTesting
+    internal fun registerCustomTasks(
+        rootProject: Project,
+        customTasks: Set<AffectedModuleTaskType>
+    ) {
+        customTasks.forEach { taskType ->
+            val task = rootProject.tasks.register(taskType.commandByImpact).get()
+            task.group = CUSTOM_TASK_GROUP_NAME
+            task.description = taskType.taskDescription
+
+            rootProject.subprojects { project ->
+                pluginIds.forEach { pluginId ->
+                    withPlugin(pluginId, task, taskType, project)
                 }
+            }
         }
     }
 
     @VisibleForTesting
     internal fun registerTestTasks(rootProject: Project) {
-        registerImpactAnalysisTask(
+        registerInternalTask(
             rootProject = rootProject,
             taskType = InternalTaskType.ANDROID_JVM_TEST,
             groupName = TEST_TASK_GROUP_NAME
         )
 
-        registerImpactAnalysisTask(
+        registerInternalTask(
             rootProject = rootProject,
             taskType = InternalTaskType.ANDROID_TEST,
             groupName = TEST_TASK_GROUP_NAME
         )
 
-        registerImpactAnalysisTask(
+        registerInternalTask(
             rootProject = rootProject,
             taskType = InternalTaskType.ASSEMBLE_ANDROID_TEST,
             groupName = TEST_TASK_GROUP_NAME
@@ -117,7 +126,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     @VisibleForTesting
-    internal fun registerImpactAnalysisTask(
+    internal fun registerInternalTask(
         rootProject: Project,
         taskType: AffectedModuleTaskType,
         groupName: String

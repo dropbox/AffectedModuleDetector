@@ -15,7 +15,12 @@ buildscript {
         classpath Dependencies.Libs.ANDROID_BUILD_TOOLS
         classpath Dependencies.Libs.KOTLIN_GRADLE_PLUGIN
         classpath Dependencies.Libs.KTLINT
+        classpath Dependencies.Libs.DETEKT
     }
+}
+
+plugins {
+    id("io.gitlab.arturbosch.detekt") version "1.20.0"
 }
 
 apply plugin: "org.jlleitschuh.gradle.ktlint"
@@ -30,10 +35,9 @@ affectedModuleDetector {
     compareFrom = "SpecifiedBranchCommit"
     customTasks = [
             new AffectedModuleConfiguration.CustomTask(
-                    "runSomeCustomTaskByImpact",
-                    "someTaskForExample",
-                    "Command someTaskForExample is just an example task for demonstration of" +
-                            "how to add custom commands to impact analysis"
+                    "runDetektByImpact",
+                    "detekt",
+                    "Run static analysis tool by Impact analysis"
             )
     ]
     logFolder = "${project.rootDir}"
@@ -42,14 +46,9 @@ affectedModuleDetector {
     ]
 }
 
-// just for example; Do not add to you project.
 allprojects {
-    tasks.register("someTaskForExample") {task ->
-        println("someTaskForExample on path: ${task.path} was called")
-    }
-}
+    apply plugin: Dependencies.Libs.DETEKT_PLUGIN
 
-allprojects {
     repositories {
         google()
         mavenCentral()
@@ -59,4 +58,3 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
