@@ -94,6 +94,13 @@ affectedModuleDetector {
     ]
     includeUncommitted = true
     top = "HEAD"
+    customTasks = [
+        new AffectedModuleConfiguration.CustomTask(
+            "runDetektByImpact",
+            "detekt",
+            "Run static analysis tool without auto-correction by Impact analysis"
+        )
+    ]
 }
 ```
 
@@ -109,15 +116,14 @@ affectedModuleDetector {
  - `excludedModules`: A list of modules that will be excluded from the build process
  - `includeUncommitted`: If uncommitted files should be considered affected
  - `top`: The top of the git log to use. Must be used in combination with configuration `includeUncommitted = false`
-
-
+ - `customTasks`: set of [CustomTask](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleConfiguration.kt)
 
  By default, the Detector will look for `assembleAndroidDebugTest`, `connectedAndroidDebugTest`, and `testDebug`.  Modules can specify a configuration block to specify which variant tests to run:
  ```groovy
  affectedTestConfiguration {
-    assembleAndroidTestTask = "assembleAndroidReleaseTest"
-    runAndroidTestTask = "connectedAndroidReleaseTest"
-    jvmTestTask = "testRelease"
+      assembleAndroidTestTask = "assembleAndroidReleaseTest"
+      runAndroidTestTask = "connectedAndroidReleaseTest"
+      jvmTestTask = "testRelease"
 }
 ```
  
@@ -167,12 +173,38 @@ To run this on the sample app:
 ```
 
 2. Try running the following command:
-
 ```
  ./gradlew runAffectedUnitTests -Paffected_module_detector.enable
 ```
 
 You should see zero tests run. Make a change within one of the modules and commit it. Rerunning the command should execute tests in that module and its dependent modules.
+
+## Custom tasks 
+
+If you want to add a custom gradle command to execute with impact analysis 
+you must declare [AffectedModuleConfiguration.CustomTask](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleConfiguration.kt) 
+which is implementing [AffectedModuleTaskType]() in the configuration in `build.gradle` of your project:
+
+```groovy
+// ... 
+
+affectedModuleDetector {
+     // ...
+     customTasks = [
+           new AffectedModuleConfiguration.CustomTask(
+                   "runDetektByImpact", 
+                   "detekt",
+                   "Run static analysis tool without auto-correction by Impact analysis"
+           )
+     ]
+     // ...
+}
+```
+
+**NOTE:** Please, test all your custom commands.
+If your custom task doesn't work correctly after testing, might be your task quite complex 
+and for correct working must using more gradle's api. 
+Hence, you must create `buildSrc` module and write custom plugin manually like [AffectedModuleDetectorPlugin](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleDetectorPlugin.kt)
 
 ## Notes
 

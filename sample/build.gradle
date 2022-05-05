@@ -1,3 +1,4 @@
+import com.dropbox.affectedmoduledetector.AffectedModuleConfiguration
 import com.dropbox.sample.Dependencies
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
@@ -14,7 +15,12 @@ buildscript {
         classpath Dependencies.Libs.ANDROID_BUILD_TOOLS
         classpath Dependencies.Libs.KOTLIN_GRADLE_PLUGIN
         classpath Dependencies.Libs.KTLINT
+        classpath Dependencies.Libs.DETEKT
     }
+}
+
+plugins {
+    id("io.gitlab.arturbosch.detekt") version "1.20.0"
 }
 
 apply plugin: "org.jlleitschuh.gradle.ktlint"
@@ -27,7 +33,13 @@ affectedModuleDetector {
     ]
     specifiedBranch = "main"
     compareFrom = "SpecifiedBranchCommit"
-
+    customTasks = [
+            new AffectedModuleConfiguration.CustomTask(
+                    "runDetektByImpact",
+                    "detekt",
+                    "Run static analysis tool by Impact analysis"
+            )
+    ]
     logFolder = "${project.rootDir}"
     excludedModules = [
             "sample-util"
@@ -35,6 +47,8 @@ affectedModuleDetector {
 }
 
 allprojects {
+    apply plugin: Dependencies.Libs.DETEKT_PLUGIN
+
     repositories {
         google()
         mavenCentral()
@@ -44,4 +58,3 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-

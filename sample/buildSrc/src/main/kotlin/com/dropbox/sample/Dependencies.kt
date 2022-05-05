@@ -1,8 +1,10 @@
 package com.dropbox.sample
 
 object Dependencies {
+
     private object Versions {
         const val KOTLIN_VERSION = "1.6.10"
+        const val DETEKT_VERSION = "1.20.0"
     }
 
     object Libs {
@@ -17,5 +19,7 @@ object Dependencies {
         const val ANDROIDX_ESPRESSO = "androidx.test.espresso:espresso-core:3.3.0"
         const val ANDROID_BUILD_TOOLS = "com.android.tools.build:gradle:4.1.0"
         const val KTLINT = "org.jlleitschuh.gradle:ktlint-gradle:9.1.1"
+        const val DETEKT = "com.android.tools.build:gradle:${Versions.DETEKT_VERSION}"
+        const val DETEKT_PLUGIN = "io.gitlab.arturbosch.detekt"
     }
 }
