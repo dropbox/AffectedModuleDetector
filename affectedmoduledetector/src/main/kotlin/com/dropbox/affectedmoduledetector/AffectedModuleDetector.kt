@@ -216,7 +216,7 @@ abstract class AffectedModuleDetector {
             )
         }
 
-        private fun isProjectEnabled(project: Project): Boolean {
+        internal fun isProjectEnabled(project: Project): Boolean {
             return project.hasProperty(ENABLE_ARG)
         }
 
