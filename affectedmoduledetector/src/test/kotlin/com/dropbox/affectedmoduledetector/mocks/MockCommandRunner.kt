@@ -3,7 +3,7 @@ package com.dropbox.affectedmoduledetector.mocks
 import com.dropbox.affectedmoduledetector.GitClient
 import com.dropbox.affectedmoduledetector.ToStringLogger
 
-class MockCommandRunner(private val logger: ToStringLogger) : GitClient.CommandRunner {
+internal class MockCommandRunner(private val logger: ToStringLogger) : GitClient.CommandRunner {
     private val replies = mutableMapOf<String, List<String>>()
 
     fun addReply(command: String, response: String) {
