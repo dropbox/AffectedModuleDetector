@@ -9,6 +9,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
 import org.gradle.internal.impldep.org.jetbrains.annotations.VisibleForTesting
+import org.gradle.util.GradleVersion
 
 /**
  * This plugin creates and registers all affected test tasks.
@@ -125,6 +126,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         )
     }
 
+    @Suppress("UnstableApiUsage")
     @VisibleForTesting
     internal fun registerInternalTask(
         rootProject: Project,
@@ -134,6 +136,9 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         val task = rootProject.tasks.register(taskType.commandByImpact).get()
         task.group = groupName
         task.description = taskType.taskDescription
+        if (GradleVersion.current() >= GradleVersion.version("7.4")) {
+            task.notCompatibleWithConfigurationCache("AMD requires knowledge of what has changed in the file system so we can not cache those values (https://github.com/dropbox/AffectedModuleDetector/issues/150)")
+        }
 
         rootProject.subprojects { project ->
             project.afterEvaluate {
