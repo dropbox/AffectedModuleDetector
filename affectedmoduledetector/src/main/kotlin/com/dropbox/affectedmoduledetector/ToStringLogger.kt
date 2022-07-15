@@ -40,7 +40,7 @@ import java.io.File
  * Gradle logger that logs to a string.
  */
 internal open class ToStringLogger(
-    private val stringBuilder: Provider<ToStringLoggerBuildService>?
+    private val loggerProvider: Provider<ToStringLoggerBuildService>?
 ) : OutputEventListenerBackedLogger(
         "amd",
         OutputEventListenerBackedLoggerContext {
@@ -48,7 +48,7 @@ internal open class ToStringLogger(
         }.also {
             it.level = LogLevel.DEBUG
             it.setOutputEventListener { outputEvent ->
-                stringBuilder?.get()?.parameters?.getStringBuilderProperty()?.get()?.appendLine(outputEvent.toString())
+                loggerProvider?.get()?.parameters?.getStringBuilderProperty()?.get()?.appendLine(outputEvent.toString())
             }
         },
         Clock {
@@ -59,7 +59,7 @@ internal open class ToStringLogger(
     /**
      * Returns the current log.
      */
-    fun buildString() = stringBuilder?.get()?.parameters?.getStringBuilderProperty()?.get()?.toString()
+    fun buildString() = loggerProvider?.get()?.parameters?.getStringBuilderProperty()?.get()?.toString()
 
     @Suppress("UnstableApiUsage") // BuildService is not yet stable
     companion object {
