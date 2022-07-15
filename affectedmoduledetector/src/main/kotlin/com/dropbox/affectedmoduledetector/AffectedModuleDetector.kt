@@ -151,19 +151,10 @@ abstract class AffectedModuleDetector {
 
             val logger =
                 ToStringLogger.createWithLifecycle(
-                    gradle
-                ) { log ->
-                    config.logFolder?.let {
-                        val distDir = File(it)
-                        if (!distDir.exists()) {
-                            distDir.mkdirs()
-                        }
-                        val outputFile =
-                            distDir.resolve(config.logFilename)
-                        outputFile.appendText(log)
-                        println("Wrote dependency log to ${outputFile.absolutePath}")
-                    }
-                }
+                    rootProject,
+                    config.logFilename,
+                    config.logFolder
+                )
 
             val modules =
                 getModulesProperty(
