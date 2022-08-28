@@ -112,7 +112,10 @@ affectedModuleDetector {
  - `compareFrom`: A commit to compare the branch changes against. Can be either:
     - PreviousCommit: compare against the previous commit
     - ForkCommit: compare against the commit the branch was forked from
-    - SpecifiedBranchCommit: specify the branch to compare changes against using the `specifiedBranch` configuration before the `compareFrom` configuration
+    - SpecifiedBranchCommit: compare against the last commit of `$specifiedBranch` using `git rev-parse` approach. 
+    - SpecifiedBranchCommit2: compare against the nearest ancestors with `$specifiedBranch` using `git merge base` approach.
+    
+ **Note:** specify the branch to compare changes against using the `specifiedBranch` configuration before the `compareFrom` configuration
  - `excludedModules`: A list of modules that will be excluded from the build process
  - `includeUncommitted`: If uncommitted files should be considered affected
  - `top`: The top of the git log to use. Must be used in combination with configuration `includeUncommitted = false`
