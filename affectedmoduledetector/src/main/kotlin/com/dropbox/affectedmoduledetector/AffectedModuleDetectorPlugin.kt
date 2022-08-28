@@ -48,11 +48,13 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
         registerSubprojectConfiguration(project)
         registerMainConfiguration(project)
+        AffectedModuleDetector.initConfiguration(project)
+
         registerCustomTasks(project)
         registerTestTasks(project)
 
         project.gradle.projectsEvaluated {
-            AffectedModuleDetector.configure(project.gradle, project)
+            AffectedModuleDetector.configure(project)
 
             filterAndroidTests(project)
             filterJvmTests(project)
@@ -77,11 +79,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     private fun registerCustomTasks(rootProject: Project) {
-        val mainConfiguration = requireNotNull(
-            value = rootProject.extensions.findByName(AffectedModuleConfiguration.name),
-            lazyMessage = {  "Unable to find ${AffectedTestConfiguration.name} in $rootProject" }
-        ) as AffectedModuleConfiguration
-
+        val mainConfiguration = AffectedModuleDetector.affectedModuleConfiguration
         rootProject.afterEvaluate {
             registerCustomTasks(rootProject, mainConfiguration.customTasks)
         }
@@ -188,24 +186,21 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         taskType: AffectedModuleTaskType,
         project: Project
     ): String? {
-        val tasks = requireNotNull(
-            value = project.extensions.findByName(AffectedTestConfiguration.name),
-            lazyMessage = { "Unable to find ${AffectedTestConfiguration.name} in $project" }
-        ) as AffectedTestConfiguration
+        val overriddenTasks = AffectedModuleDetector.affectedTestConfiguration
 
         return when (taskType) {
             InternalTaskType.ANDROID_TEST -> {
-                getPathAndTask(project, tasks.runAndroidTestTask)
+                getPathAndTask(project, overriddenTasks.runAndroidTestTask)
             }
             InternalTaskType.ASSEMBLE_ANDROID_TEST -> {
-                getPathAndTask(project, tasks.assembleAndroidTestTask)
+                getPathAndTask(project, overriddenTasks.assembleAndroidTestTask)
             }
             InternalTaskType.ANDROID_JVM_TEST -> {
-                getPathAndTask(project, tasks.jvmTestTask)
+                getPathAndTask(project, overriddenTasks.jvmTestTask)
             }
             InternalTaskType.JVM_TEST -> {
-                if (tasks.jvmTestTask != AffectedTestConfiguration.DEFAULT_JVM_TEST_TASK) {
-                    getPathAndTask(project, tasks.jvmTestTask)
+                if (overriddenTasks.jvmTestTask != AffectedTestConfiguration.DEFAULT_JVM_TEST_TASK) {
+                    getPathAndTask(project, overriddenTasks.jvmTestTask)
                 } else {
                     getPathAndTask(project, taskType.originalGradleCommand)
                 }

@@ -29,9 +29,7 @@ import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProvider
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.invocation.Gradle
 import org.gradle.api.logging.Logger
-import java.io.File
 
 /**
  * The subsets we allow the projects to be partitioned into.
@@ -113,8 +111,28 @@ abstract class AffectedModuleDetector {
         private const val ENABLE_ARG = "affected_module_detector.enable"
         var isConfigured = false
 
+        lateinit var affectedModuleConfiguration: AffectedModuleConfiguration
+        lateinit var affectedTestConfiguration: AffectedTestConfiguration
+
         @JvmStatic
-        fun configure(gradle: Gradle, rootProject: Project) {
+        fun initConfiguration(rootProject: Project) {
+            affectedModuleConfiguration = requireNotNull(
+                value = rootProject.extensions.findByType(AffectedModuleConfiguration::class.java),
+                lazyMessage = {
+                    "Root project ${rootProject.path} must have the ${AffectedModuleConfiguration.name} extension added."
+                }
+            )
+
+            affectedTestConfiguration = requireNotNull(
+                value = rootProject.extensions.findByType(AffectedTestConfiguration::class.java),
+                lazyMessage = {
+                    "Root project ${rootProject.path} must have the ${AffectedTestConfiguration.name} extension added."
+                }
+            )
+        }
+
+        @JvmStatic
+        fun configure(rootProject: Project) {
             require(rootProject == rootProject.rootProject) {
                 "Project provided must be root, project was ${rootProject.path}"
             }
@@ -141,19 +159,11 @@ abstract class AffectedModuleDetector {
                 }
             }
 
-            val config =
-                requireNotNull(
-                    rootProject.extensions.findByType(AffectedModuleConfiguration::class.java)
-                ) {
-                    "Root project ${rootProject.path} must have the AffectedModuleConfiguration " +
-                        "extension added."
-                }
-
             val logger =
                 ToStringLogger.createWithLifecycle(
                     rootProject,
-                    config.logFilename,
-                    config.logFolder
+                    affectedModuleConfiguration.logFilename,
+                    affectedModuleConfiguration.logFolder
                 )
 
             val modules =
@@ -167,7 +177,7 @@ abstract class AffectedModuleDetector {
                 ignoreUnknownProjects = true,
                 projectSubset = subset,
                 modules = modules,
-                config = config
+                config = affectedModuleConfiguration
             ).also {
                 logger.info("Using real detector with $subset")
                 setInstance(
@@ -276,6 +286,11 @@ abstract class AffectedModuleDetector {
             val modules = getModulesProperty(rootProject)
             return modules?.contains(project.path) ?: true
         }
+
+        @JvmStatic
+        fun isModuleExcluded(project: Project): Boolean {
+            return affectedModuleConfiguration.excludedModules.contains(project.name)
+        }
     }
 }
 
@@ -362,16 +377,15 @@ class AffectedModuleDetectorImpl constructor(
     private var unknownFiles: MutableSet<String> = mutableSetOf()
 
     override fun shouldInclude(project: Project): Boolean {
-        return (
-            (project.isRoot || (
-                affectedProjects.contains(project) &&
-                    isProjectProvided2(project)
-                )) && !config.excludedModules.contains(project.name)
-            ).also {
-            logger?.info(
-                "checking whether I should include ${project.path} and my answer is $it"
-            )
-        }
+        val isRootProject = project.isRoot
+        val isProjectAffected = affectedProjects.contains(project)
+        val isProjectProvided = isProjectProvided2(project)
+        val isNotModuleExcluded = !isModuleExcluded(project)
+
+        val shouldInclude = (isRootProject || (isProjectAffected && isProjectProvided)) && isNotModuleExcluded
+        logger?.info("checking whether I should include ${project.path} and my answer is $shouldInclude")
+
+        return shouldInclude
     }
 
     override fun hasAffectedProjects() = affectedProjects.isNotEmpty()
