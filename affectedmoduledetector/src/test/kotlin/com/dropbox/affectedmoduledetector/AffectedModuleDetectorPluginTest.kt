@@ -8,7 +8,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.lang.IllegalStateException
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
@@ -101,9 +100,14 @@ class AffectedModuleDetectorPluginTest {
     @Test
     fun `GIVEN affected module detector plugin WHEN register_custom_task is called AND AffectedModuleConfiguration customTask is not empty THEN task is added`() {
         // GIVEN
-        val configuration = AffectedModuleConfiguration()
-        configuration.customTasks = setOf(fakeTask)
-        rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+        val rootConfiguration = AffectedModuleConfiguration()
+        rootConfiguration.customTasks = setOf(fakeTask)
+        rootProject.extensions.add(AffectedModuleConfiguration.name, rootConfiguration)
+
+        val testConfiguration = AffectedTestConfiguration()
+        rootProject.subprojects {
+            it.extensions.add(AffectedTestConfiguration.name, testConfiguration)
+        }
 
         val plugin = AffectedModuleDetectorPlugin()
 
@@ -121,8 +125,14 @@ class AffectedModuleDetectorPluginTest {
     @Test
     fun `GIVEN affected module detector plugin WHEN registerCustomTasks is called AND AffectedModuleConfiguration customTask is empty THEN task isn't added`() {
         // GIVEN
-        val configuration = AffectedModuleConfiguration()
-        rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+        val rootConfiguration = AffectedModuleConfiguration()
+        rootProject.extensions.add(AffectedModuleConfiguration.name, rootConfiguration)
+
+        val testConfiguration = AffectedTestConfiguration()
+        rootProject.subprojects {
+            it.extensions.add(AffectedTestConfiguration.name, testConfiguration)
+        }
+
         val plugin = AffectedModuleDetectorPlugin()
 
         // WHEN
@@ -189,6 +199,12 @@ class AffectedModuleDetectorPluginTest {
         val configuration = AffectedModuleConfiguration()
         configuration.customTasks = givenCustomTasks
         rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+
+        val testConfiguration = AffectedTestConfiguration()
+        rootProject.subprojects {
+            it.extensions.add(AffectedTestConfiguration.name, testConfiguration)
+        }
+
         val plugin = AffectedModuleDetectorPlugin()
 
         // WHEN
@@ -201,4 +217,6 @@ class AffectedModuleDetectorPluginTest {
         // THEN
         assert(customTasks.size == 2)
     }
+
+
 }

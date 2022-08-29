@@ -114,8 +114,13 @@ abstract class AffectedModuleDetector {
         private var affectedModuleConfiguration: AffectedModuleConfiguration? = null
 
         @JvmStatic
-        fun getRootConfiguration(rootProject: Project): AffectedModuleConfiguration {
+        fun getRootConfiguration(project: Project): AffectedModuleConfiguration {
             if (affectedModuleConfiguration == null) {
+                var rootProject = project
+                while (!rootProject.isRoot || rootProject.parent != null) {
+                    rootProject = rootProject.parent!!
+                }
+
                 affectedModuleConfiguration = requireNotNull(
                     value = rootProject.extensions.findByType(AffectedModuleConfiguration::class.java),
                     lazyMessage = {
