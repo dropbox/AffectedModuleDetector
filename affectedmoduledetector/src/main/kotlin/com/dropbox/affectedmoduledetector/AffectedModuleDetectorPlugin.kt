@@ -48,7 +48,6 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
         registerSubprojectConfiguration(project)
         registerMainConfiguration(project)
-        AffectedModuleDetector.initConfiguration(project)
 
         registerCustomTasks(project)
         registerTestTasks(project)
@@ -79,9 +78,9 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     private fun registerCustomTasks(rootProject: Project) {
-        val mainConfiguration = AffectedModuleDetector.affectedModuleConfiguration
+        val rootConfiguration = AffectedModuleDetector.getRootConfiguration(rootProject)
         rootProject.afterEvaluate {
-            registerCustomTasks(rootProject, mainConfiguration.customTasks)
+            registerCustomTasks(rootProject, rootConfiguration.customTasks)
         }
     }
 
@@ -164,18 +163,21 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         testType: AffectedModuleTaskType,
         project: Project
     ) {
-        project.pluginManager.withPlugin(pluginId) {
-            getAffectedPath(testType, project)?.let { path ->
-                if (AffectedModuleDetector.isProjectProvided(project)) {
-                    task.dependsOn(path)
-                }
+        val affectedPath = getAffectedPath(testType, project)
+        if (affectedPath == null || AffectedModuleDetector.isModuleExcluded(project)) {
+            return
+        }
 
-                project.afterEvaluate {
-                    project.tasks.findByPath(path)?.onlyIf { task ->
-                        when {
-                            !AffectedModuleDetector.isProjectEnabled(task.project) -> true
-                            else -> AffectedModuleDetector.isProjectAffected(task.project)
-                        }
+        project.pluginManager.withPlugin(pluginId) {
+            if (AffectedModuleDetector.isProjectProvided(project)) {
+                task.dependsOn(affectedPath)
+            }
+
+            project.afterEvaluate {
+                project.tasks.findByPath(affectedPath)?.onlyIf { task ->
+                    when {
+                        !AffectedModuleDetector.isProjectEnabled(task.project) -> true
+                        else -> AffectedModuleDetector.isProjectAffected(task.project)
                     }
                 }
             }
@@ -186,7 +188,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         taskType: AffectedModuleTaskType,
         project: Project
     ): String? {
-        val overriddenTasks = AffectedModuleDetector.affectedTestConfiguration
+        val overriddenTasks = AffectedModuleDetector.getTestConfiguration(project)
 
         return when (taskType) {
             InternalTaskType.ANDROID_TEST -> {

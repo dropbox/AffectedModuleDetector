@@ -111,22 +111,29 @@ abstract class AffectedModuleDetector {
         private const val ENABLE_ARG = "affected_module_detector.enable"
         var isConfigured = false
 
-        lateinit var affectedModuleConfiguration: AffectedModuleConfiguration
-        lateinit var affectedTestConfiguration: AffectedTestConfiguration
+        private var affectedModuleConfiguration: AffectedModuleConfiguration? = null
 
         @JvmStatic
-        fun initConfiguration(rootProject: Project) {
-            affectedModuleConfiguration = requireNotNull(
-                value = rootProject.extensions.findByType(AffectedModuleConfiguration::class.java),
-                lazyMessage = {
-                    "Root project ${rootProject.path} must have the ${AffectedModuleConfiguration.name} extension added."
-                }
-            )
+        fun getRootConfiguration(rootProject: Project): AffectedModuleConfiguration {
+            if (affectedModuleConfiguration == null) {
+                affectedModuleConfiguration = requireNotNull(
+                    value = rootProject.extensions.findByType(AffectedModuleConfiguration::class.java),
+                    lazyMessage = {
+                        "Root project $rootProject must have the ${AffectedModuleConfiguration.name} extension added."
 
-            affectedTestConfiguration = requireNotNull(
-                value = rootProject.extensions.findByType(AffectedTestConfiguration::class.java),
+                    }
+                )
+            }
+
+            return affectedModuleConfiguration!!
+        }
+
+        @JvmStatic
+        fun getTestConfiguration(project: Project): AffectedTestConfiguration {
+            return requireNotNull(
+                value = project.extensions.findByType(AffectedTestConfiguration::class.java),
                 lazyMessage = {
-                    "Root project ${rootProject.path} must have the ${AffectedTestConfiguration.name} extension added."
+                    "Root project $project must have the ${AffectedTestConfiguration.name} extension added."
                 }
             )
         }
@@ -159,11 +166,12 @@ abstract class AffectedModuleDetector {
                 }
             }
 
+            val rootProjectConfiguration = getRootConfiguration(rootProject)
             val logger =
                 ToStringLogger.createWithLifecycle(
                     rootProject,
-                    affectedModuleConfiguration.logFilename,
-                    affectedModuleConfiguration.logFolder
+                    rootProjectConfiguration.logFilename,
+                    rootProjectConfiguration.logFolder
                 )
 
             val modules =
@@ -177,7 +185,7 @@ abstract class AffectedModuleDetector {
                 ignoreUnknownProjects = true,
                 projectSubset = subset,
                 modules = modules,
-                config = affectedModuleConfiguration
+                config = rootProjectConfiguration
             ).also {
                 logger.info("Using real detector with $subset")
                 setInstance(
@@ -289,7 +297,7 @@ abstract class AffectedModuleDetector {
 
         @JvmStatic
         fun isModuleExcluded(project: Project): Boolean {
-            return affectedModuleConfiguration.excludedModules.contains(project.name)
+            return getRootConfiguration(project).excludedModules.contains(project.name)
         }
     }
 }
