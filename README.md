@@ -135,6 +135,26 @@ affectedModuleDetector {
  * `./gradlew runAffectedAndroidTests` - runs connected tests
  * `./gradlew assembleAffectedAndroidTests` - assembles but does not run on device tests, useful when working with device labs
 
+## SpecifiedBranchCommit vs SpecifiedBranchCommit2
+
+- SpecifiedBranchCommit using `git rev-parse` command for getting sha. 
+- SpecifiedBranchCommit2 using `git merge base` command for getting sha. 
+
+What does it mean?
+When we run any AMD command we compare the current branch with the specified parent branch. Consider an example when, during the development of our feature,
+another developer merged his changes (9 files) into our common remote parent branch - "origin/dev". 
+
+Please, look at picture:
+![specified_branch_difference.png](specified_branch_difference.png)
+
+Suppose we have changed 6 files in our "feature" branch.
+
+1. Behaviour of SpecifiedBranchCommit:
+   AMD will show the result that 15 files were affected. Because our branch is not updated (pull) and AMD will see our 6 files and 9 files that were merged by another developer.
+2. Behaviour of SpecifiedBranchCommit2:
+   AMD will show the result that 6 files were affected. And this is the correct behavior.
+
+Hence, depends on your CI settings you have to configure AMD right. 
 
 ## Sample Usage
 
