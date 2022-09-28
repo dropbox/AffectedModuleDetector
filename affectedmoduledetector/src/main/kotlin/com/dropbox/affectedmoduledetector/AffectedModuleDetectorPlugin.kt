@@ -77,10 +77,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     private fun registerCustomTasks(rootProject: Project) {
-        val mainConfiguration = requireNotNull(
-            value = rootProject.extensions.findByName(AffectedModuleConfiguration.name),
-            lazyMessage = {  "Unable to find ${AffectedTestConfiguration.name} in $rootProject" }
-        ) as AffectedModuleConfiguration
+        val mainConfiguration = requireConfiguration(rootProject)
 
         rootProject.afterEvaluate {
             registerCustomTasks(rootProject, mainConfiguration.customTasks)
@@ -166,9 +163,15 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         testType: AffectedModuleTaskType,
         project: Project
     ) {
+        val config = requireConfiguration(project)
+
+        fun isExcludedModule(configuration: AffectedModuleConfiguration, path: String): Boolean {
+            return configuration.excludedModules.find { path.startsWith(":$it") } != null
+        }
+
         project.pluginManager.withPlugin(pluginId) {
             getAffectedPath(testType, project)?.let { path ->
-                if (AffectedModuleDetector.isProjectProvided(project)) {
+                if (AffectedModuleDetector.isProjectProvided(project) && !isExcludedModule(config, path)) {
                     task.dependsOn(path)
                 }
 
@@ -247,6 +250,13 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         project.tasks.withType(Test::class.java).configureEach { task ->
             AffectedModuleDetector.configureTaskGuard(task)
         }
+    }
+
+    private fun requireConfiguration(project: Project): AffectedModuleConfiguration {
+        return requireNotNull(
+            value = project.rootProject.extensions.findByName(AffectedModuleConfiguration.name),
+            lazyMessage = {  "Unable to find ${AffectedTestConfiguration.name} in ${project.rootProject}" }
+        ) as AffectedModuleConfiguration
     }
 
     companion object {
