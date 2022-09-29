@@ -255,7 +255,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     private fun requireConfiguration(project: Project): AffectedModuleConfiguration {
         return requireNotNull(
             value = project.rootProject.extensions.findByName(AffectedModuleConfiguration.name),
-            lazyMessage = {  "Unable to find ${AffectedTestConfiguration.name} in ${project.rootProject}" }
+            lazyMessage = {  "Unable to find ${AffectedModuleConfiguration.name} in ${project.rootProject}" }
         ) as AffectedModuleConfiguration
     }
 
