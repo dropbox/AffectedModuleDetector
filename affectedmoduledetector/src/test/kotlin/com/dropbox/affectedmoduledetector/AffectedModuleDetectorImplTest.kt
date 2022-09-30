@@ -168,6 +168,8 @@ class AffectedModuleDetectorImplTest {
             it.baseDir = tmpDir.absolutePath
             it.pathsAffectingAllModules = pathsAffectingAllModules
         }
+
+        root.extensions.add(AffectedModuleConfiguration.name, affectedModuleConfiguration)
     }
 
     @Test
@@ -1247,6 +1249,10 @@ class AffectedModuleDetectorImplTest {
             ),
             config = affectedModuleConfiguration
         )
+
+        val configuration = root.extensions.getByName(AffectedModuleConfiguration.name) as AffectedModuleConfiguration
+        configuration.excludedModules = setOf("p1")
+
         Truth.assertThat(detector.shouldInclude(p1)).isFalse()
         Truth.assertThat(detector.shouldInclude(p4)).isTrue()
         Truth.assertThat(detector.shouldInclude(p5)).isTrue()
