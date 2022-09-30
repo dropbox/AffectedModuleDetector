@@ -182,17 +182,17 @@ You should see zero tests run. Make a change within one of the modules and commi
 ## Custom tasks 
 
 If you want to add a custom gradle command to execute with impact analysis 
-you must declare [AffectedModuleConfiguration.CustomTask](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleConfiguration.kt) 
+you must declare [AffectedModuleConfiguration.CustomTask](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleConfiguration.kt)
 which is implementing the [AffectedModuleTaskType](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleTaskType.kt) interface in the `build.gradle` configuration of your project:
 
 ```groovy
-// ... 
+// ...
 
 affectedModuleDetector {
      // ...
      customTasks = [
            new AffectedModuleConfiguration.CustomTask(
-                   "runDetektByImpact", 
+                   "runDetektByImpact",
                    "detekt",
                    "Run static analysis tool without auto-correction by Impact analysis"
            )
