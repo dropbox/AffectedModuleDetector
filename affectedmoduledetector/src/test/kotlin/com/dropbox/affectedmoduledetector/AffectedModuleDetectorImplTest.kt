@@ -6,7 +6,7 @@ import org.gradle.api.plugins.ExtraPropertiesExtension
 import org.gradle.testfixtures.ProjectBuilder
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
-import org.junit.Assert.fail
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -168,8 +168,66 @@ class AffectedModuleDetectorImplTest {
             it.baseDir = tmpDir.absolutePath
             it.pathsAffectingAllModules = pathsAffectingAllModules
         }
+    }
 
-        root.extensions.add(AffectedModuleConfiguration.name, affectedModuleConfiguration)
+    @Test
+    fun `WHEN has excluded module THEN isModuleExcluded is true`() {
+        val affectedModuleConfiguration = AffectedModuleConfiguration().also {
+            it.excludedModules = setOf("p1")
+        }
+
+        assertTrue(AffectedModuleDetector.isModuleExcluded(affectedModuleConfiguration, p1))
+        assertFalse(AffectedModuleDetector.isModuleExcluded(affectedModuleConfiguration, p2))
+    }
+
+    @Test
+    fun `WHEN has 2 excluded modules THEN isModuleExcluded with true answer called 2 times`() {
+        val affectedModuleConfiguration = AffectedModuleConfiguration().also {
+            it.excludedModules = setOf("p1", "p5")
+        }
+
+        val excludedModules = mutableListOf<String>()
+        root.subprojects {
+            val isExcluded = AffectedModuleDetector.isModuleExcluded(affectedModuleConfiguration, it)
+            if (isExcluded) excludedModules.add(it.name)
+        }
+
+        assert(excludedModules.size == 2)
+        assertTrue(excludedModules[0] == "p1")
+        assertTrue(excludedModules[1] == "p5")
+    }
+
+    @Test
+    fun `WHEN getTestConfiguration called THEN configuration is exist`() {
+        // GIVEN
+        p2.extensions.add(
+            AffectedTestConfiguration.name,
+            AffectedTestConfiguration()
+        )
+
+        // THEN
+        val configuration = AffectedModuleDetector.getTestConfiguration(p2)
+        assertNotNull(configuration)
+    }
+
+    @Test
+    fun `GIVEN AffectedTestConfiguration is not added WHEN getTestConfiguration called THEN throw exception`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            AffectedModuleDetector.getTestConfiguration(p3)
+        }
+    }
+
+    @Test
+    fun `WHEN children project called THEN root configuration is exist`() {
+        // GIVEN
+        root.extensions.add(
+            AffectedModuleConfiguration.name,
+            AffectedModuleConfiguration()
+        )
+
+        // THEN
+        val rootConfiguration = AffectedModuleDetector.getRootConfiguration(p2)
+        assertNotNull(rootConfiguration)
     }
 
     @Test
@@ -1249,10 +1307,6 @@ class AffectedModuleDetectorImplTest {
             ),
             config = affectedModuleConfiguration
         )
-
-        val configuration = root.extensions.getByName(AffectedModuleConfiguration.name) as AffectedModuleConfiguration
-        configuration.excludedModules = setOf("p1")
-
         Truth.assertThat(detector.shouldInclude(p1)).isFalse()
         Truth.assertThat(detector.shouldInclude(p4)).isTrue()
         Truth.assertThat(detector.shouldInclude(p5)).isTrue()

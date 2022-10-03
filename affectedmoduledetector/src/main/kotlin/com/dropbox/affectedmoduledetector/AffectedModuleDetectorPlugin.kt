@@ -164,7 +164,8 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         project: Project
     ) {
         val affectedPath = getAffectedPath(testType, project)
-        if (affectedPath == null || AffectedModuleDetector.isModuleExcluded(project)) {
+        val configuration = AffectedModuleDetector.getRootConfiguration(project)
+        if (affectedPath == null || AffectedModuleDetector.isModuleExcluded(configuration, project)) {
             return
         }
 

@@ -125,7 +125,6 @@ abstract class AffectedModuleDetector {
                     value = rootProject.extensions.findByType(AffectedModuleConfiguration::class.java),
                     lazyMessage = {
                         "Root project $rootProject must have the ${AffectedModuleConfiguration.name} extension added."
-
                     }
                 )
             }
@@ -301,8 +300,8 @@ abstract class AffectedModuleDetector {
         }
 
         @JvmStatic
-        fun isModuleExcluded(project: Project): Boolean {
-            return getRootConfiguration(project).excludedModules.contains(project.name)
+        fun isModuleExcluded(configuration: AffectedModuleConfiguration, project: Project): Boolean {
+            return configuration.excludedModules.contains(project.name)
         }
     }
 }
@@ -393,7 +392,7 @@ class AffectedModuleDetectorImpl constructor(
         val isRootProject = project.isRoot
         val isProjectAffected = affectedProjects.contains(project)
         val isProjectProvided = isProjectProvided2(project)
-        val isNotModuleExcluded = !isModuleExcluded(project)
+        val isNotModuleExcluded = !isModuleExcluded(config, project)
 
         val shouldInclude = (isRootProject || (isProjectAffected && isProjectProvided)) && isNotModuleExcluded
         logger?.info("checking whether I should include ${project.path} and my answer is $shouldInclude")
