@@ -9,7 +9,6 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.io.File
-import java.lang.Exception
 
 @RunWith(JUnit4::class)
 class AffectedModuleConfigurationTest {
@@ -174,6 +173,30 @@ class AffectedModuleConfigurationTest {
     }
 
     @Test
+    fun `WHEN compareFrom is set to SpecifiedBranchCommit2 AND specifiedBranch is set THEN return SpecifiedBranchCommit2`() {
+        val specifiedBranchCommit2 = "SpecifiedBranchCommit2"
+        val specifiedBranch = "origin/dev"
+
+        config.specifiedBranch = specifiedBranch
+        config.compareFrom = specifiedBranchCommit2
+
+        val actual = config.compareFrom
+
+        assertThat(actual).isEqualTo(specifiedBranchCommit2)
+    }
+
+    @Test
+    fun `WHEN compareFrom is set to SpecifiedBranchCommit2 AND specifiedBranch isn't set THEN throw exception`() {
+        val specifiedBranchCommit2 = "SpecifiedBranchCommit2"
+
+        try {
+            config.compareFrom = specifiedBranchCommit2
+        } catch (e: IllegalArgumentException) {
+            assertThat(e.message).isEqualTo("Specify a branch using the configuration specifiedBranch")
+        }
+    }
+
+    @Test
     fun `GIVEN AffectedModuleConfiguration WHEN compareFrom is set to ForkCommit THEN is ForkCommit`() {
         val forkCommit = "ForkCommit"
 
@@ -218,7 +241,7 @@ class AffectedModuleConfigurationTest {
             fail()
         } catch (e: Exception) {
             assertThat(e::class).isEqualTo(IllegalArgumentException::class)
-            assertThat(e.message).isEqualTo("The property configuration compareFrom must be one of the following: PreviousCommit, ForkCommit, SpecifiedBranchCommit")
+            assertThat(e.message).isEqualTo("The property configuration compareFrom must be one of the following: PreviousCommit, ForkCommit, SpecifiedBranchCommit, SpecifiedBranchCommit2")
             assertThat(config.compareFrom).isEqualTo("PreviousCommit")
         }
     }

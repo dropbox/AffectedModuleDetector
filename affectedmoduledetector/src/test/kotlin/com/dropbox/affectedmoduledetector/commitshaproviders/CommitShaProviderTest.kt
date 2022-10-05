@@ -42,6 +42,23 @@ class CommitShaProviderTest {
     }
 
     @Test
+    fun givenSpecifiedBranchCommit2AndSpecifiedBranchNull_whenFromString_thenThrowException() {
+        try {
+            CommitShaProvider.fromString("SpecifiedBranchCommit2")
+        } catch (e: Exception) {
+            assertThat(e::class).isEqualTo(IllegalArgumentException::class)
+            assertThat(e.message).isEqualTo("Specified branch must be defined")
+        }
+    }
+
+    @Test
+    fun givenSpecifiedBranchCommit2_whenFromString_thenReturnSpecifiedBranchCommit2() {
+        val actual = CommitShaProvider.fromString("SpecifiedBranchCommit2", "branch")
+
+        assertThat(actual::class).isEqualTo(SpecifiedBranchCommit2::class)
+    }
+
+    @Test
     fun givenInvalidCommitString_whenFromString_thenExceptionThrown() {
         try {
             CommitShaProvider.fromString("Invalid")

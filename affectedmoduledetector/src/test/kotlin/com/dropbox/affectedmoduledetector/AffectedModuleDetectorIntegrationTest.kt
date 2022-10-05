@@ -52,6 +52,12 @@ class AffectedModuleDetectorIntegrationTest {
                 """.trimMargin()
         )
 
+        tmpFolder.newFile("local.properties").writeText(
+            """
+                |sdk.dir=/Users/romanajmaletdinov/Library/Android/sdk
+                """.trimMargin()
+        )
+
         tmpFolder.newFile("build.gradle").writeText(
                 """buildscript {
                 |   repositories {
