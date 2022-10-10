@@ -92,18 +92,20 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         rootProject: Project,
         customTasks: Set<AffectedModuleTaskType>
     ) {
-        customTasks.forEach { taskType ->
-            val task = rootProject.tasks.register(taskType.commandByImpact).get()
-            task.group = CUSTOM_TASK_GROUP_NAME
-            task.description = taskType.taskDescription
-            disableConfigCache(task)
+        customTasks
+            .find { it.isTaskRequestedByUser(rootProject) }
+            ?.also { taskType ->
+                val task = rootProject.tasks.register(taskType.commandByImpact).get()
+                task.group = CUSTOM_TASK_GROUP_NAME
+                task.description = taskType.taskDescription
+                disableConfigCache(task)
 
-            rootProject.subprojects { project ->
-                pluginIds.forEach { pluginId ->
-                    withPlugin(pluginId, task, taskType, project)
+                rootProject.subprojects { project ->
+                    pluginIds.forEach { pluginId ->
+                        withPlugin(pluginId, task, taskType, project)
+                    }
                 }
             }
-        }
     }
 
     @VisibleForTesting
@@ -134,6 +136,10 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         taskType: AffectedModuleTaskType,
         groupName: String
     ) {
+        if (!taskType.isTaskRequestedByUser(rootProject)) {
+            return
+        }
+
         val task = rootProject.tasks.register(taskType.commandByImpact).get()
         task.group = groupName
         task.description = taskType.taskDescription
@@ -247,6 +253,11 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         project.tasks.withType(Test::class.java).configureEach { task ->
             AffectedModuleDetector.configureTaskGuard(task)
         }
+    }
+
+    private fun AffectedModuleTaskType.isTaskRequestedByUser(rootProject: Project): Boolean {
+        val requestedTask = rootProject.gradle.startParameter.taskRequests.toString()
+        return requestedTask.contains(this.commandByImpact)
     }
 
     companion object {
