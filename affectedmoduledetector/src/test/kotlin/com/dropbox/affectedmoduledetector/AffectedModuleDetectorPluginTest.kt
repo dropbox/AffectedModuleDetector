@@ -8,11 +8,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.lang.IllegalStateException
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
 
-@RunWith(JUnit4::class)
 class AffectedModuleDetectorPluginTest {
 
     private companion object {
@@ -83,6 +79,8 @@ class AffectedModuleDetectorPluginTest {
         val task = fakeTask
         val plugin = AffectedModuleDetectorPlugin()
 
+        rootProject.gradle.startParameter.setTaskNames(listOf(task.commandByImpact))
+
         // WHEN
         plugin.registerInternalTask(
             rootProject = rootProject,
@@ -104,6 +102,7 @@ class AffectedModuleDetectorPluginTest {
         val configuration = AffectedModuleConfiguration()
         configuration.customTasks = setOf(fakeTask)
         rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+        rootProject.gradle.startParameter.setTaskNames(listOf(fakeTask.commandByImpact))
 
         val plugin = AffectedModuleDetectorPlugin()
 
@@ -141,10 +140,62 @@ class AffectedModuleDetectorPluginTest {
     }
 
     @Test
-    fun `GIVEN affected module detector plugin WHEN registerTestTasks THEN task all task added`() {
+    fun `GIVEN affectedModuleDetectorPlugin AND runAffectedAndroidTests requested WHEN registerTestTasks THEN task added`() {
         // GIVEN
         val configuration = AffectedModuleConfiguration()
         rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+        rootProject.gradle.startParameter.setTaskNames(listOf(InternalTaskType.ANDROID_TEST.commandByImpact))
+        val plugin = AffectedModuleDetectorPlugin()
+
+        // WHEN
+        plugin.registerTestTasks(rootProject)
+        val androidTestTask = rootProject.tasks.findByPath(InternalTaskType.ANDROID_TEST.commandByImpact)
+
+        // THEN
+        assertThat(androidTestTask).isNotNull()
+        assertThat(androidTestTask?.group).isEqualTo(AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME)
+    }
+
+    @Test
+    fun `GIVEN affectedModuleDetectorPlugin AND assembleAffectedAndroidTests requested WHEN registerTestTasks THEN task added`() {
+        // GIVEN
+        val configuration = AffectedModuleConfiguration()
+        rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+        rootProject.gradle.startParameter.setTaskNames(listOf(InternalTaskType.ASSEMBLE_ANDROID_TEST.commandByImpact))
+        val plugin = AffectedModuleDetectorPlugin()
+
+        // WHEN
+        plugin.registerTestTasks(rootProject)
+        val androidTestTask = rootProject.tasks.findByPath(InternalTaskType.ASSEMBLE_ANDROID_TEST.commandByImpact)
+
+        // THEN
+        assertThat(androidTestTask).isNotNull()
+        assertThat(androidTestTask?.group).isEqualTo(AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME)
+    }
+
+    @Test
+    fun `GIVEN affectedModuleDetectorPlugin AND runAffectedUnitTests requested WHEN registerTestTasks THEN task added`() {
+        // GIVEN
+        val configuration = AffectedModuleConfiguration()
+        rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+        rootProject.gradle.startParameter.setTaskNames(listOf(InternalTaskType.ANDROID_JVM_TEST.commandByImpact))
+        val plugin = AffectedModuleDetectorPlugin()
+
+        // WHEN
+        plugin.registerTestTasks(rootProject)
+        val androidTestTask = rootProject.tasks.findByPath(InternalTaskType.ANDROID_JVM_TEST.commandByImpact)
+
+        // THEN
+        assertThat(androidTestTask).isNotNull()
+        assertThat(androidTestTask?.group).isEqualTo(AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME)
+    }
+
+    @Test
+    fun `GIVEN affectedModuleDetectorPlugin AND runAffectedUnitTests requested WHEN registerTestTasks called THEN only runAffectedUnitTests added`() {
+        // GIVEN
+        val configuration = AffectedModuleConfiguration()
+        rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+        rootProject.gradle.startParameter.setTaskNames(listOf(InternalTaskType.ANDROID_JVM_TEST.commandByImpact))
         val plugin = AffectedModuleDetectorPlugin()
 
         // WHEN
@@ -154,32 +205,11 @@ class AffectedModuleDetectorPluginTest {
         val jvmTestTask = rootProject.tasks.findByPath(InternalTaskType.ANDROID_JVM_TEST.commandByImpact)
 
         // THEN
-        assertThat(androidTestTask).isNotNull()
-        assertThat(androidTestTask?.group).isEqualTo(AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME)
-
-        assertThat(assembleAndroidTestTask).isNotNull()
-        assertThat(assembleAndroidTestTask?.group).isEqualTo(AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME)
+        assertThat(androidTestTask).isNull()
+        assertThat(assembleAndroidTestTask).isNull()
 
         assertThat(jvmTestTask).isNotNull()
         assertThat(jvmTestTask?.group).isEqualTo(AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME)
-    }
-
-    @Test
-    fun `GIVEN affected module detector plugin WHEN registerTestTasks called THEN added all tasks from InternalTaskType`() {
-        // GIVEN
-        val configuration = AffectedModuleConfiguration()
-        rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
-        val plugin = AffectedModuleDetectorPlugin()
-        val availableTaskVariants = 3 // runAffectedAndroidTests, assembleAffectedAndroidTests and runAffectedUnitTests
-
-        // WHEN
-        plugin.registerTestTasks(rootProject)
-        val testTasks = rootProject
-            .tasks
-            .filter { it.group == AffectedModuleDetectorPlugin.TEST_TASK_GROUP_NAME }
-
-        // THEN
-        assert(testTasks.size == availableTaskVariants)
     }
 
     @Test
@@ -189,6 +219,7 @@ class AffectedModuleDetectorPluginTest {
         val configuration = AffectedModuleConfiguration()
         configuration.customTasks = givenCustomTasks
         rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
+        rootProject.gradle.startParameter.setTaskNames(listOf(fakeTask.commandByImpact))
         val plugin = AffectedModuleDetectorPlugin()
 
         // WHEN
@@ -198,7 +229,10 @@ class AffectedModuleDetectorPluginTest {
             .tasks
             .filter { it.group == AffectedModuleDetectorPlugin.CUSTOM_TASK_GROUP_NAME  }
 
+        val registeredTask = rootProject.tasks.findByPath(fakeTask.commandByImpact)
+
         // THEN
-        assert(customTasks.size == 2)
+        assert(customTasks.size == 1)
+        assertThat(registeredTask).isNotNull()
     }
 }

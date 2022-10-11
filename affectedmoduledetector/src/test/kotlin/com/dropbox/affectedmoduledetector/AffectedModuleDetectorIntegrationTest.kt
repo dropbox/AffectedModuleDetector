@@ -13,14 +13,10 @@ class AffectedModuleDetectorIntegrationTest {
     val tmpFolder = TemporaryFolder()
 
     @Test
-    fun `GIVEN single project WHEN plugin is applied THEN tasks are added`() {
+    fun `GIVEN single project WHEN plugin is applied with arg runAffectedUnitTests THEN task are added`() {
         // GIVEN
         // expected tasks
-        val tasks = listOf(
-                "runAffectedUnitTests",
-                "runAffectedAndroidTests",
-                "assembleAffectedAndroidTests"
-        )
+        val expectedTask = "runAffectedUnitTests"
         tmpFolder.newFile("build.gradle").writeText(
                 """plugins {
                 |   id "com.dropbox.affectedmoduledetector"
@@ -31,14 +27,85 @@ class AffectedModuleDetectorIntegrationTest {
         val result = GradleRunner.create()
                 .withProjectDir(tmpFolder.root)
                 .withPluginClasspath()
-                .withArguments("tasks")
+                .withArguments(expectedTask)
                 .build()
 
         // THEN
-        tasks.forEach { taskName ->
-            assertThat(result.output).contains(taskName)
-        }
+        assertThat(result.output.contains(expectedTask))
     }
+
+    @Test
+    fun `GIVEN single project WHEN plugin is applied with arg runAffectedAndroidTests THEN task are added`() {
+        // GIVEN
+        // expected tasks
+        val expectedTask = "runAffectedAndroidTests"
+        tmpFolder.newFile("build.gradle").writeText(
+            """plugins {
+                |   id "com.dropbox.affectedmoduledetector"
+                |}""".trimMargin()
+        )
+
+        // WHEN
+        val result = GradleRunner.create()
+            .withProjectDir(tmpFolder.root)
+            .withPluginClasspath()
+            .withArguments(expectedTask)
+            .build()
+
+        // THEN
+        assertThat(result.output.contains(expectedTask))
+    }
+
+
+    @Test
+    fun `GIVEN single project WHEN plugin is applied with arg assembleAffectedAndroidTests THEN task are added`() {
+        // GIVEN
+        // expected tasks
+        val expectedTask = "assembleAffectedAndroidTests"
+        tmpFolder.newFile("build.gradle").writeText(
+            """plugins {
+                |   id "com.dropbox.affectedmoduledetector"
+                |}""".trimMargin()
+        )
+
+        // WHEN
+        val result = GradleRunner.create()
+            .withProjectDir(tmpFolder.root)
+            .withPluginClasspath()
+            .withArguments(expectedTask)
+            .build()
+
+        // THEN
+        assertThat(result.output.contains(expectedTask))
+    }
+
+    @Test
+    fun `GIVEN single project WHEN plugin is applied AND task isn't called THEN task isn't added`() {
+        // GIVEN
+        // expected tasks
+        val tasks = listOf(
+            "runAffectedUnitTests",
+            "runAffectedAndroidTests",
+            "assembleAffectedAndroidTests"
+        )
+        tmpFolder.newFile("build.gradle").writeText(
+            """plugins {
+                |   id "com.dropbox.affectedmoduledetector"
+                |}""".trimMargin()
+        )
+
+        // WHEN
+        val gradleResult = GradleRunner.create()
+            .withProjectDir(tmpFolder.root)
+            .withPluginClasspath()
+            .build()
+
+        // THEN
+
+        val testResult = tasks.all { gradleTask -> !gradleResult.output.contains(gradleTask) }
+        assertThat(testResult)
+    }
+
 
     @Test
     fun `GIVEN multiple project WHEN plugin is applied THEN tasks has dependencies`() {
