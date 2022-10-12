@@ -93,14 +93,15 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         customTasks: Set<AffectedModuleTaskType>
     ) {
         customTasks.forEach { taskType ->
-            val task = rootProject.tasks.register(taskType.commandByImpact).get()
-            task.group = CUSTOM_TASK_GROUP_NAME
-            task.description = taskType.taskDescription
-            disableConfigCache(task)
+            rootProject.tasks.register(taskType.commandByImpact) { task ->
+                task.group = CUSTOM_TASK_GROUP_NAME
+                task.description = taskType.taskDescription
+                disableConfigCache(task)
 
-            rootProject.subprojects { project ->
-                pluginIds.forEach { pluginId ->
-                    withPlugin(pluginId, task, taskType, project)
+                rootProject.subprojects { project ->
+                    pluginIds.forEach { pluginId ->
+                        withPlugin(pluginId, task, taskType, project)
+                    }
                 }
             }
         }
@@ -134,20 +135,19 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         taskType: AffectedModuleTaskType,
         groupName: String
     ) {
-        val task = rootProject.tasks.register(taskType.commandByImpact).get()
-        task.group = groupName
-        task.description = taskType.taskDescription
-        disableConfigCache(task)
+        rootProject.tasks.register(taskType.commandByImpact) { task ->
+            task.group = groupName
+            task.description = taskType.taskDescription
+            disableConfigCache(task)
 
-        rootProject.subprojects { project ->
-            project.afterEvaluate { evaluatedProject ->
+            rootProject.subprojects { project ->
                 pluginIds.forEach { pluginId ->
                     if (pluginId == PLUGIN_JAVA_LIBRARY || pluginId == PLUGIN_KOTLIN) {
                         if (taskType == InternalTaskType.ANDROID_JVM_TEST) {
-                            withPlugin(pluginId, task, InternalTaskType.JVM_TEST, evaluatedProject)
+                            withPlugin(pluginId, task, InternalTaskType.JVM_TEST, project)
                         }
                     } else {
-                        withPlugin(pluginId, task, taskType, evaluatedProject)
+                        withPlugin(pluginId, task, taskType, project)
                     }
                 }
             }
@@ -172,12 +172,10 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
                     task.dependsOn(path)
                 }
 
-                project.afterEvaluate {
-                    project.tasks.findByPath(path)?.onlyIf { task ->
-                        when {
-                            !AffectedModuleDetector.isProjectEnabled(task.project) -> true
-                            else -> AffectedModuleDetector.isProjectAffected(task.project)
-                        }
+                project.tasks.findByPath(path)?.onlyIf { task ->
+                    when {
+                        !AffectedModuleDetector.isProjectEnabled(task.project) -> true
+                        else -> AffectedModuleDetector.isProjectAffected(task.project)
                     }
                 }
             }

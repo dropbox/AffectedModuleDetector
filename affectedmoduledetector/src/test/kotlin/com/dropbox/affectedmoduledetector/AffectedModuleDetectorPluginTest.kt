@@ -82,6 +82,7 @@ class AffectedModuleDetectorPluginTest {
         // GIVEN
         val task = fakeTask
         val plugin = AffectedModuleDetectorPlugin()
+        rootProject.pluginManager.apply(AffectedModuleDetectorPlugin::class.java)
 
         // WHEN
         plugin.registerInternalTask(
