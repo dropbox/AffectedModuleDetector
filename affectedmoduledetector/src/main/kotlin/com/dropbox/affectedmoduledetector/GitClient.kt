@@ -30,6 +30,7 @@ interface GitClient {
         top: Sha = "HEAD",
         includeUncommitted: Boolean = false
     ): List<String>
+
     fun getGitRoot(): File
 
     /**
@@ -40,10 +41,12 @@ interface GitClient {
          * Executes the given shell command and returns the stdout as a string.
          */
         fun execute(command: String): String
+
         /**
          * Executes the given shell command and returns the stdout by lines.
          */
         fun executeAndParse(command: String): List<String>
+
         /**
          * Executes the given shell command and returns the first stdout line.
          */
@@ -97,6 +100,7 @@ internal class GitClientImpl(
         }
         return null
     }
+
     @Suppress("LongParameterList")
     private fun parseCommitLogString(
         commitLogString: String,
@@ -162,6 +166,7 @@ internal class GitClientImpl(
             check(proc.exitValue() == 0) { "Nonzero exit value running git command." }
             return stdout
         }
+
         override fun executeAndParse(command: String): List<String> {
             val response = execute(command)
                 .split(System.lineSeparator())
