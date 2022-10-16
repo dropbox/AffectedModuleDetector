@@ -21,9 +21,11 @@
 package com.dropbox.affectedmoduledetector
 
 import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProvider
+import com.dropbox.affectedmoduledetector.util.toOsSpecificLineEnding
+import com.dropbox.affectedmoduledetector.util.toOsSpecificPath
+import org.gradle.api.logging.Logger
 import java.io.File
 import java.util.concurrent.TimeUnit
-import org.gradle.api.logging.Logger
 
 interface GitClient {
     fun findChangedFiles(
@@ -83,11 +85,13 @@ internal class GitClientImpl(
         val sha = commitShaProvider.get(commandRunner)
 
         // use this if we don't want local changes
-        return commandRunner.executeAndParse(if (includeUncommitted) {
-            "$CHANGED_FILES_CMD_PREFIX $sha"
-        } else {
-            "$CHANGED_FILES_CMD_PREFIX $top..$sha"
-        })
+        return commandRunner.executeAndParse(
+            if (includeUncommitted) {
+                "$CHANGED_FILES_CMD_PREFIX $sha"
+            } else {
+                "$CHANGED_FILES_CMD_PREFIX $top..$sha"
+            }
+        )
     }
 
     private fun findGitDirInParentFilepath(filepath: File): File? {
@@ -168,12 +172,10 @@ internal class GitClientImpl(
         }
 
         override fun executeAndParse(command: String): List<String> {
-            val response = execute(command)
+            return execute(command).toOsSpecificLineEnding()
                 .split(System.lineSeparator())
-                .filterNot {
-                    it.isEmpty()
-                }
-            return response
+                .map { it.toOsSpecificPath() }
+                .filterNot { it.isEmpty() }
         }
 
         override fun executeAndParseFirst(command: String): String {
