@@ -26,6 +26,7 @@ import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.DEPEN
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.ENABLE_ARG
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.MODULES_ARG
 import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProvider
+import com.dropbox.affectedmoduledetector.util.toPathSections
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -496,9 +497,13 @@ class AffectedModuleDetectorImpl constructor(
         }
     }
 
-    private fun affectsAllModules(file: String): Boolean {
+    private fun affectsAllModules(relativeFilePath: String): Boolean {
         logger?.info("Paths affecting all modules: ${config.pathsAffectingAllModules}")
-        return config.pathsAffectingAllModules.any { file.startsWith(it) }
+
+        val pathSections = relativeFilePath.toPathSections(rootProject.projectDir, git.getGitRoot())
+        val projectRelativePath = pathSections.joinToString(File.separatorChar.toString())
+
+        return config.pathsAffectingAllModules.any { projectRelativePath.startsWith(it) }
     }
 
     private fun findContainingProject(filePath: String): Project? {
