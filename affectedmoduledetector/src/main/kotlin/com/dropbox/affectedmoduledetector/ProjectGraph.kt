@@ -52,24 +52,11 @@ internal class ProjectGraph(project: Project, val gitRoot: File, val logger: Log
      * Finds the project that contains the given file.
      * The file's path prefix should match the project's path.
      */
-    fun findContainingProject(filePath: String): Project? {
-        val sections = filePath.split(File.separatorChar)
-        val realSections = sections.toMutableList()
-        val projectRelativeDir = findProjectRelativeDir()
-        for (dir in projectRelativeDir) {
-            if (realSections.isNotEmpty() && dir == realSections.first()) {
-                realSections.removeAt(0)
-            } else {
-                break
-            }
-        }
+    fun findContainingProject(relativeFilePath: String): Project? {
+        val pathSections = relativeFilePath.toPathSections(rootProjectDir, gitRoot)
 
-        logger?.info("finding containing project for $filePath , sections: $realSections")
-        return rootNode.find(realSections, 0)
-    }
-
-    private fun findProjectRelativeDir(): List<String> {
-        return rootProjectDir.toRelativeString(gitRoot).split(File.separatorChar)
+        logger?.info("finding containing project for $relativeFilePath , sections: $pathSections")
+        return rootNode.find(pathSections, 0)
     }
 
     private class Node(val logger: Logger? = null) {
