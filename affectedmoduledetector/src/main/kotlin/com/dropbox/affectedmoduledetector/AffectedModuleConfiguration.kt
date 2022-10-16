@@ -42,7 +42,7 @@ class AffectedModuleConfiguration {
      * @see CustomTask - Implementation class
      * @see AffectedModuleDetectorPlugin - gradle plugin
      */
-    var customTasks = emptySet<AffectedModuleConfiguration.CustomTask>()
+    var customTasks = emptySet<CustomTask>()
 
     /**
      * Folder to place the log in
