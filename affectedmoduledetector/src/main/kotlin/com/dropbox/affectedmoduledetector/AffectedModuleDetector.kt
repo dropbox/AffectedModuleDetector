@@ -362,16 +362,15 @@ class AffectedModuleDetectorImpl constructor(
     private var unknownFiles: MutableSet<String> = mutableSetOf()
 
     override fun shouldInclude(project: Project): Boolean {
-        return (
-            (project.isRoot || (
-                affectedProjects.contains(project) &&
-                    isProjectProvided2(project)
-                )) && !config.excludedModules.contains(project.name)
-            ).also {
-            logger?.info(
-                "checking whether I should include ${project.path} and my answer is $it"
-            )
-        }
+        val isRootProject = project.isRoot
+        val isProjectAffected = affectedProjects.contains(project)
+        val isProjectProvided = isProjectProvided2(project)
+        val isNotModuleExcluded = !config.excludedModules.contains(project.name)
+
+        val shouldInclude = (isRootProject || (isProjectAffected && isProjectProvided)) && isNotModuleExcluded
+        logger?.info("checking whether I should include ${project.path} and my answer is $shouldInclude")
+
+        return shouldInclude
     }
 
     override fun hasAffectedProjects() = affectedProjects.isNotEmpty()
