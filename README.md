@@ -113,7 +113,7 @@ affectedModuleDetector {
     - PreviousCommit: compare against the previous commit
     - ForkCommit: compare against the commit the branch was forked from
     - SpecifiedBranchCommit: compare against the last commit of `$specifiedBranch` using `git rev-parse` approach. 
-    - SpecifiedBranchCommit2: compare against the nearest ancestors with `$specifiedBranch` using `git merge base` approach.
+    - SpecifiedBranchCommitMergeBase: compare against the nearest ancestors with `$specifiedBranch` using `git merge base` approach.
     
  **Note:** specify the branch to compare changes against using the `specifiedBranch` configuration before the `compareFrom` configuration
  - `excludedModules`: A list of modules that will be excluded from the build process
@@ -135,10 +135,10 @@ affectedModuleDetector {
  * `./gradlew runAffectedAndroidTests` - runs connected tests
  * `./gradlew assembleAffectedAndroidTests` - assembles but does not run on device tests, useful when working with device labs
 
-## SpecifiedBranchCommit vs SpecifiedBranchCommit2
+## SpecifiedBranchCommit vs SpecifiedBranchCommitMergeBase
 
 - SpecifiedBranchCommit using `git rev-parse` command for getting sha. 
-- SpecifiedBranchCommit2 using `git merge base` command for getting sha. 
+- SpecifiedBranchCommitMergeBase using `git merge base` command for getting sha. 
 
 What does it mean?
 When we run any AMD command we compare the current branch with the specified parent branch. Consider an example when, during the development of our feature,
@@ -151,7 +151,7 @@ Suppose we have changed 6 files in our "feature" branch.
 
 1. Behaviour of SpecifiedBranchCommit:
    AMD will show the result that 15 files were affected. Because our branch is not updated (pull) and AMD will see our 6 files and 9 files that were merged by another developer.
-2. Behaviour of SpecifiedBranchCommit2:
+2. Behaviour of SpecifiedBranchCommitMergeBase:
    AMD will show the result that 6 files were affected. And this is the correct behavior.
 
 Hence, depends on your CI settings you have to configure AMD right. 

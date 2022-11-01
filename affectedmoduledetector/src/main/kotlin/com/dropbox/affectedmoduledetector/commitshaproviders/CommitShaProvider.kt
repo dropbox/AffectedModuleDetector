@@ -18,11 +18,11 @@ interface CommitShaProvider {
                     }
                     SpecifiedBranchCommit(specifiedBranch)
                 }
-                "SpecifiedBranchCommit2" -> {
+                "SpecifiedBranchCommitMergeBase" -> {
                     requireNotNull(specifiedBranch) {
                         "Specified branch must be defined"
                     }
-                    SpecifiedBranchCommit2(specifiedBranch)
+                    SpecifiedBranchCommitMergeBase(specifiedBranch)
                 }
                 else -> throw IllegalArgumentException("Unsupported compareFrom type")
             }

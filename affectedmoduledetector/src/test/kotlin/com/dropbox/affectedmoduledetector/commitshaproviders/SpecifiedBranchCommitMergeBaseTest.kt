@@ -9,24 +9,24 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class SpecifiedBranchCommit2Test {
+class SpecifiedBranchCommitMergeBaseTest {
 
     @Rule
     @JvmField
     val attachLogsRule = AttachLogsTestRule()
     private val logger = attachLogsRule.logger
     private val commandRunner = MockCommandRunner(logger)
-    private val previousCommit = SpecifiedBranchCommit2(SPECIFIED_BRANCH)
+    private val previousCommit = SpecifiedBranchCommitMergeBase(SPECIFIED_BRANCH)
 
     @Test
     fun `WHEN CURRENT_BRANCH_CMD THEN command returned`() {
-        Truth.assertThat(SpecifiedBranchCommit2.CURRENT_BRANCH_CMD).isEqualTo("git rev-parse --abbrev-ref HEAD")
+        Truth.assertThat(SpecifiedBranchCommitMergeBase.CURRENT_BRANCH_CMD).isEqualTo("git rev-parse --abbrev-ref HEAD")
     }
 
     @Test
     fun `WHEN get commit sha THEN return sha`() {
 
-        commandRunner.addReply(SpecifiedBranchCommit2.CURRENT_BRANCH_CMD, NEW_FEATURE_BRANCH)
+        commandRunner.addReply(SpecifiedBranchCommitMergeBase.CURRENT_BRANCH_CMD, NEW_FEATURE_BRANCH)
         commandRunner.addReply("git merge-base $NEW_FEATURE_BRANCH $SPECIFIED_BRANCH", "commit-sha")
 
         val actual = previousCommit.get(commandRunner)

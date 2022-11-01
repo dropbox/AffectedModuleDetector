@@ -85,12 +85,12 @@ class AffectedModuleConfiguration {
             "PreviousCommit",
             "ForkCommit",
             "SpecifiedBranchCommit",
-            "SpecifiedBranchCommit2"
+            "SpecifiedBranchCommitMergeBase"
         )
         require(commitShaProviders.contains(value)) {
             "The property configuration compareFrom must be one of the following: ${commitShaProviders.joinToString(", ")}"
         }
-        if (value == "SpecifiedBranchCommit" || value == "SpecifiedBranchCommit2") {
+        if (value == "SpecifiedBranchCommit" || value == "SpecifiedBranchCommitMergeBase") {
             requireNotNull(specifiedBranch) {
                 "Specify a branch using the configuration specifiedBranch"
             }

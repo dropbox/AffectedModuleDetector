@@ -173,24 +173,24 @@ class AffectedModuleConfigurationTest {
     }
 
     @Test
-    fun `WHEN compareFrom is set to SpecifiedBranchCommit2 AND specifiedBranch is set THEN return SpecifiedBranchCommit2`() {
-        val specifiedBranchCommit2 = "SpecifiedBranchCommit2"
+    fun `WHEN compareFrom is set to SpecifiedBranchCommitMergeBase AND specifiedBranch is set THEN return SpecifiedBranchCommitMergeBase`() {
+        val specifiedBranchCommitMergeBase = "SpecifiedBranchCommitMergeBase"
         val specifiedBranch = "origin/dev"
 
         config.specifiedBranch = specifiedBranch
-        config.compareFrom = specifiedBranchCommit2
+        config.compareFrom = specifiedBranchCommitMergeBase
 
         val actual = config.compareFrom
 
-        assertThat(actual).isEqualTo(specifiedBranchCommit2)
+        assertThat(actual).isEqualTo(specifiedBranchCommitMergeBase)
     }
 
     @Test
-    fun `WHEN compareFrom is set to SpecifiedBranchCommit2 AND specifiedBranch isn't set THEN throw exception`() {
-        val specifiedBranchCommit2 = "SpecifiedBranchCommit2"
+    fun `WHEN compareFrom is set to SpecifiedBranchCommitMergeBase AND specifiedBranch isn't set THEN throw exception`() {
+        val specifiedBranchCommitMergeBase = "SpecifiedBranchCommitMergeBase"
 
         try {
-            config.compareFrom = specifiedBranchCommit2
+            config.compareFrom = specifiedBranchCommitMergeBase
         } catch (e: IllegalArgumentException) {
             assertThat(e.message).isEqualTo("Specify a branch using the configuration specifiedBranch")
         }
@@ -241,7 +241,7 @@ class AffectedModuleConfigurationTest {
             fail()
         } catch (e: Exception) {
             assertThat(e::class).isEqualTo(IllegalArgumentException::class)
-            assertThat(e.message).isEqualTo("The property configuration compareFrom must be one of the following: PreviousCommit, ForkCommit, SpecifiedBranchCommit, SpecifiedBranchCommit2")
+            assertThat(e.message).isEqualTo("The property configuration compareFrom must be one of the following: PreviousCommit, ForkCommit, SpecifiedBranchCommit, SpecifiedBranchCommitMergeBase")
             assertThat(config.compareFrom).isEqualTo("PreviousCommit")
         }
     }

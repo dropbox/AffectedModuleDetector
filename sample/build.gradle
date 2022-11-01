@@ -32,7 +32,7 @@ affectedModuleDetector {
             "buildSrc/"
     ]
     specifiedBranch = "origin/main"
-    compareFrom = "SpecifiedBranchCommit2"
+    compareFrom = "SpecifiedBranchCommitMergeBase"
     customTasks = [
             new AffectedModuleConfiguration.CustomTask(
                     "runDetektByImpact",
