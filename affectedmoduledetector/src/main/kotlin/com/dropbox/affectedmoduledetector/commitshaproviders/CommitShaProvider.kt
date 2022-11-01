@@ -4,6 +4,7 @@ import com.dropbox.affectedmoduledetector.GitClient
 import com.dropbox.affectedmoduledetector.Sha
 
 interface CommitShaProvider {
+
     fun get(commandRunner: GitClient.CommandRunner): Sha
 
     companion object {
@@ -17,9 +18,14 @@ interface CommitShaProvider {
                     }
                     SpecifiedBranchCommit(specifiedBranch)
                 }
+                "SpecifiedBranchCommitMergeBase" -> {
+                    requireNotNull(specifiedBranch) {
+                        "Specified branch must be defined"
+                    }
+                    SpecifiedBranchCommitMergeBase(specifiedBranch)
+                }
                 else -> throw IllegalArgumentException("Unsupported compareFrom type")
             }
         }
     }
 }
-
