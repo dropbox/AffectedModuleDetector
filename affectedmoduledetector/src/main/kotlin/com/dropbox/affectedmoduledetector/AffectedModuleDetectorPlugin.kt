@@ -77,10 +77,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     private fun registerCustomTasks(rootProject: Project) {
-        val mainConfiguration = requireNotNull(
-            value = rootProject.extensions.findByName(AffectedModuleConfiguration.name),
-            lazyMessage = {  "Unable to find ${AffectedTestConfiguration.name} in $rootProject" }
-        ) as AffectedModuleConfiguration
+        val mainConfiguration = requireConfiguration(rootProject)
 
         rootProject.afterEvaluate {
             registerCustomTasks(rootProject, mainConfiguration.customTasks)
@@ -93,14 +90,15 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         customTasks: Set<AffectedModuleTaskType>
     ) {
         customTasks.forEach { taskType ->
-            val task = rootProject.tasks.register(taskType.commandByImpact).get()
-            task.group = CUSTOM_TASK_GROUP_NAME
-            task.description = taskType.taskDescription
-            disableConfigCache(task)
+            rootProject.tasks.register(taskType.commandByImpact) { task ->
+                task.group = CUSTOM_TASK_GROUP_NAME
+                task.description = taskType.taskDescription
+                disableConfigCache(task)
 
-            rootProject.subprojects { project ->
-                pluginIds.forEach { pluginId ->
-                    withPlugin(pluginId, task, taskType, project)
+                rootProject.subprojects { project ->
+                    pluginIds.forEach { pluginId ->
+                        withPlugin(pluginId, task, taskType, project)
+                    }
                 }
             }
         }
@@ -134,20 +132,19 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         taskType: AffectedModuleTaskType,
         groupName: String
     ) {
-        val task = rootProject.tasks.register(taskType.commandByImpact).get()
-        task.group = groupName
-        task.description = taskType.taskDescription
-        disableConfigCache(task)
+        rootProject.tasks.register(taskType.commandByImpact) { task ->
+            task.group = groupName
+            task.description = taskType.taskDescription
+            disableConfigCache(task)
 
-        rootProject.subprojects { project ->
-            project.afterEvaluate { evaluatedProject ->
+            rootProject.subprojects { project ->
                 pluginIds.forEach { pluginId ->
                     if (pluginId == PLUGIN_JAVA_LIBRARY || pluginId == PLUGIN_KOTLIN) {
                         if (taskType == InternalTaskType.ANDROID_JVM_TEST) {
-                            withPlugin(pluginId, task, InternalTaskType.JVM_TEST, evaluatedProject)
+                            withPlugin(pluginId, task, InternalTaskType.JVM_TEST, project)
                         }
                     } else {
-                        withPlugin(pluginId, task, taskType, evaluatedProject)
+                        withPlugin(pluginId, task, taskType, project)
                     }
                 }
             }
@@ -166,18 +163,22 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         testType: AffectedModuleTaskType,
         project: Project
     ) {
+        val config = requireConfiguration(project)
+
+        fun isExcludedModule(configuration: AffectedModuleConfiguration, path: String): Boolean {
+            return configuration.excludedModules.find { path.startsWith(":$it") } != null
+        }
+
         project.pluginManager.withPlugin(pluginId) {
             getAffectedPath(testType, project)?.let { path ->
-                if (AffectedModuleDetector.isProjectProvided(project)) {
+                if (AffectedModuleDetector.isProjectProvided(project) && !isExcludedModule(config, path)) {
                     task.dependsOn(path)
                 }
 
-                project.afterEvaluate {
-                    project.tasks.findByPath(path)?.onlyIf { task ->
-                        when {
-                            !AffectedModuleDetector.isProjectEnabled(task.project) -> true
-                            else -> AffectedModuleDetector.isProjectAffected(task.project)
-                        }
+                project.tasks.findByPath(path)?.onlyIf { task ->
+                    when {
+                        !AffectedModuleDetector.isProjectEnabled(task.project) -> true
+                        else -> AffectedModuleDetector.isProjectAffected(task.project)
                     }
                 }
             }
@@ -247,6 +248,13 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         project.tasks.withType(Test::class.java).configureEach { task ->
             AffectedModuleDetector.configureTaskGuard(task)
         }
+    }
+
+    private fun requireConfiguration(project: Project): AffectedModuleConfiguration {
+        return requireNotNull(
+            value = project.rootProject.extensions.findByName(AffectedModuleConfiguration.name),
+            lazyMessage = {  "Unable to find ${AffectedModuleConfiguration.name} in ${project.rootProject}" }
+        ) as AffectedModuleConfiguration
     }
 
     companion object {
