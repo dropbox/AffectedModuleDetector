@@ -45,7 +45,7 @@ class AffectedModuleConfigurationTest {
     @Test
     fun `GIVEN AffectedModuleConfiguration WHEN log folder is set THEN log folder is set`() {
         // GIVEN
-        val sample = "sammple"
+        val sample = "sample"
 
         // WHEN
         config.logFolder = sample
