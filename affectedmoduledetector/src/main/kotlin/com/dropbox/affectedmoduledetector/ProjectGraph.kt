@@ -40,8 +40,16 @@ internal class ProjectGraph(project: Project, val gitRoot: File, val logger: Log
             logger?.info("creating node for ${it.path}")
             val relativePath = it.projectDir.canonicalFile.toRelativeString(rootProjectDir)
             val sections = relativePath.split(File.separatorChar)
-            logger?.info("relative path: $relativePath , sections: $sections")
-            val leaf = sections.fold(rootNode) { left, right ->
+
+            // If the subproject is not a child of the root project (in the File directory sense)
+            // then we are in some weird non standard quixotic project and our sections are going
+            // to have ".." characters indicating that we need to traverse up one level. However
+            // we need to filter these out because this will not match the parent child
+            // dependency relationship that Gradle will produce.
+            val realSections = sections.filter { section -> section != ".." }
+
+            logger?.info("relative path: $relativePath , sections: $realSections")
+            val leaf = realSections.fold(rootNode) { left, right ->
                 left.getOrCreateNode(right)
             }
             leaf.project = it
