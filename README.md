@@ -154,7 +154,7 @@ Suppose we have changed 6 files in our "feature" branch.
 2. Behaviour of SpecifiedBranchCommitMergeBase:
    AMD will show the result that 6 files were affected. And this is the correct behavior.
 
-Hence, depends on your CI settings you have to configure AMD right. 
+Hence, depending on your CI settings you have to configure AMD appropriately. 
 
 ## Sample Usage
 
@@ -225,13 +225,13 @@ affectedModuleDetector {
 ```
 
 **NOTE:** Please, test all your custom commands.
-If your custom task doesn't work correctly after testing, might be your task quite complex 
-and for correct working must using more gradle's api. 
-Hence, you must create `buildSrc` module and write custom plugin manually like [AffectedModuleDetectorPlugin](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleDetectorPlugin.kt)
+If your custom task doesn't work correctly after testing, it might be that your task is quite complex 
+and to work correctly it must use more gradle api's. 
+Hence, you must create `buildSrc` module and write a custom plugin manually like [AffectedModuleDetectorPlugin](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleDetectorPlugin.kt)
 
 ## Notes
 
-Special thanks to the AndroidX for originally developing this project at https://android.googlesource.com/platform/frameworks/support/+/androidx-main/buildSrc/src/main/kotlin/androidx/build/dependencyTracker
+Special thanks to the AndroidX team for originally developing this project at https://android.googlesource.com/platform/frameworks/support/+/androidx-main/buildSrc/src/main/kotlin/androidx/build/dependencyTracker
 
 ## License
 
