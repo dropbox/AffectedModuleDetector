@@ -1456,10 +1456,10 @@ class AffectedModuleDetectorImplTest {
             modules = null,
             injectedGitClient = MockGitClient(
                 changedFiles = listOf(
-                    convertToFilePath("p1/p3", "foo.java"),
-                    convertToFilePath("p1/p3/p4", "foo.java"),
-                    convertToFilePath("p2/p5", "foo.java"),
-                    convertToFilePath("p1/p3/p6", "foo.java")
+                    convertToFilePath("d1/d3", "foo.java"),
+                    convertToFilePath("d1/d3/d4", "foo.java"),
+                    convertToFilePath("d2/d5", "foo.java"),
+                    convertToFilePath("d1/d3/d6", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
             ),
