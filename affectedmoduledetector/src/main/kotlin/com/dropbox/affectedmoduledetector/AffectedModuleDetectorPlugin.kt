@@ -125,7 +125,6 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         )
     }
 
-    @Suppress("UnstableApiUsage")
     @VisibleForTesting
     internal fun registerInternalTask(
         rootProject: Project,
@@ -170,16 +169,15 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         }
 
         project.pluginManager.withPlugin(pluginId) {
-            getAffectedPath(testType, project)?.let { path ->
-                if (AffectedModuleDetector.isProjectProvided(project) && !isExcludedModule(config, path)) {
-                    task.dependsOn(path)
-                }
+            val path = getAffectedPath(testType, project)
+            if (AffectedModuleDetector.isProjectProvided(project) && !isExcludedModule(config, path)) {
+                task.dependsOn(path)
+            }
 
-                project.tasks.findByPath(path)?.onlyIf { task ->
-                    when {
-                        !AffectedModuleDetector.isProjectEnabled(task.project) -> true
-                        else -> AffectedModuleDetector.isProjectAffected(task.project)
-                    }
+            project.tasks.findByPath(path)?.onlyIf { task ->
+                when {
+                    !AffectedModuleDetector.isProjectEnabled(task.project) -> true
+                    else -> AffectedModuleDetector.isProjectAffected(task.project)
                 }
             }
         }
@@ -188,7 +186,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     private fun getAffectedPath(
         taskType: AffectedModuleTaskType,
         project: Project
-    ): String? {
+    ): String {
         val tasks = requireNotNull(
             value = project.extensions.findByName(AffectedTestConfiguration.name),
             lazyMessage = { "Unable to find ${AffectedTestConfiguration.name} in $project" }
@@ -217,8 +215,8 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         }
     }
 
-    private fun getPathAndTask(project: Project, task: String?): String? {
-        return if (task.isNullOrBlank()) null else "${project.path}:${task}"
+    private fun getPathAndTask(project: Project, task: String): String {
+        return "${project.path}:${task}"
     }
 
     private fun filterAndroidTests(project: Project) {

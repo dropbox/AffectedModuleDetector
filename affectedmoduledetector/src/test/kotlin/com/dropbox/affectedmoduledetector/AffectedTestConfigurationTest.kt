@@ -1,20 +1,13 @@
 package com.dropbox.affectedmoduledetector
 
 import com.google.common.truth.Truth.assertThat
-import org.junit.Before
 import org.junit.Test
 
 class AffectedTestConfigurationTest {
 
-    private lateinit var config : AffectedTestConfiguration
-
-    @Before
-    fun setup() {
-        config = AffectedTestConfiguration()
-    }
-
     @Test
     fun `GIVEN AffectedTestConfiguration WHEN default values THEN default values returned`() {
+        val config = AffectedTestConfiguration()
         assertThat(config.assembleAndroidTestTask).isEqualTo("assembleDebugAndroidTest")
         assertThat(config.runAndroidTestTask).isEqualTo("connectedDebugAndroidTest")
         assertThat(config.jvmTestTask).isEqualTo("testDebugUnitTest")
@@ -28,9 +21,11 @@ class AffectedTestConfigurationTest {
         val jvmTest = "jvmTest"
 
         // WHEN
-        config.assembleAndroidTestTask = assembleAndroidTestTask
-        config.runAndroidTestTask = runAndroidTestTask
-        config.jvmTestTask = jvmTest
+        val config = AffectedTestConfiguration(
+            assembleAndroidTestTask,
+            runAndroidTestTask,
+            jvmTest,
+        )
 
         // THEN
         assertThat(config.assembleAndroidTestTask).isEqualTo(assembleAndroidTestTask)

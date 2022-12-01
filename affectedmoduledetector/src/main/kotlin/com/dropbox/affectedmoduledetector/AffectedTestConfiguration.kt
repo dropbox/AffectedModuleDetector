@@ -6,11 +6,11 @@ package com.dropbox.affectedmoduledetector
  *  assembleAndroidTestTask = "assembleDevDebugAndroidTest"
  * }
  */
-open class AffectedTestConfiguration {
-
-    var assembleAndroidTestTask : String? = DEFAULT_ASSEMBLE_ANDROID_TEST_TASK
-    var runAndroidTestTask : String?  = DEFAULT_ANDROID_TEST_TASK
-    var jvmTestTask : String? = DEFAULT_JVM_TEST_TASK
+open class AffectedTestConfiguration(
+    val assembleAndroidTestTask: String = DEFAULT_ASSEMBLE_ANDROID_TEST_TASK,
+    val runAndroidTestTask: String = DEFAULT_ANDROID_TEST_TASK,
+    val jvmTestTask: String = DEFAULT_JVM_TEST_TASK,
+) {
 
     companion object {
         const val name = "affectedTestConfiguration"
