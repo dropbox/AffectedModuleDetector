@@ -366,7 +366,9 @@ class AffectedModuleDetectorImpl constructor(
         val isRootProject = project.isRoot
         val isProjectAffected = affectedProjects.contains(project)
         val isProjectProvided = isProjectProvided2(project)
-        val isNotModuleExcluded = !config.excludedModules.contains(project.name)
+        val isModuleExcludedByName = config.excludedModules.contains(project.name)
+        val isModuleExcludedByRegex = config.excludedModules.any { project.path.matches(it.toRegex()) }
+        val isNotModuleExcluded = !(isModuleExcludedByName || isModuleExcludedByRegex)
 
         val shouldInclude = (isRootProject || (isProjectAffected && isProjectProvided)) && isNotModuleExcluded
         logger?.info("checking whether I should include ${project.path} and my answer is $shouldInclude")

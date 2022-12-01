@@ -90,7 +90,7 @@ affectedModuleDetector {
     logFolder = "${project.rootDir}/output"
     compareFrom = "PreviousCommit" //default is PreviousCommit
     excludedModules = [
-        "sample-util"
+        "sample-util", ":(app|library):.+"
     ]
     includeUncommitted = true
     top = "HEAD"
@@ -116,7 +116,7 @@ affectedModuleDetector {
     - SpecifiedBranchCommitMergeBase: compare against the nearest ancestors with `$specifiedBranch` using `git merge base` approach.
     
  **Note:** specify the branch to compare changes against using the `specifiedBranch` configuration before the `compareFrom` configuration
- - `excludedModules`: A list of modules that will be excluded from the build process
+ - `excludedModules`: A list of modules that will be excluded from the build process, can be the name of a module, or a regex against the module gradle path
  - `includeUncommitted`: If uncommitted files should be considered affected
  - `top`: The top of the git log to use. Must be used in combination with configuration `includeUncommitted = false`
  - `customTasks`: set of [CustomTask](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleConfiguration.kt)

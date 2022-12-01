@@ -1261,6 +1261,34 @@ class AffectedModuleDetectorImplTest {
     }
 
     @Test
+    fun `GIVEN regex is in excludedModules configuration WHEN shouldInclude THEN excluded module false AND dependent modules true`() {
+        affectedModuleConfiguration = affectedModuleConfiguration.also {
+            it.excludedModules = setOf(":p1:p3:[a-zA-Z0-9:]+")
+        }
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
+            modules = null,
+            injectedGitClient = MockGitClient(
+                changedFiles = listOf(
+                    convertToFilePath("p1/p3", "foo.java"),
+                    convertToFilePath("p1/p3/p4", "foo.java"),
+                    convertToFilePath("p2/p5", "foo.java"),
+                    convertToFilePath("p1/p3/p6", "foo.java")
+                ),
+                tmpFolder = tmpFolder.root
+            ),
+            config = affectedModuleConfiguration
+        )
+        Truth.assertThat(detector.shouldInclude(p3)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p4)).isFalse()
+        Truth.assertThat(detector.shouldInclude(p5)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p6)).isFalse()
+    }
+
+    @Test
     fun `GIVEN a file that effects all changes has a change WHEN projectSubset is CHANGED_PROJECTS THEN all modules should be in this`() {
         val changedFile = convertToFilePath("android", "gradle", "test.java")
 
