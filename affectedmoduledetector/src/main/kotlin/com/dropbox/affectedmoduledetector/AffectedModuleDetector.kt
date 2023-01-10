@@ -501,7 +501,12 @@ class AffectedModuleDetectorImpl constructor(
     private fun affectsAllModules(relativeFilePath: String): Boolean {
         logger?.info("Paths affecting all modules: ${config.pathsAffectingAllModules}")
 
-        val pathSections = relativeFilePath.toPathSections(rootProject.projectDir, git.getGitRoot())
+        val rootProjectDir = if (config.baseDir != null) {
+            File(config.baseDir!!)
+        } else {
+            rootProject.projectDir
+        }
+        val pathSections = relativeFilePath.toPathSections(rootProjectDir, git.getGitRoot())
         val projectRelativePath = pathSections.joinToString(File.separatorChar.toString())
 
         return config.pathsAffectingAllModules.any { projectRelativePath.startsWith(it) }
