@@ -195,8 +195,9 @@ To run this on the sample app:
 ./gradlew :affectedmoduledetector:publishToMavenLocal
 ```
 
-2. Try running the following command:
+2. Try running the following commands:
 ```
+cd sample
  ./gradlew runAffectedUnitTests -Paffected_module_detector.enable
 ```
 
