@@ -171,11 +171,12 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
         project.pluginManager.withPlugin(pluginId) {
             getAffectedPath(testType, project)?.let { path ->
-                if (AffectedModuleDetector.isProjectProvided(project) && !isExcludedModule(config, path)) {
+                val pathOrNull = project.tasks.findByPath(path)
+                if (AffectedModuleDetector.isProjectProvided(project) && !isExcludedModule(config, path) && pathOrNull != null) {
                     task.dependsOn(path)
                 }
 
-                project.tasks.findByPath(path)?.onlyIf { task ->
+                pathOrNull?.onlyIf { task ->
                     when {
                         !AffectedModuleDetector.isProjectEnabled(task.project) -> true
                         else -> AffectedModuleDetector.isProjectAffected(task.project)
