@@ -106,6 +106,11 @@ class AffectedModuleConfiguration {
     var excludedModules = emptySet<String>()
 
     /**
+     * A set of files that will be filtered out of the list of changed files retrieved by git.
+     */
+    var ignoredFiles = emptySet<String>()
+
+    /**
      * If uncommitted files should be considered affected
      */
     var includeUncommitted: Boolean = true
