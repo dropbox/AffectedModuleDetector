@@ -93,7 +93,7 @@ affectedModuleDetector {
         "sample-util", ":(app|library):.+"
     ]
     ignoredFiles = [
-        "*.md", "*.txt", "README"
+        ".*\\.md", ".*\\.txt", ".*README"
     ]
     includeUncommitted = true
     top = "HEAD"
