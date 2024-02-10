@@ -53,8 +53,8 @@ class AffectedTasksPlugin : Plugin<Project> {
     private fun registerAffectedTestTask(
         taskName: String, testTask: String, testTaskBackup: String?,
         rootProject: Project
-    ): Task {
-        val task = rootProject.tasks.register(taskName) { task ->
+    ) {
+        rootProject.tasks.register(taskName) { task ->
             val paths = getAffectedPaths(testTask, testTaskBackup, rootProject)
             paths.forEach { path ->
                 task.dependsOn(path)
@@ -62,7 +62,6 @@ class AffectedTasksPlugin : Plugin<Project> {
             task.enabled = paths.isNotEmpty()
             task.onlyIf { paths.isNotEmpty() }
         }
-        return task.get()
     }
 
     private fun getAffectedPaths(
