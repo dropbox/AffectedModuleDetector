@@ -31,7 +31,7 @@ import org.gradle.util.GradleVersion
  *       logFolder = "${project.rootDir}".
  *   }
  *
- * To enable affected module detection, you need to pass [ENABLE_ARG]
+ * To enable affected module detection, you need to pass [com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.ENABLE_ARG]
  * into the build as a command line parameter.
  *
  * See [AffectedModuleDetector] for additional flags.
@@ -125,7 +125,6 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         )
     }
 
-    @Suppress("UnstableApiUsage")
     @VisibleForTesting
     internal fun registerInternalTask(
         rootProject: Project,
@@ -151,6 +150,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         }
     }
 
+    @Suppress("UnstableApiUsage")
     private fun disableConfigCache(task: Task) {
         if (GradleVersion.current() >= GradleVersion.version("7.4")) {
             task.notCompatibleWithConfigurationCache("AMD requires knowledge of what has changed in the file system so we can not cache those values (https://github.com/dropbox/AffectedModuleDetector/issues/150)")
@@ -159,7 +159,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
     private fun withPlugin(
         pluginId: String,
-        taskToConfigure: Task,
+        task: Task,
         testType: AffectedModuleTaskType,
         project: Project
     ) {
@@ -171,19 +171,17 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
         project.pluginManager.withPlugin(pluginId) {
             getAffectedPath(testType, project)?.let { path ->
-                project
-                    .tasks
-                    .findByPath(path)
-                    ?.onlyIf { task ->
-                        when {
-                            !AffectedModuleDetector.isProjectEnabled(task.project) -> true
-                            else -> AffectedModuleDetector.isProjectAffected(task.project)
-                        }.also { onlyIf ->
-                            if (onlyIf && AffectedModuleDetector.isProjectProvided(project) && !isExcludedModule(config, path)) {
-                                taskToConfigure.dependsOn(path)
-                            }
-                        }
+                val pathOrNull = project.tasks.findByPath(path)
+                val onlyIf = when {
+                    pathOrNull == null -> false
+                    !AffectedModuleDetector.isProjectEnabled(pathOrNull.project) -> true
+                    else -> AffectedModuleDetector.isProjectAffected(pathOrNull.project)
                 }
+
+                if (onlyIf && AffectedModuleDetector.isProjectProvided(project)  && !isExcludedModule(config, path)) {
+                    task.dependsOn(path)
+                }
+                pathOrNull?.onlyIf { onlyIf }
             }
         }
     }
@@ -201,12 +199,15 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             InternalTaskType.ANDROID_TEST -> {
                 getPathAndTask(project, tasks.runAndroidTestTask)
             }
+
             InternalTaskType.ASSEMBLE_ANDROID_TEST -> {
                 getPathAndTask(project, tasks.assembleAndroidTestTask)
             }
+
             InternalTaskType.ANDROID_JVM_TEST -> {
                 getPathAndTask(project, tasks.jvmTestTask)
             }
+
             InternalTaskType.JVM_TEST -> {
                 if (tasks.jvmTestTask != AffectedTestConfiguration.DEFAULT_JVM_TEST_TASK) {
                     getPathAndTask(project, tasks.jvmTestTask)
@@ -214,6 +215,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
                     getPathAndTask(project, taskType.originalGradleCommand)
                 }
             }
+
             else -> {
                 getPathAndTask(project, taskType.originalGradleCommand)
             }
@@ -256,7 +258,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     private fun requireConfiguration(project: Project): AffectedModuleConfiguration {
         return requireNotNull(
             value = project.rootProject.extensions.findByName(AffectedModuleConfiguration.name),
-            lazyMessage = {  "Unable to find ${AffectedModuleConfiguration.name} in ${project.rootProject}" }
+            lazyMessage = { "Unable to find ${AffectedModuleConfiguration.name} in ${project.rootProject}" }
         ) as AffectedModuleConfiguration
     }
 
@@ -264,6 +266,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
         @VisibleForTesting
         internal const val TEST_TASK_GROUP_NAME = "Affected Module Detector"
+
         @VisibleForTesting
         internal const val CUSTOM_TASK_GROUP_NAME = "Affected Module Detector custom tasks"
 
