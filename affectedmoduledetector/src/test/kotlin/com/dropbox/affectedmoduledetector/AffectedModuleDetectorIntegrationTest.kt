@@ -112,6 +112,9 @@ class AffectedModuleDetectorIntegrationTest {
 
         // THEN
         assertThat(result.output).contains(":sample-app:assembleDebugAndroidTest SKIPPED")
+        assertThat(result.output).contains(":sample-core:mergeDexDebugAndroidTest SKIPPED")
+        assertThat(result.output).contains(":sample-core:packageDebugAndroidTest SKIPPED")
+        assertThat(result.output).contains(":sample-core:assembleDebugAndroidTest SKIPPED")
         assertThat(result.output).contains(":sample-core:assembleAndroidTest SKIPPED")
         assertThat(result.output).contains(":assembleAffectedAndroidTests SKIPPED")
     }
@@ -190,7 +193,10 @@ class AffectedModuleDetectorIntegrationTest {
 
         // THEN
         assertThat(result.output).contains(":sample-app:assembleDebugAndroidTest SKIPPED")
-        assertThat(result.output).doesNotContain(":sample-core:assembleAndroidTest SKIPPED")
+        assertThat(result.output).doesNotContain(":sample-core:mergeDexDebugAndroidTest")
+        assertThat(result.output).doesNotContain(":sample-core:packageDebugAndroidTest")
+        assertThat(result.output).doesNotContain(":sample-core:assembleDebugAndroidTest")
+        assertThat(result.output).doesNotContain(":sample-core:assembleAndroidTest")
         assertThat(result.output).contains(":assembleAffectedAndroidTests SKIPPED")
     }
 }
