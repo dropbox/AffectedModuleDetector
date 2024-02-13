@@ -27,17 +27,24 @@ class GitClientImplTest {
         workingDir = workingDir,
         logger = logger,
         commandRunner = commandRunner,
-        commitShaProvider = commitShaProvider
+        commitShaProvider = commitShaProvider,
+        ignoredFiles = setOf(".*\\.ignore", ".*IGNORED_FILE")
     )
 
     @Test
     fun givenChangedFiles_whenFindChangedFilesIncludeUncommitted_thenReturnChanges() {
         val changes = listOf(
+                convertToFilePath("d", "e", ".ignoredNot"),
                 convertToFilePath("a", "b", "c.java"),
                 convertToFilePath("d", "e", "f.java"))
+        val changesWithIgnores = listOf(
+                convertToFilePath("a", "b", "anything.ignore"),
+                convertToFilePath("d", "e", ".ignore"),
+                convertToFilePath("d", "e", "IGNORED_FILE")
+        ) + changes
         commandRunner.addReply(
                 "$CHANGED_FILES_CMD_PREFIX mySha",
-                changes.joinToString(System.lineSeparator())
+            changesWithIgnores.joinToString(System.lineSeparator())
         )
         commitShaProvider.addReply("mySha")
 
@@ -58,11 +65,17 @@ class GitClientImplTest {
     @Test
     fun findChangesSince_twoCls() {
         val changes = listOf(
+                convertToFilePath("d", "e", ".ignoredNot"),
                 convertToFilePath("a", "b", "c.java"),
                 convertToFilePath("d", "e", "f.java"))
+        val changesWithIgnores = listOf(
+                convertToFilePath("a", "b", "anything.ignore"),
+                convertToFilePath("d", "e", ".ignore"),
+                convertToFilePath("d", "e", "IGNORED_FILE")
+        ) + changes
         commandRunner.addReply(
                 "$CHANGED_FILES_CMD_PREFIX otherSha..mySha",
-                changes.joinToString(System.lineSeparator())
+            changesWithIgnores.joinToString(System.lineSeparator())
         )
         commitShaProvider.addReply("mySha")
         assertEquals(
