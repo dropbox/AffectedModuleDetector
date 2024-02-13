@@ -3,7 +3,7 @@ package com.dropbox.affectedmoduledetector.commitshaproviders
 import com.dropbox.affectedmoduledetector.GitClient
 import com.dropbox.affectedmoduledetector.Sha
 
-class PreviousCommit: CommitShaProvider {
+class PreviousCommit : CommitShaProvider {
     override fun get(commandRunner: GitClient.CommandRunner): Sha {
         return commandRunner.executeAndParseFirst(PREV_COMMIT_CMD)
     }

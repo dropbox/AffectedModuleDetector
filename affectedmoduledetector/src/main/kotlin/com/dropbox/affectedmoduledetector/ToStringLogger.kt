@@ -31,7 +31,12 @@ import org.gradle.api.services.BuildServiceParameters
 import org.gradle.internal.build.event.BuildEventListenerRegistryInternal
 import org.gradle.internal.logging.slf4j.OutputEventListenerBackedLogger
 import org.gradle.internal.logging.slf4j.OutputEventListenerBackedLoggerContext
-import org.gradle.internal.operations.*
+import org.gradle.internal.operations.BuildOperationDescriptor
+import org.gradle.internal.operations.BuildOperationListener
+import org.gradle.internal.operations.OperationFinishEvent
+import org.gradle.internal.operations.OperationIdentifier
+import org.gradle.internal.operations.OperationProgressEvent
+import org.gradle.internal.operations.OperationStartEvent
 import org.gradle.internal.time.Clock
 import org.gradle.invocation.DefaultGradle
 import java.io.File
@@ -42,18 +47,18 @@ import java.io.File
 internal open class ToStringLogger(
     private val loggerProvider: Provider<ToStringLoggerBuildService>?
 ) : OutputEventListenerBackedLogger(
-        "amd",
-        OutputEventListenerBackedLoggerContext {
-            System.currentTimeMillis()
-        }.also {
-            it.level = LogLevel.DEBUG
-            it.setOutputEventListener { outputEvent ->
-                loggerProvider?.get()?.parameters?.getStringBuilderProperty()?.get()?.appendLine(outputEvent.toString())
-            }
-        },
-        Clock {
-            System.currentTimeMillis()
+    "amd",
+    OutputEventListenerBackedLoggerContext {
+        System.currentTimeMillis()
+    }.also {
+        it.level = LogLevel.DEBUG
+        it.setOutputEventListener { outputEvent ->
+            loggerProvider?.get()?.parameters?.getStringBuilderProperty()?.get()?.appendLine(outputEvent.toString())
         }
+    },
+    Clock {
+        System.currentTimeMillis()
+    }
 ) {
 
     /**
@@ -61,7 +66,6 @@ internal open class ToStringLogger(
      */
     fun buildString() = loggerProvider?.get()?.parameters?.getStringBuilderProperty()?.get()?.toString()
 
-    @Suppress("UnstableApiUsage") // BuildService is not yet stable
     companion object {
         internal abstract class ToStringLoggerBuildService : BuildService<ToStringLoggerBuildService.ToStringLoggerBuildServiceParameters>, BuildOperationListener, AutoCloseable {
             interface ToStringLoggerBuildServiceParameters : BuildServiceParameters {

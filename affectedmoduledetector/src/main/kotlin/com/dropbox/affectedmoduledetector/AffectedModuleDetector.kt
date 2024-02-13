@@ -119,7 +119,7 @@ abstract class AffectedModuleDetector {
             require(rootProject == rootProject.rootProject) {
                 "Project provided must be root, project was ${rootProject.path}"
             }
-            
+
             val enabled = isProjectEnabled(rootProject)
             if (!enabled) {
                 setInstance(
@@ -380,7 +380,7 @@ class AffectedModuleDetectorImpl constructor(
     override fun hasAffectedProjects() = affectedProjects.isNotEmpty()
 
     override fun isProjectProvided2(project: Project): Boolean {
-        if(modules == null ) return true
+        if (modules == null) return true
         return modules.contains(project.path)
     }
 

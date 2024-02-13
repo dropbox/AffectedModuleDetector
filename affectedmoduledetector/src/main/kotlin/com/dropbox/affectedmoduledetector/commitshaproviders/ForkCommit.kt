@@ -3,7 +3,7 @@ package com.dropbox.affectedmoduledetector.commitshaproviders
 import com.dropbox.affectedmoduledetector.GitClient
 import com.dropbox.affectedmoduledetector.Sha
 
-class ForkCommit: CommitShaProvider {
+class ForkCommit : CommitShaProvider {
     override fun get(commandRunner: GitClient.CommandRunner): Sha {
         val currentBranch = commandRunner.executeAndParseFirst(CURRENT_BRANCH_CMD)
 
