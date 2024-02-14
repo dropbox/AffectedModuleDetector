@@ -1,11 +1,11 @@
 package com.dropbox.affectedmoduledetector.commitshaproviders
 
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.lang.IllegalArgumentException
-import org.junit.Assert.fail
 
 @RunWith(JUnit4::class)
 class CommitShaProviderTest {

@@ -97,7 +97,7 @@ internal class GitClientImpl(
         return ignoredFiles
             .orEmpty()
             .map { it.toRegex() }
-            .foldRight(changedFiles){ignoredFileRegex: Regex, fileList: List<String> ->
+            .foldRight(changedFiles) { ignoredFileRegex: Regex, fileList: List<String> ->
                 fileList.filterNot { it.matches(ignoredFileRegex) }
             }
     }

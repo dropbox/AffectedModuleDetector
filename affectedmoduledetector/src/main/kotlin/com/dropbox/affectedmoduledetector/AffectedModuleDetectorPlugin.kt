@@ -178,7 +178,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
                     else -> AffectedModuleDetector.isProjectAffected(pathOrNull.project)
                 }
 
-                if (onlyIf && AffectedModuleDetector.isProjectProvided(project)  && !isExcludedModule(config, path)) {
+                if (onlyIf && AffectedModuleDetector.isProjectProvided(project) && !isExcludedModule(config, path)) {
                     task.dependsOn(path)
                 }
                 pathOrNull?.onlyIf { onlyIf }
@@ -223,7 +223,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     }
 
     private fun getPathAndTask(project: Project, task: String?): String? {
-        return if (task.isNullOrBlank()) null else "${project.path}:${task}"
+        return if (task.isNullOrBlank()) null else "${project.path}:$task"
     }
 
     private fun filterAndroidTests(project: Project) {

@@ -4,7 +4,7 @@ internal enum class InternalTaskType(
     override val commandByImpact: String,
     override val originalGradleCommand: String,
     override val taskDescription: String
-): AffectedModuleTaskType {
+) : AffectedModuleTaskType {
 
     ANDROID_TEST(
         commandByImpact = "runAffectedAndroidTests",

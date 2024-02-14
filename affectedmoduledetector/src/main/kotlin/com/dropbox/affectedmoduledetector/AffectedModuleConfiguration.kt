@@ -82,23 +82,23 @@ class AffectedModuleConfiguration {
     var specifiedBranch: String? = null
 
     var compareFrom: String = "PreviousCommit"
-    set(value) {
-        val commitShaProviders = listOf(
-            "PreviousCommit",
-            "ForkCommit",
-            "SpecifiedBranchCommit",
-            "SpecifiedBranchCommitMergeBase"
-        )
-        require(commitShaProviders.contains(value)) {
-            "The property configuration compareFrom must be one of the following: ${commitShaProviders.joinToString(", ")}"
-        }
-        if (value == "SpecifiedBranchCommit" || value == "SpecifiedBranchCommitMergeBase") {
-            requireNotNull(specifiedBranch) {
-                "Specify a branch using the configuration specifiedBranch"
+        set(value) {
+            val commitShaProviders = listOf(
+                "PreviousCommit",
+                "ForkCommit",
+                "SpecifiedBranchCommit",
+                "SpecifiedBranchCommitMergeBase"
+            )
+            require(commitShaProviders.contains(value)) {
+                "The property configuration compareFrom must be one of the following: ${commitShaProviders.joinToString(", ")}"
             }
+            if (value == "SpecifiedBranchCommit" || value == "SpecifiedBranchCommitMergeBase") {
+                requireNotNull(specifiedBranch) {
+                    "Specify a branch using the configuration specifiedBranch"
+                }
+            }
+            field = value
         }
-        field = value
-    }
 
     /**
      * A set of modules that will not be considered in the build process, even if changes are made in them.

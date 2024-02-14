@@ -8,9 +8,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.lang.IllegalStateException
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import java.lang.IllegalStateException
 
 @RunWith(JUnit4::class)
 class AffectedModuleDetectorPluginTest {
@@ -197,7 +197,7 @@ class AffectedModuleDetectorPluginTest {
 
         val customTasks = rootProject
             .tasks
-            .filter { it.group == AffectedModuleDetectorPlugin.CUSTOM_TASK_GROUP_NAME  }
+            .filter { it.group == AffectedModuleDetectorPlugin.CUSTOM_TASK_GROUP_NAME }
 
         // THEN
         assert(customTasks.size == 2)
