@@ -1,14 +1,14 @@
 package com.dropbox.affectedmoduledetector
 
-import java.io.File
+import com.dropbox.affectedmoduledetector.GitClientImpl.Companion.CHANGED_FILES_CMD_PREFIX
+import com.dropbox.affectedmoduledetector.mocks.MockCommandRunner
+import com.dropbox.affectedmoduledetector.mocks.MockCommitShaProvider
 import junit.framework.TestCase.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import com.dropbox.affectedmoduledetector.GitClientImpl.Companion.CHANGED_FILES_CMD_PREFIX
-import com.dropbox.affectedmoduledetector.mocks.MockCommandRunner
-import com.dropbox.affectedmoduledetector.mocks.MockCommitShaProvider
+import java.io.File
 
 @RunWith(JUnit4::class)
 class GitClientImplTest {
@@ -34,56 +34,60 @@ class GitClientImplTest {
     @Test
     fun givenChangedFiles_whenFindChangedFilesIncludeUncommitted_thenReturnChanges() {
         val changes = listOf(
-                convertToFilePath("d", "e", ".ignoredNot"),
-                convertToFilePath("a", "b", "c.java"),
-                convertToFilePath("d", "e", "f.java"))
+            convertToFilePath("d", "e", ".ignoredNot"),
+            convertToFilePath("a", "b", "c.java"),
+            convertToFilePath("d", "e", "f.java")
+        )
         val changesWithIgnores = listOf(
-                convertToFilePath("a", "b", "anything.ignore"),
-                convertToFilePath("d", "e", ".ignore"),
-                convertToFilePath("d", "e", "IGNORED_FILE")
+            convertToFilePath("a", "b", "anything.ignore"),
+            convertToFilePath("d", "e", ".ignore"),
+            convertToFilePath("d", "e", "IGNORED_FILE")
         ) + changes
         commandRunner.addReply(
-                "$CHANGED_FILES_CMD_PREFIX mySha",
+            "$CHANGED_FILES_CMD_PREFIX mySha",
             changesWithIgnores.joinToString(System.lineSeparator())
         )
         commitShaProvider.addReply("mySha")
 
         assertEquals(
-                changes,
-                client.findChangedFiles(includeUncommitted = true))
+            changes,
+            client.findChangedFiles(includeUncommitted = true)
+        )
     }
 
     @Test
     fun findChangesSince_empty() {
         commitShaProvider.addReply("mySha")
         assertEquals(
-                emptyList<String>(),
-                client.findChangedFiles()
+            emptyList<String>(),
+            client.findChangedFiles()
         )
     }
 
     @Test
     fun findChangesSince_twoCls() {
         val changes = listOf(
-                convertToFilePath("d", "e", ".ignoredNot"),
-                convertToFilePath("a", "b", "c.java"),
-                convertToFilePath("d", "e", "f.java"))
+            convertToFilePath("d", "e", ".ignoredNot"),
+            convertToFilePath("a", "b", "c.java"),
+            convertToFilePath("d", "e", "f.java")
+        )
         val changesWithIgnores = listOf(
-                convertToFilePath("a", "b", "anything.ignore"),
-                convertToFilePath("d", "e", ".ignore"),
-                convertToFilePath("d", "e", "IGNORED_FILE")
+            convertToFilePath("a", "b", "anything.ignore"),
+            convertToFilePath("d", "e", ".ignore"),
+            convertToFilePath("d", "e", "IGNORED_FILE")
         ) + changes
         commandRunner.addReply(
-                "$CHANGED_FILES_CMD_PREFIX otherSha..mySha",
+            "$CHANGED_FILES_CMD_PREFIX otherSha..mySha",
             changesWithIgnores.joinToString(System.lineSeparator())
         )
         commitShaProvider.addReply("mySha")
         assertEquals(
-                changes,
-                client.findChangedFiles(
-                    top = "otherSha",
-                    includeUncommitted = false
-                ))
+            changes,
+            client.findChangedFiles(
+                top = "otherSha",
+                includeUncommitted = false
+            )
+        )
     }
 
     // For both Linux/Windows

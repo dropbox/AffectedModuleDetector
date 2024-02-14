@@ -6,7 +6,7 @@ import org.junit.Test
 
 class AffectedTestConfigurationTest {
 
-    private lateinit var config : AffectedTestConfiguration
+    private lateinit var config: AffectedTestConfiguration
 
     @Before
     fun setup() {

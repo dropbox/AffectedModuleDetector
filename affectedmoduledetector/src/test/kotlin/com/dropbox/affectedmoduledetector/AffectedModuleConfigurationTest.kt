@@ -16,7 +16,7 @@ class AffectedModuleConfigurationTest {
     @get:Rule
     val tmpFolder = TemporaryFolder()
 
-    private lateinit var config : AffectedModuleConfiguration
+    private lateinit var config: AffectedModuleConfiguration
 
     private val FAKE_TASK = AffectedModuleConfiguration.CustomTask(
         commandByImpact = "runFakeTask",
@@ -122,7 +122,6 @@ class AffectedModuleConfigurationTest {
         fail("Expected to catch an exception")
     }
 
-
     @Test
     fun `GIVEN AffectedModuleConfiguration WHEN base dir is set and paths affecting module is set THEN succeeds`() {
         // GIVEN
@@ -158,7 +157,6 @@ class AffectedModuleConfigurationTest {
 
         fail("Expected to catch an exception")
     }
-
 
     @Test
     fun `GIVEN AffectedModuleConfiguration WHEN companion object name is returned THEN affectedModuleDetector is returned`() {
@@ -231,7 +229,6 @@ class AffectedModuleConfigurationTest {
         }
 
         fail("Expected to catch an exception")
-
     }
 
     @Test
