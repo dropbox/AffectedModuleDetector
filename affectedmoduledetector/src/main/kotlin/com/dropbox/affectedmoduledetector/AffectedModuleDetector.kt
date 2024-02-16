@@ -30,7 +30,7 @@ import com.dropbox.affectedmoduledetector.util.toPathSections
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.invocation.Gradle
+import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.logging.Logger
 import java.io.File
 
@@ -115,7 +115,7 @@ abstract class AffectedModuleDetector {
         var isConfigured = false
 
         @JvmStatic
-        fun configure(gradle: Gradle, rootProject: Project) {
+        fun configure(rootProject: Project) {
             require(rootProject == rootProject.rootProject) {
                 "Project provided must be root, project was ${rootProject.path}"
             }
@@ -193,7 +193,11 @@ abstract class AffectedModuleDetector {
         private fun getInstance(project: Project): AffectedModuleDetector? {
             val extensions = project.rootProject.extensions
 
-            return extensions.getByName(ROOT_PROP_NAME) as? AffectedModuleDetector
+            return try {
+                extensions.getByName(ROOT_PROP_NAME) as? AffectedModuleDetector
+            } catch (e: UnknownDomainObjectException) {
+                null
+            }
         }
 
         private fun getOrThrow(project: Project): AffectedModuleDetector {
