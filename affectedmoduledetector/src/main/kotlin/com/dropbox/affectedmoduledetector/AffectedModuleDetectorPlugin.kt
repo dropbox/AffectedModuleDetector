@@ -48,12 +48,11 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
         registerSubprojectConfiguration(project)
         registerMainConfiguration(project)
+        AffectedModuleDetector.configure(project)
         registerCustomTasks(project)
         registerTestTasks(project)
 
         project.gradle.projectsEvaluated {
-            AffectedModuleDetector.configure(project.gradle, project)
-
             filterAndroidTests(project)
             filterJvmTests(project)
             filterCustomTasks(project)
