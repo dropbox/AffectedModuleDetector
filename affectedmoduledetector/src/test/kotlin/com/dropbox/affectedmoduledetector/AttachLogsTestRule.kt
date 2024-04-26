@@ -1,9 +1,9 @@
 package com.dropbox.affectedmoduledetector
 
-import com.nhaarman.mockito_kotlin.mock
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import org.mockito.kotlin.mock
 
 /**
  * Special rule for dependency detector tests that will attach logs to a failure.
