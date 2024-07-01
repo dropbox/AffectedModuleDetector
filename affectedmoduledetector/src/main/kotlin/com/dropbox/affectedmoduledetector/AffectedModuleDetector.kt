@@ -476,7 +476,7 @@ class AffectedModuleDetectorImpl constructor(
         var buildAll = false
 
         // Should only trigger if there are no changedFiles
-        if (changedProjects.isEmpty() && unknownFiles.isEmpty()) {
+        if (config.buildAllWhenNoProjectsChanged && changedProjects.isEmpty() && unknownFiles.isEmpty()) {
             buildAll = true
         }
         logger?.info(
