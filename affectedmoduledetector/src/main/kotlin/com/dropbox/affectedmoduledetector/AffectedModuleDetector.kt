@@ -147,7 +147,7 @@ abstract class AffectedModuleDetector {
                     rootProject.extensions.findByType(AffectedModuleConfiguration::class.java)
                 ) {
                     "Root project ${rootProject.path} must have the AffectedModuleConfiguration " +
-                        "extension added."
+                            "extension added."
                 }
 
             val logger =
@@ -415,6 +415,10 @@ class AffectedModuleDetectorImpl constructor(
             top = top,
             includeUncommitted = includeUncommitted
         ).forEach { fileName ->
+            if (isIgnoredFile(fileName)) {
+                // Skip ignored files
+                return@forEach
+            }
             if (affectsAllModules(fileName)) {
                 return allProjects
             }
@@ -429,18 +433,22 @@ class AffectedModuleDetectorImpl constructor(
                 unknownFiles.add(filePath)
                 logger?.info(
                     "Couldn't find containing project for file$filePath. " +
-                        "Adding to unknownFiles."
+                            "Adding to unknownFiles."
                 )
             } else {
                 changedProjects.add(containingProject)
                 logger?.info(
                     "For file $filePath containing project is $containingProject. " +
-                        "Adding to changedProjects."
+                            "Adding to changedProjects."
                 )
             }
         }
 
         return changedProjects
+    }
+
+    private fun isIgnoredFile(filePath: String): Boolean {
+        return config.ignoredFiles.any { filePath.matches(it.toRegex()) }
     }
 
     /**
@@ -475,13 +483,13 @@ class AffectedModuleDetectorImpl constructor(
 
         var buildAll = false
 
-        // Should only trigger if there are no changedFiles
-        if (changedProjects.isEmpty() && unknownFiles.isEmpty()) {
+        // Should only trigger if there are no changedFiles and no changes in non-ignored files
+        if (changedProjects.isEmpty() && unknownFiles.isEmpty() && changedFiles.isEmpty()) {
             buildAll = true
         }
         logger?.info(
             "unknownFiles: $unknownFiles, changedProjects: $changedProjects, buildAll: " +
-                "$buildAll"
+                    "$buildAll"
         )
 
         // If we're in a buildAll state, we return allProjects unless it's the changed target,
