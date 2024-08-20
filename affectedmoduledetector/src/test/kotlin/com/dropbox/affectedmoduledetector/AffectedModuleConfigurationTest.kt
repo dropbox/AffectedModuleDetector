@@ -1,6 +1,8 @@
 package com.dropbox.affectedmoduledetector
 
+import com.dropbox.affectedmoduledetector.mocks.MockConfiguration
 import com.google.common.truth.Truth.assertThat
+import org.gradle.api.artifacts.Configuration
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -11,6 +13,7 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.io.File
+import java.util.function.Predicate
 
 @RunWith(JUnit4::class)
 class AffectedModuleConfigurationTest {
@@ -375,5 +378,28 @@ class AffectedModuleConfigurationTest {
 
         // THEN
         assertFalse(actual)
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN configuration predicate is set THEN is configuration predicate`() {
+        // GIVEN
+        config.configurationPredicate = Predicate<Configuration> { false }
+
+        // WHEN
+        val actual = config.configurationPredicate.test(MockConfiguration())
+
+        // THEN
+        assertFalse(actual)
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN configuration predicate is not set THEN is default`() {
+        // GIVEN default configuration
+
+        // WHEN
+        val actual = config.configurationPredicate.test(MockConfiguration())
+
+        // THEN
+        assertTrue(actual)
     }
 }
