@@ -242,7 +242,18 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10)
+                mapOf(
+                    p1.projectPath to p1,
+                    p2.projectPath to p2,
+                    p3.projectPath to p3,
+                    p4.projectPath to p4,
+                    p5.projectPath to p5,
+                    p6.projectPath to p6,
+                    p7.projectPath to p7,
+                    p8.projectPath to p8,
+                    p9.projectPath to p9,
+                    p10.projectPath to p10
+                )
             )
         )
     }
@@ -263,7 +274,18 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10)
+                mapOf(
+                    p1.projectPath to p1,
+                    p2.projectPath to p2,
+                    p3.projectPath to p3,
+                    p4.projectPath to p4,
+                    p5.projectPath to p5,
+                    p6.projectPath to p6,
+                    p7.projectPath to p7,
+                    p8.projectPath to p8,
+                    p9.projectPath to p9,
+                    p10.projectPath to p10
+                )
             )
         )
     }
@@ -284,7 +306,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf()
+                mapOf()
             )
         )
     }
@@ -305,7 +327,12 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p1, p3, p4, p5)
+                mapOf(
+                    p1.projectPath to p1,
+                    p3.projectPath to p3,
+                    p4.projectPath to p4,
+                    p5.projectPath to p5
+                )
             )
         )
     }
@@ -326,7 +353,11 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p3, p4, p5)
+                mapOf(
+                    p3.projectPath to p3,
+                    p4.projectPath to p4,
+                    p5.projectPath to p5
+                )
             )
         )
     }
@@ -347,7 +378,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p1)
+                mapOf(p1.projectPath to p1)
             )
         )
     }
@@ -371,7 +402,14 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p1, p2, p3, p4, p5, p6)
+                mapOf(
+                    p1.projectPath to p1,
+                    p2.projectPath to p2,
+                    p3.projectPath to p3,
+                    p4.projectPath to p4,
+                    p5.projectPath to p5,
+                    p6.projectPath to p6
+                )
             )
         )
     }
@@ -395,7 +433,12 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p3, p4, p5, p6)
+                mapOf(
+                    p3.projectPath to p3,
+                    p4.projectPath to p4,
+                    p5.projectPath to p5,
+                    p6.projectPath to p6
+                )
             )
         )
     }
@@ -419,7 +462,10 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p1, p2)
+                mapOf(
+                    p1.projectPath to p1,
+                    p2.projectPath to p2
+                )
             )
         )
     }
@@ -440,7 +486,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf()
+                mapOf()
             )
         )
     }
@@ -461,7 +507,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf()
+                mapOf()
             )
         )
     }
@@ -482,7 +528,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p7)
+                mapOf(p7.projectPath to p7)
             )
         )
     }
@@ -507,7 +553,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p12)
+                mapOf(p12.projectPath to p12)
             )
         )
     }
@@ -532,7 +578,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p12)
+                mapOf(p12.projectPath to p12)
             )
         )
     }
@@ -557,7 +603,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf()
+                mapOf()
             )
         )
     }
@@ -582,7 +628,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf()
+                mapOf()
             )
         )
     }
@@ -607,7 +653,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf()
+                mapOf()
             )
         )
     }
@@ -632,7 +678,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf()
+                mapOf()
             )
         )
     }
@@ -657,7 +703,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p8)
+                mapOf(p8.projectPath to p8)
             )
         )
     }
@@ -682,7 +728,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p8)
+                mapOf(p8.projectPath to p8)
             )
         )
     }
@@ -707,7 +753,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf()
+                mapOf()
             )
         )
     }
@@ -732,7 +778,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf()
+                mapOf()
             )
         )
     }
@@ -756,7 +802,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p12)
+                mapOf(p12.projectPath to p12)
             )
         )
     }
@@ -780,7 +826,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p12)
+                mapOf(p12.projectPath to p12)
             )
         )
     }
@@ -804,7 +850,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf() // a change to a project in the normal build doesn't affect the ui build
+                mapOf() // a change to a project in the normal build doesn't affect the ui build
             )
         ) // and compose is in changed and so excluded from dependent
     }
@@ -828,7 +874,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p7) // a change in compose is known not to matter to the normal build
+                mapOf(p7.projectPath to p7) // a change in compose is known not to matter to the normal build
             )
         )
     }
@@ -852,7 +898,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p7)
+                mapOf(p7.projectPath to p7)
             )
         )
     }
@@ -876,7 +922,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf() // a change in compose is known not to matter to the normal build
+                mapOf() // a change in compose is known not to matter to the normal build
             )
         ) // and p7 is in changed and so not in dependent
     }
@@ -899,7 +945,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf() // a change in androidx root normally doesn't affect the ui build
+                mapOf() // a change in androidx root normally doesn't affect the ui build
             )
         ) // unless otherwise specified (e.g. gradlew)
     }
@@ -922,7 +968,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                emptySet()
+                emptyMap()
             )
         ) // a change in ui/root affects all ui projects
     }
@@ -945,7 +991,18 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10)
+                mapOf(
+                    p1.projectPath to p1,
+                    p2.projectPath to p2,
+                    p3.projectPath to p3,
+                    p4.projectPath to p4,
+                    p5.projectPath to p5,
+                    p6.projectPath to p6,
+                    p7.projectPath to p7,
+                    p8.projectPath to p8,
+                    p9.projectPath to p9,
+                    p10.projectPath to p10
+                )
             )
         ) // a change to buildSrc affects everything in both builds
     }
@@ -969,7 +1026,10 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p12, p13) // a change to buildSrc affects everything in both builds
+                mapOf(
+                    p12.projectPath to p12,
+                    p13.projectPath to p13
+                ) // a change to buildSrc affects everything in both builds
             )
         )
     }
@@ -992,7 +1052,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf() // a change to ui gradlew affects only the ui build
+                mapOf() // a change to ui gradlew affects only the ui build
             )
         )
     }
@@ -1015,7 +1075,10 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p12, p13) // a change to root gradlew affects everything in both builds
+                mapOf(
+                    p12.projectPath to p12,
+                    p13.projectPath to p13
+                ) // a change to root gradlew affects everything in both builds
             )
         )
     }
@@ -1038,7 +1101,10 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p12, p13) // a change to development affects everything in both builds
+                mapOf(
+                    p12.projectPath to p12,
+                    p13.projectPath to p13
+                ) // a change to development affects everything in both builds
             )
         )
     }
@@ -1066,7 +1132,10 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p12, p13) // not sure what this folder is for, but it affects all of both?
+                mapOf(
+                    p12.projectPath to p12,
+                    p13.projectPath to p13
+                ) // not sure what this folder is for, but it affects all of both?
             )
         )
     }
@@ -1088,7 +1157,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p1)
+                mapOf(p1.projectPath to p1)
             )
         )
         // Test changed
@@ -1131,7 +1200,11 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p3, p4, p5)
+                mapOf(
+                    p3.projectPath to p3,
+                    p4.projectPath to p4,
+                    p5.projectPath to p5
+                )
             )
         )
         // Test changed
@@ -1174,7 +1247,12 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p1, p3, p4, p5)
+                mapOf(
+                    p1.projectPath to p1,
+                    p3.projectPath to p3,
+                    p4.projectPath to p4,
+                    p5.projectPath to p5
+                )
             )
         )
         // Test changed
@@ -1216,7 +1294,12 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p16, p17, p18, p19)
+                mapOf(
+                    p16.projectPath to p16,
+                    p17.projectPath to p17,
+                    p18.projectPath to p18,
+                    p19.projectPath to p19
+                )
             )
         )
     }
@@ -1237,7 +1320,12 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p16, p17, p18, p19)
+                mapOf(
+                    p16.projectPath to p16,
+                    p17.projectPath to p17,
+                    p18.projectPath to p18,
+                    p19.projectPath to p19
+                )
             )
         )
     }
@@ -1258,7 +1346,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                emptySet()
+                mapOf()
             )
         )
     }
@@ -1279,7 +1367,12 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p16, p17, p18, p19)
+                mapOf(
+                    p16.projectPath to p16,
+                    p17.projectPath to p17,
+                    p18.projectPath to p18,
+                    p19.projectPath to p19
+                )
             )
         )
     }
@@ -1300,7 +1393,10 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p18, p19)
+                mapOf(
+                    p18.projectPath to p18,
+                    p19.projectPath to p19
+                )
             )
         )
     }
@@ -1321,7 +1417,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p19)
+                mapOf(p19.projectPath to p19)
             )
         )
     }
@@ -1493,7 +1589,18 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10)
+                mapOf(
+                    p1.projectPath to p1,
+                    p2.projectPath to p2,
+                    p3.projectPath to p3,
+                    p4.projectPath to p4,
+                    p5.projectPath to p5,
+                    p6.projectPath to p6,
+                    p7.projectPath to p7,
+                    p8.projectPath to p8,
+                    p9.projectPath to p9,
+                    p10.projectPath to p10
+                )
             )
         )
     }
@@ -1517,7 +1624,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                setOf()
+                mapOf()
             )
         )
     }
