@@ -110,7 +110,7 @@ class AffectedTasksPlugin : Plugin<Project> {
         val tracker = DependencyTracker(project, null)
         project.tasks.configureEach { task ->
             if (task.name.contains(ANDROID_TEST_BUILD_VARIANT)) {
-                tracker.findAllDependents(project).forEach { dependentProject ->
+                tracker.findAllDependents(project).forEach { (_, dependentProject) ->
                     dependentProject.tasks.forEach { dependentTask ->
                         AffectedModuleDetector.configureTaskGuard(dependentTask)
                     }

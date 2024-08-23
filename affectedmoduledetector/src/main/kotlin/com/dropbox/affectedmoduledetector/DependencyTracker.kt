@@ -54,21 +54,22 @@ class DependencyTracker constructor(
         result
     }
 
-    fun findAllDependents(project: Project): Set<Project> {
+    fun findAllDependents(project: Project): Map<ProjectPath, Project> {
         logger?.info("finding dependents of ${project.path}")
-        val result = mutableSetOf<Project>()
+        val result = mutableMapOf<ProjectPath, Project>()
         fun addAllDependents(project: Project) {
-            if (result.add(project)) {
+            if (result.put(project.projectPath, project) == null) {
                 dependentList[project]?.forEach(::addAllDependents)
             }
         }
         addAllDependents(project)
         logger?.info(
-            "dependents of ${project.path} is ${result.map {
-                it.path
+            "dependents of ${project.path} is ${result.map { (path, _) ->
+                path.path
             }}"
         )
         // the project isn't a dependent of itself
-        return result.minus(project)
+        result.remove(project.projectPath)
+        return result
     }
 }

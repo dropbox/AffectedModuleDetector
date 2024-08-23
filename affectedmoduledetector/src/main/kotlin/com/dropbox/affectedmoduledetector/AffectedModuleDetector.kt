@@ -57,6 +57,12 @@ import java.io.File
 enum class ProjectSubset { DEPENDENT_PROJECTS, CHANGED_PROJECTS, ALL_AFFECTED_PROJECTS, NONE }
 
 /**
+ * An identifier for a project, ensuring that projects are always identified by their path.
+ */
+@JvmInline
+value class ProjectPath(val path: String)
+
+/**
  * A utility class that can discover which files are changed based on git history.
  *
  * To enable this, you need to pass [ENABLE_ARG] into the build as a command line parameter
@@ -344,7 +350,7 @@ class AffectedModuleDetectorImpl constructor(
     }
 
     private val allProjects by lazy {
-        rootProject.subprojects.toSet()
+        rootProject.subprojects.associateBy { it.projectPath }
     }
 
     private val projectGraph by lazy {
@@ -369,7 +375,7 @@ class AffectedModuleDetectorImpl constructor(
 
     override fun shouldInclude(project: Project): Boolean {
         val isRootProject = project.isRoot
-        val isProjectAffected = affectedProjects.contains(project)
+        val isProjectAffected = affectedProjects.contains(project.projectPath)
         val isProjectProvided = isProjectProvided2(project)
         val isModuleExcludedByName = config.excludedModules.contains(project.name)
         val isModuleExcludedByRegex = config.excludedModules.any { project.path.matches(it.toRegex()) }
@@ -390,10 +396,10 @@ class AffectedModuleDetectorImpl constructor(
 
     override fun getSubset(project: Project): ProjectSubset {
         return when {
-            changedProjects.contains(project) -> {
+            changedProjects.contains(project.projectPath) -> {
                 ProjectSubset.CHANGED_PROJECTS
             }
-            dependentProjects.contains(project) -> {
+            dependentProjects.contains(project.projectPath) -> {
                 ProjectSubset.DEPENDENT_PROJECTS
             }
             else -> {
@@ -410,7 +416,7 @@ class AffectedModuleDetectorImpl constructor(
     private fun findChangedProjects(
         top: Sha,
         includeUncommitted: Boolean = true
-    ): Set<Project> {
+    ): Map<ProjectPath, Project> {
         git.findChangedFiles(
             top = top,
             includeUncommitted = includeUncommitted
@@ -421,7 +427,7 @@ class AffectedModuleDetectorImpl constructor(
             changedFiles.add(fileName)
         }
 
-        val changedProjects = mutableSetOf<Project>()
+        val changedProjects = mutableMapOf<ProjectPath, Project>()
 
         for (filePath in changedFiles) {
             val containingProject = findContainingProject(filePath)
@@ -432,7 +438,7 @@ class AffectedModuleDetectorImpl constructor(
                         "Adding to unknownFiles."
                 )
             } else {
-                changedProjects.add(containingProject)
+                changedProjects[containingProject.projectPath] = containingProject
                 logger?.info(
                     "For file $filePath containing project is $containingProject. " +
                         "Adding to changedProjects."
@@ -447,10 +453,10 @@ class AffectedModuleDetectorImpl constructor(
      * Gets all dependent projects from the set of changedProjects. This doesn't include the
      * original changedProjects. Always build is still here to ensure at least 1 thing is built
      */
-    private fun findDependentProjects(): Set<Project> {
-        return changedProjects.flatMap {
-            dependencyTracker.findAllDependents(it)
-        }.toSet()
+    private fun findDependentProjects(): Map<ProjectPath, Project> {
+        return changedProjects.flatMap { (_, project) ->
+            dependencyTracker.findAllDependents(project).entries
+        }.associate { it.key to it.value }
     }
 
     /**
@@ -466,7 +472,7 @@ class AffectedModuleDetectorImpl constructor(
      * Also detects modules whose tests are codependent at runtime.
      */
     @Suppress("ComplexMethod")
-    private fun findAffectedProjects(): Set<Project> {
+    private fun findAffectedProjects(): Map<ProjectPath, Project> {
         // In this case we don't care about any of the logic below, we're only concerned with
         // running the changed projects in this test runner
         if (projectSubset == ProjectSubset.CHANGED_PROJECTS) {
@@ -525,3 +531,5 @@ class AffectedModuleDetectorImpl constructor(
 }
 
 val Project.isRoot get() = this == rootProject
+
+val Project.projectPath: ProjectPath get() = ProjectPath(path)
