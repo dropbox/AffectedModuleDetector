@@ -338,6 +338,29 @@ class AffectedModuleDetectorImplTest {
     }
 
     @Test
+    fun noChangeSkipAll() {
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
+            injectedGitClient = MockGitClient(
+                changedFiles = emptyList(),
+                tmpFolder = tmpFolder.root
+            ),
+            config = affectedModuleConfiguration.also {
+                it.buildAllWhenNoProjectsChanged = false
+            }
+        )
+        MatcherAssert.assertThat(
+            detector.affectedProjects,
+            CoreMatchers.`is`(
+                emptySet()
+            )
+        )
+    }
+
+    @Test
     fun changeInOneOnlyDependent() {
         val detector = AffectedModuleDetectorImpl(
             rootProject = root,

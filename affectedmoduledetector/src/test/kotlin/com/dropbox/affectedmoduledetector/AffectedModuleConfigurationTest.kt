@@ -1,6 +1,8 @@
 package com.dropbox.affectedmoduledetector
 
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
@@ -323,5 +325,30 @@ class AffectedModuleConfigurationTest {
         val actual = config.customTasks
 
         assert(actual.first().taskDescription == "Description of fake task")
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN buildAllWhenNoProjectsChanged THEN then default value is true`() {
+        // GIVEN
+        // config
+
+        // WHEN
+        val buildAllWhenNoProjectsChanged = config.buildAllWhenNoProjectsChanged
+
+        // THEN
+        assertTrue(buildAllWhenNoProjectsChanged)
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN buildAllWhenNoProjectsChanged is set to false THEN then value is false`() {
+        // GIVEN
+        val buildAll = false
+        config.buildAllWhenNoProjectsChanged = buildAll
+
+        // WHEN
+        val actual = config.buildAllWhenNoProjectsChanged
+
+        // THEN
+        assertFalse(actual)
     }
 }
