@@ -223,6 +223,7 @@ class AffectedModuleDetectorImplTest {
         affectedModuleConfiguration = AffectedModuleConfiguration().also {
             it.baseDir = tmpDir.absolutePath
             it.pathsAffectingAllModules = pathsAffectingAllModules
+            it.ignoredFiles = setOf(".*\\.md", ".*\\.txt", ".*README")
         }
     }
 
@@ -1625,6 +1626,69 @@ class AffectedModuleDetectorImplTest {
             detector.affectedProjects,
             CoreMatchers.`is`(
                 mapOf()
+            )
+        )
+    }
+
+    @Test
+    fun changeInIgnoredFile() {
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
+            injectedGitClient = MockGitClient(
+                changedFiles = listOf("README.md"),
+                tmpFolder = tmpFolder.root
+            ),
+            config = affectedModuleConfiguration
+        )
+        MatcherAssert.assertThat(
+            detector.affectedProjects,
+            CoreMatchers.`is`(
+                emptySet()
+            )
+        )
+    }
+
+    @Test
+    fun changeInIgnoredFileWithDependentProjects() {
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
+            injectedGitClient = MockGitClient(
+                changedFiles = listOf("README.md"),
+                tmpFolder = tmpFolder.root
+            ),
+            config = affectedModuleConfiguration
+        )
+        MatcherAssert.assertThat(
+            detector.affectedProjects,
+            CoreMatchers.`is`(
+                emptySet()
+            )
+        )
+    }
+
+    @Test
+    fun changeInIgnoredFileWithChangedProjects() {
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.CHANGED_PROJECTS,
+            injectedGitClient = MockGitClient(
+                changedFiles = listOf("README.md"),
+                tmpFolder = tmpFolder.root
+            ),
+            config = affectedModuleConfiguration
+        )
+        MatcherAssert.assertThat(
+            detector.affectedProjects,
+            CoreMatchers.`is`(
+                emptySet()
             )
         )
     }
