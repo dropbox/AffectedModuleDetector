@@ -1,6 +1,8 @@
 package com.dropbox.affectedmoduledetector
 
+import com.dropbox.affectedmoduledetector.mocks.MockObjectFactory
 import com.google.common.truth.Truth.assertThat
+import org.gradle.api.artifacts.Configuration
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
@@ -9,6 +11,7 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.io.File
+import java.util.function.Predicate
 
 @RunWith(JUnit4::class)
 class AffectedModuleConfigurationTest {
@@ -26,7 +29,7 @@ class AffectedModuleConfigurationTest {
 
     @Before
     fun setup() {
-        config = AffectedModuleConfiguration()
+        config = AffectedModuleConfiguration(MockObjectFactory())
     }
 
     @Test
@@ -323,5 +326,29 @@ class AffectedModuleConfigurationTest {
         val actual = config.customTasks
 
         assert(actual.first().taskDescription == "Description of fake task")
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN configuration predicate is set THEN is configuration predicate`() {
+        // GIVEN
+        val expected = Predicate<Configuration> { false }
+        config.configurationPredicate.set(expected)
+
+        // WHEN
+        val predicate = config.configurationPredicate.get()
+
+        // THEN
+        assertThat(predicate).isSameInstanceAs(expected)
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN configuration predicate is not set THEN is default`() {
+        // GIVEN default configuration
+
+        // WHEN
+        val predicate = config.configurationPredicate.get()
+
+        // THEN
+        assertThat(predicate).isInstanceOf(AlwaysConfigurationPredicate::class.java)
     }
 }

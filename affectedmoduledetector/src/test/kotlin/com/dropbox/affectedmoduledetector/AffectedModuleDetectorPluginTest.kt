@@ -1,5 +1,6 @@
 package com.dropbox.affectedmoduledetector
 
+import com.dropbox.affectedmoduledetector.mocks.MockObjectFactory
 import com.google.common.truth.Truth.assertThat
 import org.gradle.api.Project
 import org.gradle.api.internal.plugins.PluginApplicationException
@@ -10,7 +11,6 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import java.lang.IllegalStateException
 
 @RunWith(JUnit4::class)
 class AffectedModuleDetectorPluginTest {
@@ -102,7 +102,7 @@ class AffectedModuleDetectorPluginTest {
     @Test
     fun `GIVEN affected module detector plugin WHEN register_custom_task is called AND AffectedModuleConfiguration customTask is not empty THEN task is added`() {
         // GIVEN
-        val configuration = AffectedModuleConfiguration()
+        val configuration = AffectedModuleConfiguration(MockObjectFactory())
         configuration.customTasks = setOf(fakeTask)
         rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
 
@@ -122,7 +122,7 @@ class AffectedModuleDetectorPluginTest {
     @Test
     fun `GIVEN affected module detector plugin WHEN registerCustomTasks is called AND AffectedModuleConfiguration customTask is empty THEN task isn't added`() {
         // GIVEN
-        val configuration = AffectedModuleConfiguration()
+        val configuration = AffectedModuleConfiguration(MockObjectFactory())
         rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
         val plugin = AffectedModuleDetectorPlugin()
 
@@ -144,7 +144,7 @@ class AffectedModuleDetectorPluginTest {
     @Test
     fun `GIVEN affected module detector plugin WHEN registerTestTasks THEN task all task added`() {
         // GIVEN
-        val configuration = AffectedModuleConfiguration()
+        val configuration = AffectedModuleConfiguration(MockObjectFactory())
         rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
         val plugin = AffectedModuleDetectorPlugin()
 
@@ -168,7 +168,7 @@ class AffectedModuleDetectorPluginTest {
     @Test
     fun `GIVEN affected module detector plugin WHEN registerTestTasks called THEN added all tasks from InternalTaskType`() {
         // GIVEN
-        val configuration = AffectedModuleConfiguration()
+        val configuration = AffectedModuleConfiguration(MockObjectFactory())
         rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
         val plugin = AffectedModuleDetectorPlugin()
         val availableTaskVariants = 3 // runAffectedAndroidTests, assembleAffectedAndroidTests and runAffectedUnitTests
@@ -187,7 +187,7 @@ class AffectedModuleDetectorPluginTest {
     fun `GIVEN affected module detector plugin WHEN registerCustomTasks called THEN added all tasks from FakeTaskType`() {
         // GIVEN
         val givenCustomTasks = setOf(fakeTask, fakeTask.copy(commandByImpact = "otherCommand"))
-        val configuration = AffectedModuleConfiguration()
+        val configuration = AffectedModuleConfiguration(MockObjectFactory())
         configuration.customTasks = givenCustomTasks
         rootProject.extensions.add(AffectedModuleConfiguration.name, configuration)
         val plugin = AffectedModuleDetectorPlugin()

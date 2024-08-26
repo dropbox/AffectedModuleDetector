@@ -1,9 +1,13 @@
 package com.dropbox.affectedmoduledetector
 
 import com.dropbox.affectedmoduledetector.util.toOsSpecificPath
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
 import java.io.File
+import java.util.function.Predicate
 
-class AffectedModuleConfiguration {
+class AffectedModuleConfiguration(objectFactory: ObjectFactory) {
 
     /**
      * Implementation of [AffectedModuleTaskType] for easy adding of custom gradle task to
@@ -43,6 +47,16 @@ class AffectedModuleConfiguration {
      * @see AffectedModuleDetectorPlugin - gradle plugin
      */
     var customTasks = emptySet<CustomTask>()
+
+    /**
+     * Predicate to determine if a configuration should be considered or ignored.  This predicate
+     * will be called for every configuration defined by each project module.  By default,
+     * all configurations are considered.
+     */
+    @Suppress("UNCHECKED_CAST") // Erasure in the API results in: Property<Predicate<*>>
+    val configurationPredicate: Property<Predicate<Configuration>> =
+        (objectFactory.property(Predicate::class.java) as Property<Predicate<Configuration>>)
+            .convention(AlwaysConfigurationPredicate())
 
     /**
      * Folder to place the log in

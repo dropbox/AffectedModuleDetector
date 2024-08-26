@@ -62,7 +62,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     private fun registerMainConfiguration(project: Project) {
         project.extensions.add(
             AffectedModuleConfiguration.name,
-            AffectedModuleConfiguration()
+            AffectedModuleConfiguration(project.objects)
         )
     }
 

@@ -1,5 +1,6 @@
 package com.dropbox.affectedmoduledetector
 
+import com.dropbox.affectedmoduledetector.mocks.MockObjectFactory
 import com.google.common.truth.Truth
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtraPropertiesExtension
@@ -220,9 +221,12 @@ class AffectedModuleDetectorImplTest {
         val p19config = p19.configurations.create("p19config")
         p19config.dependencies.add(p19.dependencies.project(mutableMapOf("path" to ":p18")))
 
-        affectedModuleConfiguration = AffectedModuleConfiguration().also {
+        affectedModuleConfiguration = AffectedModuleConfiguration(MockObjectFactory()).also {
             it.baseDir = tmpDir.absolutePath
             it.pathsAffectingAllModules = pathsAffectingAllModules
+        }
+        listOf(root, root2, root3).forEach { rootProject ->
+            rootProject.extensions.add(AffectedModuleConfiguration.name, affectedModuleConfiguration)
         }
     }
 
@@ -1425,7 +1429,7 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun `GIVEN affected module configuration WHEN invalid path THEN throw exception`() {
         // GIVEN
-        val config = AffectedModuleConfiguration().also {
+        val config = AffectedModuleConfiguration(MockObjectFactory()).also {
             it.baseDir = tmpFolder.root.absolutePath
         }
 
@@ -1446,7 +1450,7 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun `GIVEN affected module configuration WHEN valid paths THEN return paths`() {
         // GIVEN
-        val config = AffectedModuleConfiguration().also {
+        val config = AffectedModuleConfiguration(MockObjectFactory()).also {
             it.baseDir = tmpFolder.root.absolutePath
         }
 
@@ -1627,6 +1631,55 @@ class AffectedModuleDetectorImplTest {
                 mapOf()
             )
         )
+    }
+
+    @Test
+    fun `GIVEN upward configuration reference from p2 to p6 WHEN no predicate is supplied THEN p2 is affected`() {
+        p2.configurations.create("p2-upward-p6") { config ->
+            config.dependencies.add(p2.dependencies.project(mapOf("path" to p6.path)))
+        }
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
+            modules = null,
+            injectedGitClient = MockGitClient(
+                changedFiles = listOf(
+                    convertToFilePath("d1/d3/d6", "foo.java")
+                ),
+                tmpFolder = tmpFolder.root
+            ),
+            config = affectedModuleConfiguration
+        )
+        Truth.assertThat(detector.shouldInclude(p2)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p6)).isTrue()
+    }
+
+    @Test
+    fun `GIVEN upward configuration reference from p2 to p6 WHEN predicate filtered THEN p2 is unaffected`() {
+        p2.configurations.create("p2-upward-p6") { config ->
+            config.dependencies.add(p2.dependencies.project(mapOf("path" to p6.path)))
+        }
+        affectedModuleConfiguration.configurationPredicate.set { configuration ->
+            !configuration.name.contains("-upward-")
+        }
+        val detector = AffectedModuleDetectorImpl(
+            rootProject = root,
+            logger = logger,
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
+            modules = null,
+            injectedGitClient = MockGitClient(
+                changedFiles = listOf(
+                    convertToFilePath("d1/d3/d6", "foo.java")
+                ),
+                tmpFolder = tmpFolder.root
+            ),
+            config = affectedModuleConfiguration
+        )
+        Truth.assertThat(detector.shouldInclude(p2)).isFalse()
+        Truth.assertThat(detector.shouldInclude(p6)).isTrue()
     }
 
     // For both Linux/Windows
