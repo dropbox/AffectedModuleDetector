@@ -13,8 +13,7 @@ affectedTestConfiguration {
 android {
     namespace "com.dropbox.detector.sample"
 
-    compileSdkVersion 34
-    buildToolsVersion "30.0.2"
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.dropbox.detector.sample"
