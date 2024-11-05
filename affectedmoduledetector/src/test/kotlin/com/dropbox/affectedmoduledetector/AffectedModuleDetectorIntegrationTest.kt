@@ -60,8 +60,8 @@ class AffectedModuleDetectorIntegrationTest {
                 |       jcenter()
                 |   }
                 |   dependencies {
-                |       classpath "com.android.tools.build:gradle:4.1.0"
-                |       classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10"
+                |       classpath "com.android.tools.build:gradle:7.4.0"
+                |       classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.25"
                 |   }    
                 |}
                 |plugins {
@@ -81,12 +81,20 @@ class AffectedModuleDetectorIntegrationTest {
                 |     id 'kotlin-android'
                 |   }
                 |   android {
-                |       compileSdkVersion 30
-                |       buildToolsVersion "30.0.2"
+                |       compileSdkVersion 33
+                |       namespace "sample"
                 |   }
                 |   dependencies {
                 |     implementation project(":sample-core")
                 |   }""".trimMargin()
+        )
+
+        tmpFolder.newFolder("sample-app/src/main/")
+        tmpFolder.newFile("sample-app/src/main/AndroidManifest.xml").writeText(
+            """
+                |<manifest>
+                |</manifest>
+                """.trimMargin()
         )
 
         tmpFolder.newFile("sample-core/build.gradle").writeText(
@@ -98,9 +106,17 @@ class AffectedModuleDetectorIntegrationTest {
                 |       assembleAndroidTestTask = "assembleAndroidTest"
                 |   }
                 |   android {
-                |       compileSdkVersion 30
-                |       buildToolsVersion "30.0.2"
+                |       namespace 'sample.core'
+                |       compileSdkVersion 33
                 |   }""".trimMargin()
+        )
+
+        tmpFolder.newFolder("sample-core/src/main/")
+        tmpFolder.newFile("sample-core/src/main/AndroidManifest.xml").writeText(
+            """
+                |<manifest>
+                |</manifest>
+                """.trimMargin()
         )
 
         // WHEN
@@ -138,8 +154,8 @@ class AffectedModuleDetectorIntegrationTest {
                 |       jcenter()
                 |   }
                 |   dependencies {
-                |       classpath "com.android.tools.build:gradle:4.1.0"
-                |       classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10"
+                |       classpath "com.android.tools.build:gradle:7.4.0"
+                |       classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.25"
                 |   }    
                 |}
                 |plugins {
@@ -162,12 +178,20 @@ class AffectedModuleDetectorIntegrationTest {
                 |     id 'kotlin-android'
                 |   }
                 |   android {
-                |       compileSdkVersion 30
-                |       buildToolsVersion "30.0.2"
+                |       namespace 'sample'
+                |       compileSdkVersion 33
                 |   }
                 |   dependencies {
                 |     implementation project(":sample-core")
                 |   }""".trimMargin()
+        )
+
+        tmpFolder.newFolder("sample-app/src/main/")
+        tmpFolder.newFile("sample-app/src/main/AndroidManifest.xml").writeText(
+            """
+                |<manifest>
+                |</manifest>
+                """.trimMargin()
         )
 
         tmpFolder.newFile("sample-core/build.gradle").writeText(
@@ -179,9 +203,17 @@ class AffectedModuleDetectorIntegrationTest {
                 |       assembleAndroidTestTask = "assembleAndroidTest"
                 |   }
                 |   android {
-                |       compileSdkVersion 30
-                |       buildToolsVersion "30.0.2"
+                |       namespace 'sample.core'
+                |       compileSdkVersion 33
                 |   }""".trimMargin()
+        )
+
+        tmpFolder.newFolder("sample-core/src/main/")
+        tmpFolder.newFile("sample-core/src/main/AndroidManifest.xml").writeText(
+            """
+                |<manifest>
+                |</manifest>
+                """.trimMargin()
         )
 
         // WHEN
