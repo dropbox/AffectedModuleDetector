@@ -25,14 +25,20 @@ import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.CHANG
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.DEPENDENT_PROJECTS_ARG
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.ENABLE_ARG
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector.Companion.MODULES_ARG
-import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProvider
+import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProviderConfiguration
 import com.dropbox.affectedmoduledetector.util.toPathSections
+import org.gradle.api.Action
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.UnknownDomainObjectException
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.logging.Logger
+import org.gradle.api.provider.Provider
+import org.gradle.api.services.BuildService
+import org.gradle.api.services.BuildServiceParameters
+import org.gradle.api.services.BuildServiceSpec
 import java.io.File
+import java.io.Serializable
 
 /**
  * The subsets we allow the projects to be partitioned into.
@@ -60,7 +66,7 @@ enum class ProjectSubset { DEPENDENT_PROJECTS, CHANGED_PROJECTS, ALL_AFFECTED_PR
  * An identifier for a project, ensuring that projects are always identified by their path.
  */
 @JvmInline
-value class ProjectPath(val path: String)
+value class ProjectPath(val path: String) : Serializable
 
 /**
  * A utility class that can discover which files are changed based on git history.
@@ -82,13 +88,13 @@ value class ProjectPath(val path: String)
  * Since this needs to check project dependency graph to work, it cannot be accessed before
  * all projects are loaded. Doing so will throw an exception.
  */
-abstract class AffectedModuleDetector {
+abstract class AffectedModuleDetector(protected val logger: Logger?) {
     /**
      * Returns whether this project was affected by current changes.
      *
      * Can only be called during the execution phase
      */
-    abstract fun shouldInclude(project: Project): Boolean
+    abstract fun shouldInclude(project: ProjectPath): Boolean
 
     /**
      * Returns true if at least one project has been affected
@@ -102,7 +108,7 @@ abstract class AffectedModuleDetector {
      *
      * Can be called during the configuration or execution phase
      */
-    abstract fun isProjectProvided2(project: Project): Boolean
+    abstract fun isProjectProvided2(project: ProjectPath): Boolean
 
     /**
      * Returns the set that the project belongs to. The set is one of the ProjectSubset above.
@@ -112,8 +118,20 @@ abstract class AffectedModuleDetector {
      */
     abstract fun getSubset(project: Project): ProjectSubset
 
+    /**
+     * Returns a set of all projects that are affected by the current changes. This includes both
+     * projects that have changed files and projects that depend on changed projects.
+     */
+    abstract fun getAllAffectedProjects(): Set<ProjectPath>
+
+    /**
+     * Returns a set of all projects that have changed files
+     */
+    abstract fun getAllChangedProjects(): Set<ProjectPath>
+
     companion object {
         private const val ROOT_PROP_NAME = "AffectedModuleDetectorPlugin"
+        private const val SERVICE_NAME = ROOT_PROP_NAME + "BuildService"
         private const val MODULES_ARG = "affected_module_detector.modules"
         private const val DEPENDENT_PROJECTS_ARG = "affected_module_detector.dependentProjects"
         private const val CHANGED_PROJECTS_ARG = "affected_module_detector.changedProjects"
@@ -126,12 +144,17 @@ abstract class AffectedModuleDetector {
                 "Project provided must be root, project was ${rootProject.path}"
             }
 
+            val instance = AffectedModuleDetectorWrapper()
+            rootProject.extensions.add(ROOT_PROP_NAME, instance)
+
             val enabled = isProjectEnabled(rootProject)
             if (!enabled) {
-                setInstance(
-                    rootProject,
-                    AcceptAll()
-                )
+                val provider =
+                    setupWithParams(rootProject) { spec ->
+                        val params = spec.parameters
+                        params.acceptAll = true
+                    }
+                instance.wrapped = provider
                 return
             }
             isConfigured = true
@@ -156,54 +179,71 @@ abstract class AffectedModuleDetector {
                         "extension added."
                 }
 
-            val logger =
-                ToStringLogger.createWithLifecycle(
-                    rootProject,
-                    config.logFilename,
-                    config.logFolder
-                )
+            val distDir = if (config.logFolder != null) {
+                val distDir = File(config.logFolder!!)
+                if (!distDir.exists()) {
+                    distDir.mkdirs()
+                }
+                distDir
+            } else {
+                rootProject.rootDir
+            }
+
+            val outputFile = distDir.resolve(config.logFilename).also {
+                it.writeText("")
+            }
+            val logger = FileLogger(outputFile)
 
             val modules =
                 getModulesProperty(
                     rootProject
                 )
 
-            AffectedModuleDetectorImpl(
-                rootProject = rootProject,
-                logger = logger,
-                ignoreUnknownProjects = true,
-                projectSubset = subset,
-                modules = modules,
-                config = config
-            ).also {
-                logger.info("Using real detector with $subset")
-                setInstance(
-                    rootProject,
-                    it
-                )
+            val gitClient = GitClientImpl(
+                rootProject.projectDir,
+                logger,
+                commitShaProviderConfiguration = CommitShaProviderConfiguration(config.compareFrom, config.specifiedBranch, config.top, config.includeUncommitted),
+                ignoredFiles = config.ignoredFiles
+            )
+
+            logger.lifecycle("projects evaluated")
+            val projectGraph = ProjectGraph(rootProject)
+            val dependencyTracker = DependencyTracker(rootProject, logger.toLogger())
+            val provider = setupWithParams(rootProject) { spec ->
+                val parameters = spec.parameters
+                parameters.acceptAll = false
+                parameters.projectGraph = projectGraph
+                parameters.dependencyTracker = dependencyTracker
+                parameters.log = logger
+                parameters.ignoreUnknownProjects = true
+                parameters.projectSubset = subset
+                parameters.modules = modules
+                parameters.config = config
+                parameters.gitChangedFilesProvider = gitClient.findChangedFiles(rootProject)
+                parameters.gitRoot.set(gitClient.getGitRoot())
             }
+            logger.info("Using real detector with $subset")
+            instance.wrapped = provider
         }
 
-        private fun setInstance(
+        private fun setupWithParams(
             rootProject: Project,
-            detector: AffectedModuleDetector
-        ) {
+            configureAction: Action<BuildServiceSpec<AffectedModuleDetectorLoader.Parameters>>
+        ): Provider<AffectedModuleDetectorLoader> {
             if (!rootProject.isRoot) {
-                throw IllegalArgumentException(
-                    "This should've been the root project, instead found ${rootProject.path}"
-                )
+                throw IllegalArgumentException("this should've been the root project")
             }
-            rootProject.extensions.add(ROOT_PROP_NAME, detector)
+            return rootProject.gradle.sharedServices.registerIfAbsent(
+                SERVICE_NAME,
+                AffectedModuleDetectorLoader::class.java,
+                configureAction
+            )
         }
 
         private fun getInstance(project: Project): AffectedModuleDetector? {
             val extensions = project.rootProject.extensions
-
-            return try {
-                extensions.getByName(ROOT_PROP_NAME) as? AffectedModuleDetector
-            } catch (e: UnknownDomainObjectException) {
-                null
-            }
+            val detector = extensions.findByName(ROOT_PROP_NAME) as? AffectedModuleDetector
+            return detector!!
         }
 
         private fun getOrThrow(project: Project): AffectedModuleDetector {
@@ -243,7 +283,7 @@ abstract class AffectedModuleDetector {
             task.onlyIf {
                 getOrThrow(
                     task.project
-                ).shouldInclude(task.project)
+                ).shouldInclude(task.project.projectPath)
             }
         }
 
@@ -257,7 +297,7 @@ abstract class AffectedModuleDetector {
         fun isProjectAffected(project: Project): Boolean {
             return getOrThrow(
                 project
-            ).shouldInclude(project)
+            ).shouldInclude(project.projectPath)
         }
 
         /**
@@ -290,27 +330,108 @@ abstract class AffectedModuleDetector {
     }
 }
 
+class AffectedModuleDetectorWrapper : AffectedModuleDetector(logger = null) {
+    var wrapped: Provider<AffectedModuleDetectorLoader>? = null
+
+    fun getOrThrow(): AffectedModuleDetector {
+        return wrapped?.get()?.detector
+            ?: throw GradleException(
+                """
+                        Tried to get the affected module detector implementation too early.
+                        You cannot access it until all projects are evaluated.
+            """
+                    .trimIndent()
+            )
+    }
+
+    override fun shouldInclude(project: ProjectPath): Boolean {
+        return getOrThrow().shouldInclude(project)
+    }
+
+    override fun hasAffectedProjects(): Boolean {
+        return getOrThrow().hasAffectedProjects()
+    }
+
+    override fun isProjectProvided2(project: ProjectPath): Boolean {
+        return getOrThrow().isProjectProvided2(project)
+    }
+
+    override fun getSubset(project: Project): ProjectSubset {
+        return getOrThrow().getSubset(project)
+    }
+
+    override fun getAllAffectedProjects(): Set<ProjectPath> {
+        return getOrThrow().getAllAffectedProjects()
+    }
+
+    override fun getAllChangedProjects(): Set<ProjectPath> {
+        return getOrThrow().getAllChangedProjects()
+    }
+}
+
+abstract class AffectedModuleDetectorLoader :
+    BuildService<AffectedModuleDetectorLoader.Parameters> {
+    interface Parameters : BuildServiceParameters {
+        var acceptAll: Boolean
+        var projectGraph: ProjectGraph
+        var dependencyTracker: DependencyTracker
+        var log: FileLogger
+        var ignoreUnknownProjects: Boolean
+        var projectSubset: ProjectSubset
+        var modules: Set<String>?
+        var gitChangedFilesProvider: Provider<List<String>>
+        var config: AffectedModuleConfiguration
+        val gitRoot: DirectoryProperty
+    }
+
+    val detector: AffectedModuleDetector by lazy {
+        val logger = parameters.log.toLogger()
+        if (parameters.acceptAll) {
+            AcceptAll(logger)
+        } else {
+            AffectedModuleDetectorImpl(
+                projectGraph = parameters.projectGraph,
+                dependencyTracker = parameters.dependencyTracker,
+                logger = logger,
+                ignoreUnknownProjects = parameters.ignoreUnknownProjects,
+                projectSubset = parameters.projectSubset,
+                modules = parameters.modules,
+                config = parameters.config,
+                changedFilesProvider = parameters.gitChangedFilesProvider,
+                gitRoot = parameters.gitRoot.get().asFile
+            )
+        }
+    }
+}
+
 /**
  * Implementation that accepts everything without checking.
  */
 private class AcceptAll(
-    private val wrapped: AffectedModuleDetector? = null,
-    private val logger: Logger? = null
-) : AffectedModuleDetector() {
-    override fun shouldInclude(project: Project): Boolean {
-        val wrappedResult = wrapped?.shouldInclude(project)
-        logger?.info("[AcceptAll] wrapper returned $wrappedResult but I'll return true")
+    logger: Logger? = null
+) : AffectedModuleDetector(logger) {
+    override fun shouldInclude(project: ProjectPath): Boolean {
+        logger?.info("[AcceptAll] acceptAll.shouldInclude returning true")
         return true
     }
 
     override fun hasAffectedProjects() = true
 
-    override fun isProjectProvided2(project: Project) = true
+    override fun isProjectProvided2(project: ProjectPath) = true
 
     override fun getSubset(project: Project): ProjectSubset {
-        val wrappedResult = wrapped?.getSubset(project)
-        logger?.info("[AcceptAll] wrapper returned $wrappedResult but I'll return CHANGED_PROJECTS")
+        logger?.info("[AcceptAll] AcceptAll.getSubset returning CHANGED_PROJECTS")
         return ProjectSubset.CHANGED_PROJECTS
+    }
+
+    override fun getAllAffectedProjects(): Set<ProjectPath> {
+        logger?.info("[AcceptAll] AcceptAll.getAllAffectedProjects returning empty set")
+        return emptySet()
+    }
+
+    override fun getAllChangedProjects(): Set<ProjectPath> {
+        logger?.info("[AcceptAll] AcceptAll.getAllChangedProjects returning empty set")
+        return emptySet()
     }
 }
 
@@ -321,48 +442,31 @@ private class AcceptAll(
  *
  * When a file in a module is changed, all modules that depend on it are considered as changed.
  */
-class AffectedModuleDetectorImpl constructor(
-    private val rootProject: Project,
-    private val logger: Logger?,
+class AffectedModuleDetectorImpl(
+    private val projectGraph: ProjectGraph,
+    private val dependencyTracker: DependencyTracker,
+    logger: Logger?,
     // used for debugging purposes when we want to ignore non module files
     private val ignoreUnknownProjects: Boolean = false,
     private val projectSubset: ProjectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-    private val injectedGitClient: GitClient? = null,
     private val modules: Set<String>? = null,
-    private val config: AffectedModuleConfiguration
-) : AffectedModuleDetector() {
+    private val config: AffectedModuleConfiguration,
+    private val changedFilesProvider: Provider<List<String>>,
+    private val gitRoot: File,
+) : AffectedModuleDetector(logger) {
 
     init {
         logger?.info("Modules provided: ${modules?.joinToString(separator = ",")}")
     }
 
-    private val git by lazy {
-        injectedGitClient ?: GitClientImpl(
-            rootProject.projectDir,
-            logger,
-            commitShaProvider = CommitShaProvider.fromString(config.compareFrom, config.specifiedBranch, config.specifiedRawCommitSha),
-            ignoredFiles = config.ignoredFiles
-        )
-    }
-
-    private val dependencyTracker by lazy {
-        DependencyTracker(rootProject, logger)
-    }
-
-    private val allProjects by lazy {
-        rootProject.subprojects.associateBy { it.projectPath }
-    }
-
-    private val projectGraph by lazy {
-        ProjectGraph(rootProject, git.getGitRoot(), logger)
-    }
+    private val allProjects by lazy { projectGraph.allProjects }
 
     val affectedProjects by lazy {
         findAffectedProjects()
     }
 
     private val changedProjects by lazy {
-        findChangedProjects(config.top, config.includeUncommitted)
+        findChangedProjects()
     }
 
     private val dependentProjects by lazy {
@@ -373,15 +477,14 @@ class AffectedModuleDetectorImpl constructor(
 
     private var unknownFiles: MutableSet<String> = mutableSetOf()
 
-    override fun shouldInclude(project: Project): Boolean {
-        val isRootProject = project.isRoot
-        val isProjectAffected = affectedProjects.contains(project.projectPath)
+    override fun shouldInclude(project: ProjectPath): Boolean {
+        val isProjectAffected = affectedProjects.contains(project)
         val isProjectProvided = isProjectProvided2(project)
-        val isModuleExcludedByName = config.excludedModules.contains(project.name)
+        val isModuleExcludedByName = config.excludedModules.contains(project.path) || config.excludedModules.contains(project.path.substringAfter(':'))
         val isModuleExcludedByRegex = config.excludedModules.any { project.path.matches(it.toRegex()) }
         val isNotModuleExcluded = !(isModuleExcludedByName || isModuleExcludedByRegex)
 
-        val shouldInclude = (isRootProject || (isProjectAffected && isProjectProvided)) && isNotModuleExcluded
+        val shouldInclude = isProjectAffected && isProjectProvided && isNotModuleExcluded
         logger?.info("checking whether I should include ${project.path} and my answer is $shouldInclude")
 
         return shouldInclude
@@ -389,7 +492,7 @@ class AffectedModuleDetectorImpl constructor(
 
     override fun hasAffectedProjects() = affectedProjects.isNotEmpty()
 
-    override fun isProjectProvided2(project: Project): Boolean {
+    override fun isProjectProvided2(project: ProjectPath): Boolean {
         if (modules == null) return true
         return modules.contains(project.path)
     }
@@ -408,37 +511,40 @@ class AffectedModuleDetectorImpl constructor(
         }
     }
 
+    override fun getAllAffectedProjects(): Set<ProjectPath> {
+        return affectedProjects
+    }
+
+    override fun getAllChangedProjects(): Set<ProjectPath> {
+        return changedProjects
+    }
+
     /**
      * Finds only the set of projects that were directly changed in the commit.
      *
      * Also populates the unknownFiles var which is used in findAffectedProjects
      */
-    private fun findChangedProjects(
-        top: Sha,
-        includeUncommitted: Boolean = true
-    ): Map<ProjectPath, Project> {
-        git.findChangedFiles(
-            top = top,
-            includeUncommitted = includeUncommitted
-        ).forEach { fileName ->
+    private fun findChangedProjects(): Set<ProjectPath> {
+        (changedFilesProvider.getOrNull() ?: return allProjects).forEach { fileName ->
             if (affectsAllModules(fileName)) {
+                logger?.info("File $fileName affects all modules")
                 return allProjects
             }
             changedFiles.add(fileName)
         }
 
-        val changedProjects = mutableMapOf<ProjectPath, Project>()
+        val changedProjects = mutableSetOf<ProjectPath>()
 
         for (filePath in changedFiles) {
             val containingProject = findContainingProject(filePath)
             if (containingProject == null) {
                 unknownFiles.add(filePath)
                 logger?.info(
-                    "Couldn't find containing project for file$filePath. " +
+                    "Couldn't find containing project for file $filePath. " +
                         "Adding to unknownFiles."
                 )
             } else {
-                changedProjects[containingProject.projectPath] = containingProject
+                changedProjects.add(containingProject)
                 logger?.info(
                     "For file $filePath containing project is $containingProject. " +
                         "Adding to changedProjects."
@@ -453,10 +559,10 @@ class AffectedModuleDetectorImpl constructor(
      * Gets all dependent projects from the set of changedProjects. This doesn't include the
      * original changedProjects. Always build is still here to ensure at least 1 thing is built
      */
-    private fun findDependentProjects(): Map<ProjectPath, Project> {
-        return changedProjects.flatMap { (_, project) ->
-            dependencyTracker.findAllDependents(project).entries
-        }.associate { it.key to it.value }
+    private fun findDependentProjects(): Set<ProjectPath> {
+        return changedProjects.flatMap { path ->
+            dependencyTracker.findAllDependents(path)
+        }.toSet()
     }
 
     /**
@@ -472,7 +578,7 @@ class AffectedModuleDetectorImpl constructor(
      * Also detects modules whose tests are codependent at runtime.
      */
     @Suppress("ComplexMethod")
-    private fun findAffectedProjects(): Map<ProjectPath, Project> {
+    private fun findAffectedProjects(): Set<ProjectPath> {
         // In this case we don't care about any of the logic below, we're only concerned with
         // running the changed projects in this test runner
         if (projectSubset == ProjectSubset.CHANGED_PROJECTS) {
@@ -510,20 +616,18 @@ class AffectedModuleDetectorImpl constructor(
     }
 
     private fun affectsAllModules(relativeFilePath: String): Boolean {
-        logger?.info("Paths affecting all modules: ${config.pathsAffectingAllModules}")
-
         val rootProjectDir = if (config.baseDir != null) {
             File(config.baseDir!!)
         } else {
-            rootProject.projectDir
+            File(projectGraph.getRootProjectPath()!!.path)
         }
-        val pathSections = relativeFilePath.toPathSections(rootProjectDir, git.getGitRoot())
+        val pathSections = relativeFilePath.toPathSections(rootProjectDir, gitRoot)
         val projectRelativePath = pathSections.joinToString(File.separatorChar.toString())
 
         return config.pathsAffectingAllModules.any { projectRelativePath.startsWith(it) }
     }
 
-    private fun findContainingProject(filePath: String): Project? {
+    private fun findContainingProject(filePath: String): ProjectPath? {
         return projectGraph.findContainingProject(filePath).also {
             logger?.info("search result for $filePath resulted in ${it?.path}")
         }
