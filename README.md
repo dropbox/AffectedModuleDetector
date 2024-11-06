@@ -95,6 +95,7 @@ affectedModuleDetector {
     ignoredFiles = [
         ".*\\.md", ".*\\.txt", ".*README"
     ]
+    buildAllWhenNoProjectsChanged = true // default is true
     includeUncommitted = true
     top = "HEAD"
     customTasks = [
@@ -113,6 +114,7 @@ affectedModuleDetector {
  - `logFolder`: A folder to output the log file in
  - `specifiedBranch`: A branch to specify changes against. Must be used in combination with configuration `compareFrom = "SpecifiedBranchCommit"` 
  - `ignoredFiles`: A set of files that will be filtered out of the list of changed files retrieved by git. 
+ - `buildAllWhenNoProjectsChanged`: If true, the plugin will build all projects when no projects are considered affected.
  - `compareFrom`: A commit to compare the branch changes against. Can be either:
     - PreviousCommit: compare against the previous commit
     - ForkCommit: compare against the commit the branch was forked from

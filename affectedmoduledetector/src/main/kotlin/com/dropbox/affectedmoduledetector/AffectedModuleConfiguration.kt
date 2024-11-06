@@ -116,6 +116,11 @@ class AffectedModuleConfiguration {
     var includeUncommitted: Boolean = true
 
     /**
+     * If we should build all projects when no projects have changed
+     */
+    var buildAllWhenNoProjectsChanged: Boolean = true
+
+    /**
      * The top of the git log to use, only used when [includeUncommitted] is false
      */
     var top: String = "HEAD"
