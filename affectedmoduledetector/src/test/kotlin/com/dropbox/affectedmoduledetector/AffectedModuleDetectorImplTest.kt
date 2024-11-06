@@ -3,6 +3,7 @@ package com.dropbox.affectedmoduledetector
 import com.google.common.truth.Truth
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtraPropertiesExtension
+import org.gradle.api.provider.Provider
 import org.gradle.testfixtures.ProjectBuilder
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
@@ -20,7 +21,7 @@ class AffectedModuleDetectorImplTest {
     @Rule
     @JvmField
     val attachLogsRule = AttachLogsTestRule()
-    private val logger = attachLogsRule.logger
+    private val logger by lazy { attachLogsRule.logger }
 
     @Rule
     @JvmField
@@ -35,8 +36,14 @@ class AffectedModuleDetectorImplTest {
     val tmpFolder3 = TemporaryFolder()
 
     private lateinit var root: Project
+    private lateinit var rootProjectGraph: ProjectGraph
+    private lateinit var rootDependencyTracker: DependencyTracker
     private lateinit var root2: Project
+    private lateinit var root2ProjectGraph: ProjectGraph
+    private lateinit var root2DependencyTracker: DependencyTracker
     private lateinit var root3: Project
+    private lateinit var root3ProjectGraph: ProjectGraph
+    private lateinit var root3DependencyTracker: DependencyTracker
     private lateinit var p1: Project
     private lateinit var p2: Project
     private lateinit var p3: Project
@@ -220,6 +227,13 @@ class AffectedModuleDetectorImplTest {
         val p19config = p19.configurations.create("p19config")
         p19config.dependencies.add(p19.dependencies.project(mutableMapOf("path" to ":p18")))
 
+        rootProjectGraph = ProjectGraph(root, null)
+        rootDependencyTracker = DependencyTracker(root, null)
+        root2ProjectGraph = ProjectGraph(root2, null)
+        root2DependencyTracker = DependencyTracker(root2, null)
+        root3ProjectGraph = ProjectGraph(root3, null)
+        root3DependencyTracker = DependencyTracker(root3, null)
+
         affectedModuleConfiguration = AffectedModuleConfiguration().also {
             it.baseDir = tmpDir.absolutePath
             it.pathsAffectingAllModules = pathsAffectingAllModules
@@ -229,30 +243,32 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun noChangeCLs() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            gitRoot = tmpFolder.root,
+            config = affectedModuleConfiguration,
+            changedFilesProvider = MockGitClient(
                 changedFiles = emptyList(),
                 tmpFolder = tmpFolder.root
-            ),
-            config = affectedModuleConfiguration
+            ).findChangedFiles(root),
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p1.projectPath to p1,
-                    p2.projectPath to p2,
-                    p3.projectPath to p3,
-                    p4.projectPath to p4,
-                    p5.projectPath to p5,
-                    p6.projectPath to p6,
-                    p7.projectPath to p7,
-                    p8.projectPath to p8,
-                    p9.projectPath to p9,
-                    p10.projectPath to p10
+                setOf(
+                    p1.projectPath,
+                    p2.projectPath,
+                    p3.projectPath,
+                    p4.projectPath,
+                    p5.projectPath,
+                    p6.projectPath,
+                    p7.projectPath,
+                    p8.projectPath,
+                    p9.projectPath,
+                    p10.projectPath,
                 )
             )
         )
@@ -261,30 +277,32 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun noChangeCLsOnlyDependent() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = emptyList(),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p1.projectPath to p1,
-                    p2.projectPath to p2,
-                    p3.projectPath to p3,
-                    p4.projectPath to p4,
-                    p5.projectPath to p5,
-                    p6.projectPath to p6,
-                    p7.projectPath to p7,
-                    p8.projectPath to p8,
-                    p9.projectPath to p9,
-                    p10.projectPath to p10
+                setOf(
+                    p1.projectPath,
+                    p2.projectPath,
+                    p3.projectPath,
+                    p4.projectPath,
+                    p5.projectPath,
+                    p6.projectPath,
+                    p7.projectPath,
+                    p8.projectPath,
+                    p9.projectPath,
+                    p10.projectPath,
                 )
             )
         )
@@ -293,20 +311,22 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun noChangeCLsOnlyChanged() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = emptyList(),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf()
+                setOf()
             )
         )
     }
@@ -314,24 +334,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInOne() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p1.projectPath to p1,
-                    p3.projectPath to p3,
-                    p4.projectPath to p4,
-                    p5.projectPath to p5
+                setOf(
+                    p1.projectPath,
+                    p3.projectPath,
+                    p4.projectPath,
+                    p5.projectPath,
                 )
             )
         )
@@ -363,23 +385,25 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInOneOnlyDependent() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p3.projectPath to p3,
-                    p4.projectPath to p4,
-                    p5.projectPath to p5
+                setOf(
+                    p3.projectPath,
+                    p4.projectPath,
+                    p5.projectPath,
                 )
             )
         )
@@ -388,20 +412,22 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInOneOnlyChanged() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(p1.projectPath to p1)
+                setOf(p1.projectPath)
             )
         )
     }
@@ -409,29 +435,31 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInTwo() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("d1", "foo.java"),
                     convertToFilePath("d2", "bar.java")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p1.projectPath to p1,
-                    p2.projectPath to p2,
-                    p3.projectPath to p3,
-                    p4.projectPath to p4,
-                    p5.projectPath to p5,
-                    p6.projectPath to p6
+                setOf(
+                    p1.projectPath,
+                    p2.projectPath,
+                    p3.projectPath,
+                    p4.projectPath,
+                    p5.projectPath,
+                    p6.projectPath,
                 )
             )
         )
@@ -440,27 +468,29 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInTwoOnlyDependent() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("d1", "foo.java"),
                     convertToFilePath("d2", "bar.java")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p3.projectPath to p3,
-                    p4.projectPath to p4,
-                    p5.projectPath to p5,
-                    p6.projectPath to p6
+                setOf(
+                    p3.projectPath,
+                    p4.projectPath,
+                    p5.projectPath,
+                    p6.projectPath,
                 )
             )
         )
@@ -469,25 +499,27 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInTwoOnlyChanged() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("d1", "foo.java"),
                     convertToFilePath("d2", "bar.java")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p1.projectPath to p1,
-                    p2.projectPath to p2
+                setOf(
+                    p1.projectPath,
+                    p2.projectPath,
                 )
             )
         )
@@ -496,20 +528,22 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInRootOnlyChanged_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf("foo.java"),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf()
+                setOf()
             )
         )
     }
@@ -517,20 +551,22 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInRootOnlyChanged_normalBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf("foo.java"),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf()
+                setOf()
             )
         )
     }
@@ -538,20 +574,22 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInRootAndSubproject_onlyChanged() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf("foo.java", convertToFilePath("d7", "bar.java")),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(p7.projectPath to p7)
+                setOf(p7.projectPath)
             )
         )
     }
@@ -559,24 +597,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInUi_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
                         "compose", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(p12.projectPath to p12)
+                setOf(p12.projectPath)
             )
         )
     }
@@ -584,24 +624,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInUiOnlyChanged_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
                         "compose", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(p12.projectPath to p12)
+                setOf(p12.projectPath)
             )
         )
     }
@@ -609,24 +651,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInUiOnlyDependent_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
                         "compose", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf()
+                setOf()
             )
         )
     }
@@ -634,24 +678,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInUi_normalBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
                         "compose", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf()
+                setOf()
             )
         )
     }
@@ -659,24 +705,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInUiOnlyChanged_normalBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
                         "compose", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf()
+                setOf()
             )
         )
     }
@@ -684,24 +732,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInUiOnlyDependent_normalBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
                         "compose", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf()
+                setOf()
             )
         )
     }
@@ -709,24 +759,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInNormal_normalBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
                         "d8", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(p8.projectPath to p8)
+                setOf(p8.projectPath)
             )
         )
     }
@@ -734,24 +786,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInNormalOnlyChanged_normalBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
                         "d8", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(p8.projectPath to p8)
+                setOf(p8.projectPath)
             )
         )
     }
@@ -759,24 +813,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInNormalOnlyDependent_normalBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
                         "d8", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf()
+                setOf()
             )
         )
     }
@@ -784,24 +840,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInNormal_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
                         "d8", "foo.java"
                     )
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf()
+                setOf()
             )
         )
     }
@@ -809,23 +867,25 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInBoth_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("d7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(p12.projectPath to p12)
+                setOf(p12.projectPath)
             )
         )
     }
@@ -833,23 +893,25 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInBothOnlyChanged_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("d7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(p12.projectPath to p12)
+                setOf(p12.projectPath)
             )
         )
     }
@@ -857,23 +919,25 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInBothOnlyDependent_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("d7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf() // a change to a project in the normal build doesn't affect the ui build
+                setOf() // a change to a project in the normal build doesn't affect the ui build
             )
         ) // and compose is in changed and so excluded from dependent
     }
@@ -881,23 +945,25 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInBoth_normalBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("d7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(p7.projectPath to p7) // a change in compose is known not to matter to the normal build
+                setOf(p7.projectPath) // a change in compose is known not to matter to the normal build
             )
         )
     }
@@ -905,23 +971,25 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInBothOnlyChanged_normalBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("d7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(p7.projectPath to p7)
+                setOf(p7.projectPath)
             )
         )
     }
@@ -929,23 +997,25 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInBothOnlyDependent_normalBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("d7", "foo.java"),
                     convertToFilePath("compose", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf() // a change in compose is known not to matter to the normal build
+                setOf() // a change in compose is known not to matter to the normal build
             )
         ) // and p7 is in changed and so not in dependent
     }
@@ -953,22 +1023,24 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInNormalRoot_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("..", "gradle.properties")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf() // a change in androidx root normally doesn't affect the ui build
+                setOf() // a change in androidx root normally doesn't affect the ui build
             )
         ) // unless otherwise specified (e.g. gradlew)
     }
@@ -976,22 +1048,24 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInUiRoot_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("gradle.properties")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                emptyMap()
+                emptySet()
             )
         ) // a change in ui/root affects all ui projects
     }
@@ -999,32 +1073,34 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInBuildSrc_normalBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("tools", "android", "buildSrc", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p1.projectPath to p1,
-                    p2.projectPath to p2,
-                    p3.projectPath to p3,
-                    p4.projectPath to p4,
-                    p5.projectPath to p5,
-                    p6.projectPath to p6,
-                    p7.projectPath to p7,
-                    p8.projectPath to p8,
-                    p9.projectPath to p9,
-                    p10.projectPath to p10
+                setOf(
+                    p1.projectPath,
+                    p2.projectPath,
+                    p3.projectPath,
+                    p4.projectPath,
+                    p5.projectPath,
+                    p6.projectPath,
+                    p7.projectPath,
+                    p8.projectPath,
+                    p9.projectPath,
+                    p10.projectPath,
                 )
             )
         ) // a change to buildSrc affects everything in both builds
@@ -1033,25 +1109,27 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInBuildSrc_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("tools", "android", "buildSrc", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
 
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p12.projectPath to p12,
-                    p13.projectPath to p13
+                setOf(
+                    p12.projectPath,
+                    p13.projectPath,
                 ) // a change to buildSrc affects everything in both builds
             )
         )
@@ -1060,22 +1138,24 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInUiGradlew_normalBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("ui", "gradlew")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf() // a change to ui gradlew affects only the ui build
+                setOf() // a change to ui gradlew affects only the ui build
             )
         )
     }
@@ -1083,24 +1163,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInNormalGradlew_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("android", "gradlew")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p12.projectPath to p12,
-                    p13.projectPath to p13
+                setOf(
+                    p12.projectPath,
+                    p13.projectPath,
                 ) // a change to root gradlew affects everything in both builds
             )
         )
@@ -1109,24 +1191,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInDevelopment_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("tools", "android", "buildSrc", "foo.sh")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root2),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p12.projectPath to p12,
-                    p13.projectPath to p13
+                setOf(
+                    p12.projectPath,
+                    p13.projectPath,
                 ) // a change to development affects everything in both builds
             )
         )
@@ -1135,11 +1219,12 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInTools_uiBuild() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root2,
-            logger = logger,
+            projectGraph = root2ProjectGraph,
+            dependencyTracker = root2DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath(
                         "tools",
@@ -1149,15 +1234,16 @@ class AffectedModuleDetectorImplTest {
                     )
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p12.projectPath to p12,
-                    p13.projectPath to p13
+                setOf(
+                    p12.projectPath,
+                    p13.projectPath,
                 ) // not sure what this folder is for, but it affects all of both?
             )
         )
@@ -1166,21 +1252,23 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun projectSubset_changed() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         // Verify expectations on affected projects
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(p1.projectPath to p1)
+                setOf(p1.projectPath)
             )
         )
         // Test changed
@@ -1209,24 +1297,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun projectSubset_dependent() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         // Verify expectations on affected projects
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p3.projectPath to p3,
-                    p4.projectPath to p4,
-                    p5.projectPath to p5
+                setOf(
+                    p3.projectPath,
+                    p4.projectPath,
+                    p5.projectPath,
                 )
             )
         )
@@ -1256,25 +1346,27 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun projectSubset_all() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         // Verify expectations on affected projects
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p1.projectPath to p1,
-                    p3.projectPath to p3,
-                    p4.projectPath to p4,
-                    p5.projectPath to p5
+                setOf(
+                    p1.projectPath,
+                    p3.projectPath,
+                    p4.projectPath,
+                    p5.projectPath,
                 )
             )
         )
@@ -1304,24 +1396,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun noChangeCLs_quixotic() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root3,
-            logger = logger,
+            projectGraph = root3ProjectGraph,
+            dependencyTracker = root3DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = emptyList(),
                 tmpFolder = root3.projectDir
-            ),
+            ).findChangedFiles(root3),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p16.projectPath to p16,
-                    p17.projectPath to p17,
-                    p18.projectPath to p18,
-                    p19.projectPath to p19
+                setOf(
+                    p16.projectPath,
+                    p17.projectPath,
+                    p18.projectPath,
+                    p19.projectPath,
                 )
             )
         )
@@ -1330,24 +1424,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun noChangeCLsOnlyDependent_quixotic() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root3,
-            logger = logger,
+            projectGraph = root3ProjectGraph,
+            dependencyTracker = root3DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.DEPENDENT_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = emptyList(),
                 tmpFolder = root3.projectDir
-            ),
+            ).findChangedFiles(root3),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p16.projectPath to p16,
-                    p17.projectPath to p17,
-                    p18.projectPath to p18,
-                    p19.projectPath to p19
+                setOf(
+                    p16.projectPath,
+                    p17.projectPath,
+                    p18.projectPath,
+                    p19.projectPath,
                 )
             )
         )
@@ -1356,20 +1452,22 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun noChangeCLsOnlyChanged_quixotic() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root3,
-            logger = logger,
+            projectGraph = root3ProjectGraph,
+            dependencyTracker = root3DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = emptyList(),
                 tmpFolder = root3.projectDir
-            ),
+            ).findChangedFiles(root3),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf()
+                setOf()
             )
         )
     }
@@ -1377,24 +1475,26 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInOne_quixotic_main_module() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root3,
-            logger = logger,
+            projectGraph = root3ProjectGraph,
+            dependencyTracker = root3DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(convertToFilePath("d14", "d16", "foo.java")),
                 tmpFolder = root3.projectDir
-            ),
+            ).findChangedFiles(root3),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p16.projectPath to p16,
-                    p17.projectPath to p17,
-                    p18.projectPath to p18,
-                    p19.projectPath to p19
+                setOf(
+                    p16.projectPath,
+                    p17.projectPath,
+                    p18.projectPath,
+                    p19.projectPath,
                 )
             )
         )
@@ -1403,22 +1503,24 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInOne_quixotic_common_module_with_a_dependency() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root3,
-            logger = logger,
+            projectGraph = root3ProjectGraph,
+            dependencyTracker = root3DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(convertToFilePath("d15", "d18", "foo.java")),
                 tmpFolder = root3.projectDir
-            ),
+            ).findChangedFiles(root3),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p18.projectPath to p18,
-                    p19.projectPath to p19
+                setOf(
+                    p18.projectPath,
+                    p19.projectPath,
                 )
             )
         )
@@ -1427,20 +1529,22 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun changeInOne_quixotic_common_module_without_a_dependency() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root3,
-            logger = logger,
+            projectGraph = root3ProjectGraph,
+            dependencyTracker = root3DependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(convertToFilePath("d15", "d19", "foo.java")),
                 tmpFolder = root3.projectDir
-            ),
+            ).findChangedFiles(root3),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(p19.projectPath to p19)
+                setOf(p19.projectPath)
             )
         )
     }
@@ -1484,60 +1588,66 @@ class AffectedModuleDetectorImplTest {
     @Test
     fun `GIVEN all affected modules WHEN modules parameter is passed THEN modules parameter is observed`() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             modules = setOf(":p1"),
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
-        Truth.assertThat(detector.shouldInclude(p1)).isTrue()
-        Truth.assertThat(detector.shouldInclude(p4)).isFalse()
-        Truth.assertThat(detector.shouldInclude(p5)).isFalse()
+        Truth.assertThat(detector.shouldInclude(p1.projectPath)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p4.projectPath)).isFalse()
+        Truth.assertThat(detector.shouldInclude(p5.projectPath)).isFalse()
     }
 
     @Test
     fun `GIVEN all affected modules WHEN modules parameter is empty THEN no affected modules `() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             modules = emptySet(),
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
-        Truth.assertThat(detector.shouldInclude(p1)).isFalse()
-        Truth.assertThat(detector.shouldInclude(p3)).isFalse()
-        Truth.assertThat(detector.shouldInclude(p4)).isFalse()
-        Truth.assertThat(detector.shouldInclude(p5)).isFalse()
+        Truth.assertThat(detector.shouldInclude(p1.projectPath)).isFalse()
+        Truth.assertThat(detector.shouldInclude(p3.projectPath)).isFalse()
+        Truth.assertThat(detector.shouldInclude(p4.projectPath)).isFalse()
+        Truth.assertThat(detector.shouldInclude(p5.projectPath)).isFalse()
     }
 
     @Test
     fun `GIVEN all affected modules WHEN modules parameter is null THEN all affected modules are returned `() {
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             modules = null,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
-        Truth.assertThat(detector.shouldInclude(p1)).isTrue()
-        Truth.assertThat(detector.shouldInclude(p3)).isTrue()
-        Truth.assertThat(detector.shouldInclude(p4)).isTrue()
-        Truth.assertThat(detector.shouldInclude(p5)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p1.projectPath)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p3.projectPath)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p4.projectPath)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p5.projectPath)).isTrue()
     }
 
     @Test
@@ -1546,20 +1656,22 @@ class AffectedModuleDetectorImplTest {
             it.excludedModules = setOf("p1")
         }
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             modules = null,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
-        Truth.assertThat(detector.shouldInclude(p1)).isFalse()
-        Truth.assertThat(detector.shouldInclude(p4)).isTrue()
-        Truth.assertThat(detector.shouldInclude(p5)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p1.projectPath)).isFalse()
+        Truth.assertThat(detector.shouldInclude(p4.projectPath)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p5.projectPath)).isTrue()
     }
 
     @Test
@@ -1568,12 +1680,13 @@ class AffectedModuleDetectorImplTest {
             it.excludedModules = setOf(":p1:p3:[a-zA-Z0-9:]+")
         }
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
             modules = null,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(
                     convertToFilePath("d1/d3", "foo.java"),
                     convertToFilePath("d1/d3/d4", "foo.java"),
@@ -1581,13 +1694,14 @@ class AffectedModuleDetectorImplTest {
                     convertToFilePath("d1/d3/d6", "foo.java")
                 ),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
-        Truth.assertThat(detector.shouldInclude(p3)).isTrue()
-        Truth.assertThat(detector.shouldInclude(p4)).isFalse()
-        Truth.assertThat(detector.shouldInclude(p5)).isTrue()
-        Truth.assertThat(detector.shouldInclude(p6)).isFalse()
+        Truth.assertThat(detector.shouldInclude(p3.projectPath)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p4.projectPath)).isFalse()
+        Truth.assertThat(detector.shouldInclude(p5.projectPath)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p6.projectPath)).isFalse()
     }
 
     @Test
@@ -1598,31 +1712,33 @@ class AffectedModuleDetectorImplTest {
             it.pathsAffectingAllModules.toMutableSet().add(changedFile)
         }
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             modules = null,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(changedFile),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf(
-                    p1.projectPath to p1,
-                    p2.projectPath to p2,
-                    p3.projectPath to p3,
-                    p4.projectPath to p4,
-                    p5.projectPath to p5,
-                    p6.projectPath to p6,
-                    p7.projectPath to p7,
-                    p8.projectPath to p8,
-                    p9.projectPath to p9,
-                    p10.projectPath to p10
+                setOf(
+                    p1.projectPath,
+                    p2.projectPath,
+                    p3.projectPath,
+                    p4.projectPath,
+                    p5.projectPath,
+                    p6.projectPath,
+                    p7.projectPath,
+                    p8.projectPath,
+                    p9.projectPath,
+                    p10.projectPath,
                 )
             )
         )
@@ -1633,21 +1749,23 @@ class AffectedModuleDetectorImplTest {
         val changedFile = convertToFilePath("android", "notgradle", "test.java")
 
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.CHANGED_PROJECTS,
             modules = null,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = listOf(changedFile),
                 tmpFolder = tmpFolder.root
-            ),
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                mapOf()
+                setOf()
             )
         )
     }
@@ -1663,9 +1781,8 @@ class AffectedModuleDetectorImplTest {
     ) : GitClient {
 
         override fun findChangedFiles(
-            top: Sha,
-            includeUncommitted: Boolean
-        ) = changedFiles
+            project: Project,
+        ): Provider<List<String>> = project.provider { changedFiles }
 
         override fun getGitRoot(): File {
             return tmpFolder

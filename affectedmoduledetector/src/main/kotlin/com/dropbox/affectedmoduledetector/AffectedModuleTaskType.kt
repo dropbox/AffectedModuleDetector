@@ -1,12 +1,14 @@
 package com.dropbox.affectedmoduledetector
 
+import java.io.Serializable
+
 /**
  * For creating a custom task which will be run only if module was affected
  * just override fields in your data structure which implements this interface.
  *
  * Your data structure must override all this variable
  */
-interface AffectedModuleTaskType {
+interface AffectedModuleTaskType : Serializable {
 
     /**
      * Console command `./gradlew [commandByImpact]` which will run the original

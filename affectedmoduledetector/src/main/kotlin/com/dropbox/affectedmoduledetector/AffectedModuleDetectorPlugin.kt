@@ -48,11 +48,11 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
         registerSubprojectConfiguration(project)
         registerMainConfiguration(project)
-        AffectedModuleDetector.configure(project)
         registerCustomTasks(project)
         registerTestTasks(project)
 
         project.gradle.projectsEvaluated {
+            AffectedModuleDetector.configure(project)
             filterAndroidTests(project)
             filterJvmTests(project)
             filterCustomTasks(project)
@@ -229,12 +229,11 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         val tracker = DependencyTracker(project, null)
         project.tasks.configureEach { task ->
             if (task.name.contains(ANDROID_TEST_PATTERN)) {
-                tracker.findAllDependents(project).forEach { (_, dependentProject) ->
-                    dependentProject.tasks.forEach { dependentTask ->
+                tracker.findAllDependents(project.projectPath).forEach { dependentProject ->
+                    project.rootProject.findProject(dependentProject.path)?.tasks?.forEach { dependentTask ->
                         AffectedModuleDetector.configureTaskGuard(dependentTask)
                     }
                 }
-                AffectedModuleDetector.configureTaskGuard(task)
             }
         }
     }
