@@ -313,6 +313,28 @@ abstract class AffectedModuleDetector(protected val logger: Logger?) {
         }
 
         /**
+         * Returns a set of all affected project paths
+         *
+         * Can only be called during the execution phase
+         */
+        fun affectedProjects(project: Project): Set<ProjectPath> {
+            return getOrThrow(
+                project
+            ).getAllAffectedProjects()
+        }
+
+        /**
+         * Returns a set of all changed project paths
+         *
+         * Can only be called during the execution phase
+         */
+        fun changedProjects(project: Project): Set<ProjectPath> {
+            return getOrThrow(
+                project
+            ).getAllChangedProjects()
+        }
+
+        /**
          * Returns true if the project was provided via [MODULES_ARG] or no [MODULES_ARG] was set
          *
          * Can be called during the configuration or execution phase
