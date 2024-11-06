@@ -2,7 +2,7 @@
  * Copyright (c) 2020, Dropbox, Inc. All rights reserved.
  */
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.9.25"
     `java-gradle-plugin`
 }
 
@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.dropbox.affectedmoduledetector:affectedmoduledetector:0.3.2-SNAPSHOT")
+    implementation("com.dropbox.affectedmoduledetector:affectedmoduledetector:0.4.0-SNAPSHOT")
     testImplementation("junit:junit:4.13.1")
     testImplementation("com.nhaarman:mockito-kotlin:1.5.0")
     testImplementation("com.google.truth:truth:1.0.1")

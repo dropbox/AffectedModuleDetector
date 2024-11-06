@@ -23,7 +23,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: '11'
+          java-version: '17'
 
       - name: Upload Artifacts
         run: ./gradlew publishAllPublicationsToMavenCentralRepository --no-daemon --no-parallel
@@ -60,7 +60,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: 'zulu'
-        java-version: '11'
+        java-version: '17'
     - name: Run tests
       uses: reactivecircus/android-emulator-runner@v2
       with:
