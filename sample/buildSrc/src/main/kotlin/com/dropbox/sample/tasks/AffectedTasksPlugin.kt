@@ -2,6 +2,7 @@ package com.dropbox.affectedmoduledetector.tasks
 
 import com.dropbox.affectedmoduledetector.AffectedModuleDetector
 import com.dropbox.affectedmoduledetector.DependencyTracker
+import com.dropbox.affectedmoduledetector.projectPath
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -110,8 +111,8 @@ class AffectedTasksPlugin : Plugin<Project> {
         val tracker = DependencyTracker(project, null)
         project.tasks.configureEach { task ->
             if (task.name.contains(ANDROID_TEST_BUILD_VARIANT)) {
-                tracker.findAllDependents(project).forEach { (_, dependentProject) ->
-                    dependentProject.tasks.forEach { dependentTask ->
+                tracker.findAllDependents(project.projectPath).forEach { dependentProject ->
+                    project.findProject(dependentProject.path)?.tasks?.forEach { dependentTask ->
                         AffectedModuleDetector.configureTaskGuard(dependentTask)
                     }
                 }
