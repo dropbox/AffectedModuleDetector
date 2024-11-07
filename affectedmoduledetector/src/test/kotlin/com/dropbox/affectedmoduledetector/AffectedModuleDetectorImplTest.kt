@@ -361,18 +361,21 @@ class AffectedModuleDetectorImplTest {
 
     @Test
     fun noChangeSkipAll() {
+        affectedModuleConfiguration = affectedModuleConfiguration.also {
+            it.buildAllWhenNoProjectsChanged = false
+        }
         val detector = AffectedModuleDetectorImpl(
-            rootProject = root,
-            logger = logger,
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            injectedGitClient = MockGitClient(
+            changedFilesProvider = MockGitClient(
                 changedFiles = emptyList(),
                 tmpFolder = tmpFolder.root
-            ),
-            config = affectedModuleConfiguration.also {
-                it.buildAllWhenNoProjectsChanged = false
-            }
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
+            config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
             detector.affectedProjects,
