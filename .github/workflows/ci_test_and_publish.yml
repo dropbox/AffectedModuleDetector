@@ -13,7 +13,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    if: github.repository == 'dropbox/AffectedModuleDetector' && github.ref == 'refs/heads/main'
+    if: github.repository == 'dropbox/AffectedModuleDetector' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
 
     steps:
       - name: Checkout
@@ -25,23 +25,13 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Upload Artifacts
-        run: ./gradlew publishAllPublicationsToMavenCentralRepository --no-daemon --no-parallel
+      - name: Publish Artifacts
+        run: ./gradlew publish --no-daemon --no-parallel
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
-
-      - name: Retrieve version
-        run: |
-          echo "VERSION_NAME=$(cat gradle.properties | grep -w "VERSION_NAME" | cut -d'=' -f2)" >> $GITHUB_ENV
-      - name: Publish release
-        run: ./gradlew closeAndReleaseRepository --no-daemon --no-parallel
-        if: "!endsWith(env.VERSION_NAME, '-SNAPSHOT')"
-        env:
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
