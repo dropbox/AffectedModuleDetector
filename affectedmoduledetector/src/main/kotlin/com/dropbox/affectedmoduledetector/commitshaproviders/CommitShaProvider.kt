@@ -8,7 +8,11 @@ interface CommitShaProvider {
     fun get(commandRunner: GitClient.CommandRunner): Sha
 
     companion object {
-        fun fromString(string: String, specifiedBranch: String? = null): CommitShaProvider {
+        fun fromString(
+            string: String,
+            specifiedBranch: String? = null,
+            specifiedRawCommitSha: String? = null
+        ): CommitShaProvider {
             return when (string) {
                 "PreviousCommit" -> PreviousCommit()
                 "ForkCommit" -> ForkCommit()
@@ -23,6 +27,12 @@ interface CommitShaProvider {
                         "Specified branch must be defined"
                     }
                     SpecifiedBranchCommitMergeBase(specifiedBranch)
+                }
+                "SpecifiedRawCommitSha" -> {
+                    requireNotNull(specifiedRawCommitSha) {
+                        "Specified raw commit sha must be defined"
+                    }
+                    SpecifiedRawCommitSha(specifiedRawCommitSha)
                 }
                 else -> throw IllegalArgumentException("Unsupported compareFrom type")
             }

@@ -340,7 +340,7 @@ class AffectedModuleDetectorImpl constructor(
         injectedGitClient ?: GitClientImpl(
             rootProject.projectDir,
             logger,
-            commitShaProvider = CommitShaProvider.fromString(config.compareFrom, config.specifiedBranch),
+            commitShaProvider = CommitShaProvider.fromString(config.compareFrom, config.specifiedBranch, config.specifiedRawCommitSha),
             ignoredFiles = config.ignoredFiles
         )
     }
