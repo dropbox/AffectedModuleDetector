@@ -72,7 +72,7 @@ class CommitShaProviderTest {
         } catch (e: Exception) {
             assertThat(e::class).isEqualTo(IllegalArgumentException::class)
             assertThat(e.message).isEqualTo("Specified raw commit sha must be defined")
-            }
+        }
     }
 
     @Test
