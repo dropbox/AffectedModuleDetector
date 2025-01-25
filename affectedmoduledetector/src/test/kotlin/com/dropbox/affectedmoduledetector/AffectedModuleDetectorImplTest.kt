@@ -355,7 +355,7 @@ class AffectedModuleDetectorImplTest {
         MatcherAssert.assertThat(
             detector.affectedProjects,
             CoreMatchers.`is`(
-                emptySet<Map<ProjectPath, Project>>()
+                emptySet()
             )
         )
     }
