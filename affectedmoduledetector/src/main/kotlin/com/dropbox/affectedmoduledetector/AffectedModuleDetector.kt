@@ -202,7 +202,13 @@ abstract class AffectedModuleDetector(protected val logger: Logger?) {
             val gitClient = GitClientImpl(
                 rootProject.projectDir,
                 logger,
-                commitShaProviderConfiguration = CommitShaProviderConfiguration(config.compareFrom, config.specifiedBranch, config.top, config.includeUncommitted),
+                commitShaProviderConfiguration = CommitShaProviderConfiguration(
+                    type = config.compareFrom,
+                    specifiedBranch = config.specifiedBranch,
+                    specifiedSha = config.specifiedRawCommitSha,
+                    top = config.top,
+                    includeUncommitted = config.includeUncommitted
+                ),
                 ignoredFiles = config.ignoredFiles
             )
 
