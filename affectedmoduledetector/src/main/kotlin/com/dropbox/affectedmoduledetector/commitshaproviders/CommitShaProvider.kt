@@ -11,6 +11,7 @@ interface CommitShaProvider : Serializable {
 data class CommitShaProviderConfiguration(
     val type: String,
     val specifiedBranch: String? = null,
+    val specifiedSha: String? = null,
     val top: Sha,
     val includeUncommitted: Boolean
 ) : Serializable

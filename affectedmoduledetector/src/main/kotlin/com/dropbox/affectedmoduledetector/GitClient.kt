@@ -26,6 +26,7 @@ import com.dropbox.affectedmoduledetector.commitshaproviders.ForkCommit
 import com.dropbox.affectedmoduledetector.commitshaproviders.PreviousCommit
 import com.dropbox.affectedmoduledetector.commitshaproviders.SpecifiedBranchCommit
 import com.dropbox.affectedmoduledetector.commitshaproviders.SpecifiedBranchCommitMergeBase
+import com.dropbox.affectedmoduledetector.commitshaproviders.SpecifiedRawCommitSha
 import com.dropbox.affectedmoduledetector.util.toOsSpecificLineEnding
 import com.dropbox.affectedmoduledetector.util.toOsSpecificPath
 import org.gradle.api.Project
@@ -228,6 +229,7 @@ internal abstract class GitChangedFilesSource :
 
     private fun getSha(): Sha {
         val specifiedBranch = parameters.commitShaProvider.specifiedBranch
+        val specifiedSha = parameters.commitShaProvider.specifiedSha
         val type = when (parameters.commitShaProvider.type) {
             "PreviousCommit" -> PreviousCommit()
             "ForkCommit" -> ForkCommit()
@@ -242,6 +244,12 @@ internal abstract class GitChangedFilesSource :
                     "Specified branch must be defined"
                 }
                 SpecifiedBranchCommitMergeBase(specifiedBranch)
+            }
+            "SpecifiedRawCommitSha" -> {
+                requireNotNull(specifiedSha) {
+                    "Provide a Commit SHA for the specifiedRawCommitSha property when using SpecifiedRawCommitSha comparison strategy."
+                }
+                SpecifiedRawCommitSha(specifiedSha)
             }
             else -> throw IllegalArgumentException("Unsupported compareFrom type")
         }
