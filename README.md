@@ -113,6 +113,7 @@ affectedModuleDetector {
  - `logFilename`: A filename for the output detector to use
  - `logFolder`: A folder to output the log file in
  - `specifiedBranch`: A branch to specify changes against. Must be used in combination with configuration `compareFrom = "SpecifiedBranchCommit"` 
+ - `specifiedRawCommitSha`: A raw commit SHA to specify changes against. Must be used in combination with configuration `compareFrom = "SpecifiedRawCommitSha"`
  - `ignoredFiles`: A set of files that will be filtered out of the list of changed files retrieved by git. 
  - `buildAllWhenNoProjectsChanged`: If true, the plugin will build all projects when no projects are considered affected.
  - `compareFrom`: A commit to compare the branch changes against. Can be either:
@@ -120,7 +121,8 @@ affectedModuleDetector {
     - ForkCommit: compare against the commit the branch was forked from
     - SpecifiedBranchCommit: compare against the last commit of `$specifiedBranch` using `git rev-parse` approach. 
     - SpecifiedBranchCommitMergeBase: compare against the nearest ancestors with `$specifiedBranch` using `git merge base` approach.
-    
+    - SpecifiedRawCommitSha: compare against the provided raw commit SHA.
+
  **Note:** specify the branch to compare changes against using the `specifiedBranch` configuration before the `compareFrom` configuration
  - `excludedModules`: A list of modules that will be excluded from the build process, can be the name of a module, or a regex against the module gradle path
  - `includeUncommitted`: If uncommitted files should be considered affected
@@ -161,6 +163,12 @@ Suppose we have changed 6 files in our "feature" branch.
    AMD will show the result that 6 files were affected. And this is the correct behavior.
 
 Hence, depending on your CI settings you have to configure AMD appropriately. 
+
+## SpecifiedRawCommitSha
+
+If you want AMD plugin to skip performing the git operations under-the-hood (like `git rev-parse` and `git merge base`), you can provide the raw commit SHA you wish to compare against.
+One of the main reasons you might want to follow this approach is, maybe your environment leverages [Git mirroring](https://docs.github.com/en/repositories/creating-and-managing-repositories/duplicating-a-repository) for speed optimizations, for example CI/CD environments.
+Mirroring _can_ lead to inaccurate common ancestor commits as the duplicated repository _may be_ out of sync with the true remote repository.
 
 ## Sample Usage
 

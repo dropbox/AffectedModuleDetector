@@ -59,6 +59,23 @@ class CommitShaProviderTest {
     }
 
     @Test
+    fun givenSpecifiedRawCommitSha_whenFromString_thenReturnSpecifiedRawCommitSha() {
+        val actual = CommitShaProvider.fromString("SpecifiedRawCommitSha", specifiedRawCommitSha = "sha")
+
+        assertThat(actual::class).isEqualTo(SpecifiedRawCommitSha::class)
+    }
+
+    @Test
+    fun givenSpecifiedRawCommitShaAndSpecifiedRawCommitShaNull_whenFromString_thenThrowException() {
+        try {
+            CommitShaProvider.fromString("SpecifiedRawCommitSha")
+        } catch (e: Exception) {
+            assertThat(e::class).isEqualTo(IllegalArgumentException::class)
+            assertThat(e.message).isEqualTo("Specified raw commit sha must be defined")
+        }
+    }
+
+    @Test
     fun givenInvalidCommitString_whenFromString_thenExceptionThrown() {
         try {
             CommitShaProvider.fromString("Invalid")

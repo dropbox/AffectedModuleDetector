@@ -234,13 +234,38 @@ class AffectedModuleConfigurationTest {
     }
 
     @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN compareFrom is set to SpecifiedRawCommitSha THEN is SpecifiedRawCommitSha`() {
+        val specifiedRawCommitSha = "SpecifiedRawCommitSha"
+        val commitSha = "12345"
+
+        config.specifiedRawCommitSha = commitSha
+        config.compareFrom = specifiedRawCommitSha
+
+        val actual = config.compareFrom
+        assertThat(actual).isEqualTo(specifiedRawCommitSha)
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN compareFrom is set to SpecifiedRawCommitSha AND specifiedRawCommitSha not defined THEN error thrown`() {
+        val specifiedRawCommitSha = "SpecifiedRawCommitSha"
+
+        try {
+            config.compareFrom = specifiedRawCommitSha
+        } catch (e: IllegalArgumentException) {
+            // THEN
+            assertThat(e.message).isEqualTo("Provide a Commit SHA for the specifiedRawCommitSha property when using SpecifiedRawCommitSha comparison strategy.")
+            return
+        }
+    }
+
+    @Test
     fun `GIVEN AffectedModuleConfiguration WHEN compareFrom is set to invalid sha provider THEN exception thrown and value not set`() {
         try {
             config.compareFrom = "InvalidInput"
             fail()
         } catch (e: Exception) {
             assertThat(e::class).isEqualTo(IllegalArgumentException::class)
-            assertThat(e.message).isEqualTo("The property configuration compareFrom must be one of the following: PreviousCommit, ForkCommit, SpecifiedBranchCommit, SpecifiedBranchCommitMergeBase")
+            assertThat(e.message).isEqualTo("The property configuration compareFrom must be one of the following: PreviousCommit, ForkCommit, SpecifiedBranchCommit, SpecifiedBranchCommitMergeBase, SpecifiedRawCommitSha")
             assertThat(config.compareFrom).isEqualTo("PreviousCommit")
         }
     }

@@ -81,13 +81,16 @@ class AffectedModuleConfiguration {
 
     var specifiedBranch: String? = null
 
+    var specifiedRawCommitSha: String? = null
+
     var compareFrom: String = "PreviousCommit"
         set(value) {
             val commitShaProviders = listOf(
                 "PreviousCommit",
                 "ForkCommit",
                 "SpecifiedBranchCommit",
-                "SpecifiedBranchCommitMergeBase"
+                "SpecifiedBranchCommitMergeBase",
+                "SpecifiedRawCommitSha"
             )
             require(commitShaProviders.contains(value)) {
                 "The property configuration compareFrom must be one of the following: ${commitShaProviders.joinToString(", ")}"
@@ -95,6 +98,11 @@ class AffectedModuleConfiguration {
             if (value == "SpecifiedBranchCommit" || value == "SpecifiedBranchCommitMergeBase") {
                 requireNotNull(specifiedBranch) {
                     "Specify a branch using the configuration specifiedBranch"
+                }
+            }
+            if (value == "SpecifiedRawCommitSha") {
+                requireNotNull(specifiedRawCommitSha) {
+                    "Provide a Commit SHA for the specifiedRawCommitSha property when using SpecifiedRawCommitSha comparison strategy."
                 }
             }
             field = value
