@@ -10,6 +10,7 @@ import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
 import org.gradle.util.GradleVersion
 import org.jetbrains.annotations.VisibleForTesting
+import java.io.File
 
 /**
  * This plugin creates and registers all affected test tasks.
@@ -38,6 +39,8 @@ import org.jetbrains.annotations.VisibleForTesting
  */
 class AffectedModuleDetectorPlugin : Plugin<Project> {
 
+    private val affectedProjects = mutableSetOf<String>()
+
     override fun apply(project: Project) {
         require(
             value = project.isRoot,
@@ -48,6 +51,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
         registerSubprojectConfiguration(project)
         registerMainConfiguration(project)
+        registerAffectedModulesOutputTask(project)
         AffectedModuleDetector.configure(project)
         registerCustomTasks(project)
         registerTestTasks(project)
@@ -80,6 +84,43 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
         rootProject.afterEvaluate {
             registerCustomTasks(rootProject, mainConfiguration.customTasks)
+        }
+    }
+
+    private fun registerAffectedModulesOutputTask(rootProject: Project) {
+        val outputFile = File("${rootProject.rootProject.layout.buildDirectory.get()}/affected_modules_paths.txt")
+
+        outputFile.parentFile?.mkdirs()
+        if (outputFile.exists()) {
+            outputFile.writeText("")
+        } else {
+            outputFile.createNewFile()
+        }
+
+        rootProject.tasks.register("outputAffectedModules") { task ->
+            task.group = "affected modules"
+            task.description = "Outputs the list of affected modules"
+            task.doLast {
+                println("Affected Modules:")
+                affectedProjects.forEach {
+                    println(it)
+                    outputFile.appendText("$it\n")
+                }
+                affectedProjects.clear()
+                println("Affected Modules written to ${outputFile.path}")
+            }
+        }
+
+        configureOutputAffectedModulesTask(rootProject)
+    }
+
+    private fun configureOutputAffectedModulesTask(rootProject: Project) {
+        rootProject.gradle.projectsEvaluated {
+            rootProject.allprojects {
+                if (AffectedModuleDetector.isProjectAffected(it)) {
+                    affectedProjects.add(it.path)
+                }
+            }
         }
     }
 
