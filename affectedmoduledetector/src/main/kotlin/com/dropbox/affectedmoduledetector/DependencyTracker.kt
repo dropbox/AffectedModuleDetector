@@ -22,54 +22,43 @@ package com.dropbox.affectedmoduledetector
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.logging.Logger
+import java.io.Serializable
 
 /**
- * Utility class that traverses all project dependencies and discover which modules depend
- * on each other. This is mainly used by [AffectedModuleDetector] to find out which projects
- * should be run.
+ * Utility class that traverses all project dependencies and discover which modules depend on each
+ * other. This is mainly used by [AffectedModuleDetector] to find out which projects should be run.
  */
-class DependencyTracker constructor(
-    private val rootProject: Project,
-    private val logger: Logger?
-) {
-    private val dependentList: Map<Project, Set<Project>> by lazy {
-        val result = mutableMapOf<Project, MutableSet<Project>>()
+class DependencyTracker(rootProject: Project, logger: Logger?) : Serializable {
+    val dependentList: Map<ProjectPath, Set<ProjectPath>>
+
+    init {
+        val result = mutableMapOf<ProjectPath, MutableSet<ProjectPath>>()
+        val stringBuilder = StringBuilder()
         rootProject.subprojects.forEach { project ->
-            logger?.info("checking ${project.path} for dependencies")
             project.configurations.forEach { config ->
-                logger?.info("checking config ${project.path}/$config for dependencies")
-                config
-                    .dependencies
-                    .filterIsInstance(ProjectDependency::class.java)
-                    .forEach {
-                        logger?.info(
-                            "there is a dependency from ${project.path} to " +
-                                it.dependencyProject.path
-                        )
-                        result.getOrPut(it.dependencyProject) { mutableSetOf() }
-                            .add(project)
-                    }
+                config.dependencies.filterIsInstance<ProjectDependency>().forEach {
+                    stringBuilder.append(
+                        "there is a dependency from ${project.path} (${config.name}) to " +
+                            it.dependencyProject.path +
+                            "\n"
+                    )
+                    result.getOrPut(it.dependencyProject.projectPath) { mutableSetOf() }.add(project.projectPath)
+                }
             }
         }
-        result
+        logger?.info(stringBuilder.toString())
+        dependentList = result
     }
 
-    fun findAllDependents(project: Project): Map<ProjectPath, Project> {
-        logger?.info("finding dependents of ${project.path}")
-        val result = mutableMapOf<ProjectPath, Project>()
-        fun addAllDependents(project: Project) {
-            if (result.put(project.projectPath, project) == null) {
-                dependentList[project]?.forEach(::addAllDependents)
+    fun findAllDependents(projectPath: ProjectPath): Set<ProjectPath> {
+        val result = mutableSetOf<ProjectPath>()
+        fun addAllDependents(projectPath: ProjectPath) {
+            if (result.add(projectPath)) {
+                dependentList[projectPath]?.forEach(::addAllDependents)
             }
         }
-        addAllDependents(project)
-        logger?.info(
-            "dependents of ${project.path} is ${result.map { (path, _) ->
-                path.path
-            }}"
-        )
-        // the project isn't a dependent of itself
-        result.remove(project.projectPath)
-        return result
+        addAllDependents(projectPath)
+        // the projectPath isn't a dependent of itself
+        return result.minus(projectPath)
     }
 }

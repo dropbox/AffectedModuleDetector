@@ -2,8 +2,9 @@ package com.dropbox.affectedmoduledetector
 
 import com.dropbox.affectedmoduledetector.util.toOsSpecificPath
 import java.io.File
+import java.io.Serializable
 
-class AffectedModuleConfiguration {
+class AffectedModuleConfiguration : Serializable {
 
     /**
      * Implementation of [AffectedModuleTaskType] for easy adding of custom gradle task to
