@@ -32,6 +32,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.logging.Logger
+import org.gradle.api.tasks.TaskProvider
 import java.io.File
 
 /**
@@ -232,7 +233,7 @@ abstract class AffectedModuleDetector {
         }
 
         /**
-         * Call this method to configure the given task to execute only if the owner project
+         * Call this method to configure the given provided task to execute only if the owner project
          * is affected by current changes
          *
          * Can be called during the configuration or execution phase
@@ -244,6 +245,24 @@ abstract class AffectedModuleDetector {
                 getOrThrow(
                     task.project
                 ).shouldInclude(task.project)
+            }
+        }
+
+        /**
+         * Call this method to configure the given task to execute only if the owner project
+         * is affected by current changes
+         *
+         * Can be called during the configuration or execution phase
+         */
+        @Throws(GradleException::class)
+        @JvmStatic
+        fun configureTaskGuard(taskProvider: TaskProvider<out Task>) {
+            taskProvider.configure { task ->
+                task.onlyIf {
+                    getOrThrow(
+                        task.project
+                    ).shouldInclude(task.project)
+                }
             }
         }
 
@@ -340,7 +359,11 @@ class AffectedModuleDetectorImpl constructor(
         injectedGitClient ?: GitClientImpl(
             rootProject.projectDir,
             logger,
-            commitShaProvider = CommitShaProvider.fromString(config.compareFrom, config.specifiedBranch, config.specifiedRawCommitSha),
+            commitShaProvider = CommitShaProvider.fromString(
+                config.compareFrom,
+                config.specifiedBranch,
+                config.specifiedRawCommitSha
+            ),
             ignoredFiles = config.ignoredFiles
         )
     }
