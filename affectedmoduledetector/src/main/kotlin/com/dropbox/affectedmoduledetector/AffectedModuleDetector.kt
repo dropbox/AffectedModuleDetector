@@ -32,6 +32,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.logging.Logger
+import org.gradle.api.tasks.TaskProvider
 import java.io.File
 
 /**
@@ -140,9 +141,11 @@ abstract class AffectedModuleDetector {
                 rootProject.hasProperty(DEPENDENT_PROJECTS_ARG) -> {
                     ProjectSubset.DEPENDENT_PROJECTS
                 }
+
                 rootProject.hasProperty(CHANGED_PROJECTS_ARG) -> {
                     ProjectSubset.CHANGED_PROJECTS
                 }
+
                 else -> {
                     ProjectSubset.ALL_AFFECTED_PROJECTS
                 }
@@ -153,7 +156,7 @@ abstract class AffectedModuleDetector {
                     rootProject.extensions.findByType(AffectedModuleConfiguration::class.java)
                 ) {
                     "Root project ${rootProject.path} must have the AffectedModuleConfiguration " +
-                        "extension added."
+                            "extension added."
                 }
 
             val logger =
@@ -232,7 +235,7 @@ abstract class AffectedModuleDetector {
         }
 
         /**
-         * Call this method to configure the given task to execute only if the owner project
+         * Call this method to configure the given provided task to execute only if the owner project
          * is affected by current changes
          *
          * Can be called during the configuration or execution phase
@@ -244,6 +247,24 @@ abstract class AffectedModuleDetector {
                 getOrThrow(
                     task.project
                 ).shouldInclude(task.project)
+            }
+        }
+
+        /**
+         * Call this method to configure the given task to execute only if the owner project
+         * is affected by current changes
+         *
+         * Can be called during the configuration or execution phase
+         */
+        @Throws(GradleException::class)
+        @JvmStatic
+        fun configureTaskGuard(taskProvider: TaskProvider<out Task>) {
+            taskProvider.configure { task ->
+                task.onlyIf {
+                    getOrThrow(
+                        task.project
+                    ).shouldInclude(task.project)
+                }
             }
         }
 
@@ -340,7 +361,11 @@ class AffectedModuleDetectorImpl constructor(
         injectedGitClient ?: GitClientImpl(
             rootProject.projectDir,
             logger,
-            commitShaProvider = CommitShaProvider.fromString(config.compareFrom, config.specifiedBranch, config.specifiedRawCommitSha),
+            commitShaProvider = CommitShaProvider.fromString(
+                config.compareFrom,
+                config.specifiedBranch,
+                config.specifiedRawCommitSha
+            ),
             ignoredFiles = config.ignoredFiles
         )
     }
@@ -399,9 +424,11 @@ class AffectedModuleDetectorImpl constructor(
             changedProjects.contains(project.projectPath) -> {
                 ProjectSubset.CHANGED_PROJECTS
             }
+
             dependentProjects.contains(project.projectPath) -> {
                 ProjectSubset.DEPENDENT_PROJECTS
             }
+
             else -> {
                 ProjectSubset.NONE
             }
@@ -435,13 +462,13 @@ class AffectedModuleDetectorImpl constructor(
                 unknownFiles.add(filePath)
                 logger?.info(
                     "Couldn't find containing project for file$filePath. " +
-                        "Adding to unknownFiles."
+                            "Adding to unknownFiles."
                 )
             } else {
                 changedProjects[containingProject.projectPath] = containingProject
                 logger?.info(
                     "For file $filePath containing project is $containingProject. " +
-                        "Adding to changedProjects."
+                            "Adding to changedProjects."
                 )
             }
         }
@@ -487,7 +514,7 @@ class AffectedModuleDetectorImpl constructor(
         }
         logger?.info(
             "unknownFiles: $unknownFiles, changedProjects: $changedProjects, buildAll: " +
-                "$buildAll"
+                    "$buildAll"
         )
 
         // If we're in a buildAll state, we return allProjects unless it's the changed target,
