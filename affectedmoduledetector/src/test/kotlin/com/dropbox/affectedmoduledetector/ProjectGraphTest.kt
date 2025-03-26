@@ -41,23 +41,24 @@ class ProjectGraphTest {
             .withName("p3")
             .withParent(p1)
             .build()
-        val graph = ProjectGraph(root, tmpDir)
+        val logFile = File.createTempFile(tmpDir.path, "log")
+        val graph = ProjectGraph(root, FileLogger(logFile).toLogger())
         assertNull(graph.findContainingProject("nowhere"))
         assertNull(graph.findContainingProject("rootfile.java"))
         assertEquals(
-            p1,
+            p1.projectPath,
             graph.findContainingProject("p1/px/x.java".toLocalPath())
         )
         assertEquals(
-            p1,
+            p1.projectPath,
             graph.findContainingProject("p1/a.java".toLocalPath())
         )
         assertEquals(
-            p3,
+            p3.projectPath,
             graph.findContainingProject("p1/p3/a.java".toLocalPath())
         )
         assertEquals(
-            p2,
+            p2.projectPath,
             graph.findContainingProject("p2/a/b/c/d/e/f/a.java".toLocalPath())
         )
     }
