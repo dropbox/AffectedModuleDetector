@@ -232,7 +232,7 @@ internal abstract class GitChangedFilesSource :
         val specifiedSha = parameters.commitShaProvider.specifiedSha
         val type = when (parameters.commitShaProvider.type) {
             "PreviousCommit" -> PreviousCommit()
-            "ForkCommit" -> ForkCommit()
+            "ForkCommit" -> ForkCommit(parameters.commitShaProvider.parentBranch)
             "SpecifiedBranchCommit" -> {
                 requireNotNull(specifiedBranch) {
                     "Specified branch must be defined"
