@@ -98,6 +98,9 @@ affectedModuleDetector {
     buildAllWhenNoProjectsChanged = true // default is true
     includeUncommitted = true
     top = "HEAD"
+    specifiedBranch = "main"
+    specifiedRawCommitSha = "abc123"
+    parentBranch = "main" // Optional: specify parent branch for ForkCommit comparison
     customTasks = [
         new AffectedModuleConfiguration.CustomTask(
             "runDetektByImpact",
@@ -114,6 +117,7 @@ affectedModuleDetector {
  - `logFolder`: A folder to output the log file in
  - `specifiedBranch`: A branch to specify changes against. Must be used in combination with configuration `compareFrom = "SpecifiedBranchCommit"` 
  - `specifiedRawCommitSha`: A raw commit SHA to specify changes against. Must be used in combination with configuration `compareFrom = "SpecifiedRawCommitSha"`
+ - `parentBranch`: A branch to specify as the parent branch for ForkCommit comparison. If not provided, ForkCommit will try to detect it automatically.
  - `ignoredFiles`: A set of files that will be filtered out of the list of changed files retrieved by git. 
  - `buildAllWhenNoProjectsChanged`: If true, the plugin will build all projects when no projects are considered affected.
  - `compareFrom`: A commit to compare the branch changes against. Can be either:
@@ -181,85 +185,3 @@ only executes the given task on a subset of projects.
 To run all the projects affected by a change, run one of the tasks while enabling the module detector.
 
 ```
-./gradlew runAffectedUnitTests -Paffected_module_detector.enable
-```
-
-#### Running All Changed Projects
-
-To run all the projects that changed, run one of the tasks (while enabling the module detector) and with `-Paffected_module_detector.changedProjects`
-
-```
-./gradlew runAffectedUnitTests -Paffected_module_detector.enable -Paffected_module_detector.changedProjects
-```
-
-#### Running All Dependent Projects
-
-To run all the dependent projects of projects that changed, run one of the tasks (while enabling the module detector) and with `-Paffected_module_detector.dependentProjects`
-
-```
-./gradlew runAffectedUnitTests -Paffected_module_detector.enable -Paffected_module_detector.dependentProjects
-```
-
-## Using the Sample project
-
-To run this on the sample app:
-
-1. Publish the plugin to local maven:
-```
-./gradlew :affectedmoduledetector:publishToMavenLocal
-```
-
-2. Try running the following commands:
-```
-cd sample
- ./gradlew runAffectedUnitTests -Paffected_module_detector.enable
-```
-
-You should see zero tests run. Make a change within one of the modules and commit it. Rerunning the command should execute tests in that module and its dependent modules.
-
-## Custom tasks 
-
-If you want to add a custom gradle command to execute with impact analysis 
-you must declare [AffectedModuleConfiguration.CustomTask](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleConfiguration.kt) 
-which is implementing the [AffectedModuleTaskType](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleTaskType.kt) interface in the `build.gradle` configuration of your project:
-
-```groovy
-// ... 
-
-affectedModuleDetector {
-     // ...
-     customTasks = [
-           new AffectedModuleConfiguration.CustomTask(
-                   "runDetektByImpact", 
-                   "detekt",
-                   "Run static analysis tool without auto-correction by Impact analysis"
-           )
-     ]
-     // ...
-}
-```
-
-**NOTE:** Please, test all your custom commands.
-If your custom task doesn't work correctly after testing, it might be that your task is quite complex 
-and to work correctly it must use more gradle api's. 
-Hence, you must create `buildSrc` module and write a custom plugin manually like [AffectedModuleDetectorPlugin](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleDetectorPlugin.kt)
-
-## Notes
-
-Special thanks to the AndroidX team for originally developing this project at https://android.googlesource.com/platform/frameworks/support/+/androidx-main/buildSrc/src/main/kotlin/androidx/build/dependencyTracker
-
-## License
-
-    Copyright (c) 2021 Dropbox, Inc.
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
