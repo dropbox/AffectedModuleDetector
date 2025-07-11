@@ -48,11 +48,11 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
 
         registerSubprojectConfiguration(project)
         registerMainConfiguration(project)
-        registerCustomTasks(project)
-        registerTestTasks(project)
 
         project.gradle.projectsEvaluated {
             AffectedModuleDetector.configure(project)
+            registerCustomTasks(project)
+            registerTestTasks(project)
             filterAndroidTests(project)
             filterJvmTests(project)
             filterCustomTasks(project)
@@ -78,9 +78,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
     private fun registerCustomTasks(rootProject: Project) {
         val mainConfiguration = requireConfiguration(rootProject)
 
-        rootProject.afterEvaluate {
-            registerCustomTasks(rootProject, mainConfiguration.customTasks)
-        }
+        registerCustomTasks(rootProject, mainConfiguration.customTasks)
     }
 
     @VisibleForTesting
