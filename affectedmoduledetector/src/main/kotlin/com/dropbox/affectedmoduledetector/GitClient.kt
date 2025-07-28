@@ -156,7 +156,6 @@ private class RealCommandRunner(
     override fun executeAndParse(command: String): List<String> {
         return execute(command).toOsSpecificLineEnding()
             .split(System.lineSeparator())
-            .map { it.toOsSpecificPath() }
             .filterNot { it.isEmpty() }
     }
 
@@ -205,7 +204,7 @@ internal abstract class GitChangedFilesSource :
             } else {
                 "$CHANGED_FILES_CMD_PREFIX $top..$sha"
             }
-        )
+        ).map { it.toOsSpecificPath() }
 
         return parameters.ignoredFiles.orNull
             .orEmpty()
