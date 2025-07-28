@@ -28,12 +28,14 @@ import java.io.Serializable
 /** Creates a project graph for fast lookup by file path */
 class ProjectGraph(project: Project, logger: Logger? = null) : Serializable {
     private val rootNode: Node
+    private val rootProjectDir: File
 
     init {
         // always use cannonical file: b/112205561
         logger?.info("initializing ProjectGraph")
         rootNode = Node()
-        val rootProjectDir = project.getSupportRootFolder().canonicalFile
+        rootProjectDir = project.getSupportRootFolder().canonicalFile
+        rootNode.projectPath = project.projectPath
         val projects =
             if (rootProjectDir == project.rootDir.canonicalFile) {
                 project.subprojects
@@ -70,8 +72,8 @@ class ProjectGraph(project: Project, logger: Logger? = null) : Serializable {
         return rootNode.find(sections, 0, logger)
     }
 
-    fun getRootProjectPath(): ProjectPath? {
-        return rootNode.projectPath
+    fun getRootFilePath(): String? {
+        return rootProjectDir.path
     }
 
     val allProjects by lazy {

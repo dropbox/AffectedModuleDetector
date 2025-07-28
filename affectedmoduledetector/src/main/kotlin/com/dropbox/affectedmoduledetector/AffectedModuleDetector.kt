@@ -647,7 +647,7 @@ class AffectedModuleDetectorImpl(
         val rootProjectDir = if (config.baseDir != null) {
             File(config.baseDir!!)
         } else {
-            File(projectGraph.getRootProjectPath()!!.path)
+            File(projectGraph.getRootFilePath())
         }
         val pathSections = relativeFilePath.toPathSections(rootProjectDir, gitRoot)
         val projectRelativePath = pathSections.joinToString(File.separatorChar.toString())
