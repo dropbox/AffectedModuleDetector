@@ -147,12 +147,36 @@ abstract class AffectedModuleDetector(protected val logger: Logger?) {
             val instance = AffectedModuleDetectorWrapper()
             rootProject.extensions.add(ROOT_PROP_NAME, instance)
 
+            val config =
+                requireNotNull(
+                    rootProject.extensions.findByType(AffectedModuleConfiguration::class.java)
+                ) {
+                    "Root project ${rootProject.path} must have the AffectedModuleConfiguration " +
+                            "extension added."
+                }
+
+            val distDir = if (config.logFolder != null) {
+                val distDir = File(config.logFolder!!)
+                if (!distDir.exists()) {
+                    distDir.mkdirs()
+                }
+                distDir
+            } else {
+                rootProject.rootDir
+            }
+
+            val outputFile = distDir.resolve(config.logFilename).also {
+                it.writeText("")
+            }
+            val logger = FileLogger(outputFile)
+
             val enabled = isProjectEnabled(rootProject)
             if (!enabled) {
                 val provider =
                     setupWithParams(rootProject) { spec ->
                         val params = spec.parameters
                         params.acceptAll = true
+                        params.log = logger
                     }
                 instance.wrapped = provider
                 return
@@ -170,29 +194,6 @@ abstract class AffectedModuleDetector(protected val logger: Logger?) {
                     ProjectSubset.ALL_AFFECTED_PROJECTS
                 }
             }
-
-            val config =
-                requireNotNull(
-                    rootProject.extensions.findByType(AffectedModuleConfiguration::class.java)
-                ) {
-                    "Root project ${rootProject.path} must have the AffectedModuleConfiguration " +
-                        "extension added."
-                }
-
-            val distDir = if (config.logFolder != null) {
-                val distDir = File(config.logFolder!!)
-                if (!distDir.exists()) {
-                    distDir.mkdirs()
-                }
-                distDir
-            } else {
-                rootProject.rootDir
-            }
-
-            val outputFile = distDir.resolve(config.logFilename).also {
-                it.writeText("")
-            }
-            val logger = FileLogger(outputFile)
 
             val modules =
                 getModulesProperty(
