@@ -265,7 +265,8 @@ abstract class AffectedModuleDetector(protected val logger: Logger?) {
         }
 
         internal fun isProjectEnabled(project: Project): Boolean {
-            return project.hasProperty(ENABLE_ARG)
+            val enabledProvider = project.providers.gradleProperty(ENABLE_ARG)
+            return enabledProvider.isPresent && enabledProvider.get() != "false"
         }
 
         private fun getModulesProperty(project: Project): Set<String>? {
@@ -588,9 +589,7 @@ class AffectedModuleDetectorImpl(
      * original changedProjects. Always build is still here to ensure at least 1 thing is built
      */
     private fun findDependentProjects(): Set<ProjectPath> {
-        return changedProjects.flatMap { path ->
-            dependencyTracker.findAllDependents(path)
-        }.toSet()
+        return changedProjects.flatMap { dependencyTracker.findAllDependents(it) }.toSet()
     }
 
     /**
@@ -656,8 +655,8 @@ class AffectedModuleDetectorImpl(
     }
 
     private fun findContainingProject(filePath: String): ProjectPath? {
-        return projectGraph.findContainingProject(filePath).also {
-            logger?.info("search result for $filePath resulted in ${it?.path}")
+        return projectGraph.findContainingProject(filePath, logger).also {
+            logger?.info("search result for $filePath resulted in $it")
         }
     }
 }

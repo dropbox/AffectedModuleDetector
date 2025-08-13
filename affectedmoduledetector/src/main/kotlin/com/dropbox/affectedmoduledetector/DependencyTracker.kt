@@ -28,37 +28,41 @@ import java.io.Serializable
  * Utility class that traverses all project dependencies and discover which modules depend on each
  * other. This is mainly used by [AffectedModuleDetector] to find out which projects should be run.
  */
-class DependencyTracker(rootProject: Project, logger: Logger?) : Serializable {
-    val dependentList: Map<ProjectPath, Set<ProjectPath>>
+class DependencyTracker(private val rootProject: Project, private val logger: Logger?) : Serializable {
 
-    init {
+    private val dependentList: Map<ProjectPath, Set<ProjectPath>> by lazy {
         val result = mutableMapOf<ProjectPath, MutableSet<ProjectPath>>()
-        val stringBuilder = StringBuilder()
         rootProject.subprojects.forEach { project ->
+            logger?.info("checking ${project.path} for dependencies")
             project.configurations.forEach { config ->
-                config.dependencies.filterIsInstance<ProjectDependency>().forEach {
-                    stringBuilder.append(
-                        "there is a dependency from ${project.path} (${config.name}) to " +
-                            it.dependencyProject.path +
-                            "\n"
-                    )
-                    result.getOrPut(it.dependencyProject.projectPath) { mutableSetOf() }.add(project.projectPath)
-                }
+                logger?.info("checking config ${project.path}/$config for dependencies")
+                config
+                    .dependencies
+                    .filterIsInstance<ProjectDependency>()
+                    .forEach {
+                        logger?.info(
+                            "there is a dependency from ${project.projectPath} to " +
+                                    it.path,
+                        )
+                        result.getOrPut(ProjectPath(it.path)) { mutableSetOf() }
+                            .add(project.projectPath)
+                    }
             }
         }
-        logger?.info(stringBuilder.toString())
-        dependentList = result
+        result
     }
 
     fun findAllDependents(projectPath: ProjectPath): Set<ProjectPath> {
+        logger?.info("finding dependents of $projectPath")
         val result = mutableSetOf<ProjectPath>()
-        fun addAllDependents(projectPath: ProjectPath) {
-            if (result.add(projectPath)) {
-                dependentList[projectPath]?.forEach(::addAllDependents)
+        fun addAllDependents(path: ProjectPath) {
+            if (result.add(path)) {
+                dependentList[path]?.forEach(::addAllDependents)
             }
         }
         addAllDependents(projectPath)
-        // the projectPath isn't a dependent of itself
+        logger?.info("dependents of $projectPath is $result")
+        // the project isn't a dependent of itself
         return result.minus(projectPath)
     }
 }
