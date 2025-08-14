@@ -589,7 +589,9 @@ class AffectedModuleDetectorImpl(
      * original changedProjects. Always build is still here to ensure at least 1 thing is built
      */
     private fun findDependentProjects(): Set<ProjectPath> {
-        return changedProjects.flatMap { dependencyTracker.findAllDependents(it) }.toSet()
+        return changedProjects.flatMap { path ->
+            dependencyTracker.findAllDependents(path)
+        }.toSet()
     }
 
     /**

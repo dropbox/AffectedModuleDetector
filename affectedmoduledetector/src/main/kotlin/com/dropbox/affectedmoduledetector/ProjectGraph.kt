@@ -54,10 +54,8 @@ class ProjectGraph(project: Project, logger: Logger? = null) : Serializable {
             val realSections = sections.filter { section -> section != ".." }
 
             logger?.info("relative path: $relativePath , sections: $realSections")
-            val leaf = realSections.fold(rootNode) { left, right ->
-                left.getOrCreateNode(right)
-            }
-            leaf.projectPath = it.path
+            val leaf = realSections.fold(rootNode) { left, right -> left.getOrCreateNode(right) }
+            leaf.projectPath = it.projectPath
         }
         logger?.info("finished creating ProjectGraph")
     }
@@ -69,24 +67,24 @@ class ProjectGraph(project: Project, logger: Logger? = null) : Serializable {
     fun findContainingProject(filePath: String, logger: Logger? = null): ProjectPath? {
         val sections = filePath.split(File.separatorChar)
         logger?.info("finding containing project for $filePath , sections: $sections")
-        return rootNode.find(sections, 0, logger)?.let { ProjectPath(it) }
+        return rootNode.find(sections, 0, logger)
     }
 
     val allProjects by lazy {
-        val result = mutableSetOf<String>()
+        val result = mutableSetOf<ProjectPath>()
         rootNode.addAllProjectPaths(result)
-        result.map { ProjectPath(it) }.toSet()
+        result
     }
 
     private class Node() : Serializable {
-        var projectPath: String? = null
+        var projectPath: ProjectPath? = null
         private val children = mutableMapOf<String, Node>()
 
         fun getOrCreateNode(key: String): Node {
             return children.getOrPut(key) { Node() }
         }
 
-        fun find(sections: List<String>, index: Int, logger: Logger?): String? {
+        fun find(sections: List<String>, index: Int, logger: Logger?): ProjectPath? {
             if (sections.size <= index) {
                 logger?.info("nothing")
                 return projectPath
@@ -100,7 +98,7 @@ class ProjectGraph(project: Project, logger: Logger? = null) : Serializable {
             }
         }
 
-        fun addAllProjectPaths(collection: MutableSet<String>) {
+        fun addAllProjectPaths(collection: MutableSet<ProjectPath>) {
             projectPath?.let { path -> collection.add(path) }
             for (child in children.values) {
                 child.addAllProjectPaths(collection)
@@ -109,7 +107,7 @@ class ProjectGraph(project: Project, logger: Logger? = null) : Serializable {
     }
 
     fun getRootProjectPath(): ProjectPath? {
-        return rootNode.projectPath?.let { ProjectPath(it) }
+        return rootNode.projectPath
     }
 }
 

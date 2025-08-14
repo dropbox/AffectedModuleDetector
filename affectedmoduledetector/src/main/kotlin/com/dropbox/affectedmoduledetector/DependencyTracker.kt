@@ -55,9 +55,9 @@ class DependencyTracker(private val rootProject: Project, private val logger: Lo
     fun findAllDependents(projectPath: ProjectPath): Set<ProjectPath> {
         logger?.info("finding dependents of $projectPath")
         val result = mutableSetOf<ProjectPath>()
-        fun addAllDependents(path: ProjectPath) {
-            if (result.add(path)) {
-                dependentList[path]?.forEach(::addAllDependents)
+        fun addAllDependents(projectPath: ProjectPath) {
+            if (result.add(projectPath)) {
+                dependentList[projectPath]?.forEach(::addAllDependents)
             }
         }
         addAllDependents(projectPath)
