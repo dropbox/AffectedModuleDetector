@@ -658,7 +658,7 @@ class AffectedModuleDetectorImpl(
 
     private fun findContainingProject(filePath: String): ProjectPath? {
         return projectGraph.findContainingProject(filePath, logger).also {
-            logger?.info("search result for $filePath resulted in $it")
+            logger?.info("search result for $filePath resulted in ${it?.path}")
         }
     }
 }
