@@ -2,7 +2,7 @@
  * Copyright (c) 2020, Dropbox, Inc. All rights reserved.
  */
 plugins {
-    kotlin("jvm") version "1.9.25"
+    kotlin("jvm") version "2.2.0"
     `java-gradle-plugin`
 }
 
