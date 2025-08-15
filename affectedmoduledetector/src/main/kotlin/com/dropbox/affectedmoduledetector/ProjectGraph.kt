@@ -70,10 +70,6 @@ class ProjectGraph(project: Project, logger: Logger? = null) : Serializable {
         return rootNode.find(sections, 0, logger)
     }
 
-    fun getRootProjectPath(): ProjectPath? {
-        return rootNode.projectPath
-    }
-
     val allProjects by lazy {
         val result = mutableSetOf<ProjectPath>()
         rootNode.addAllProjectPaths(result)
@@ -108,6 +104,10 @@ class ProjectGraph(project: Project, logger: Logger? = null) : Serializable {
                 child.addAllProjectPaths(collection)
             }
         }
+    }
+
+    fun getRootProjectPath(): ProjectPath? {
+        return rootNode.projectPath
     }
 }
 

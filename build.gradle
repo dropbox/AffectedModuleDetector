@@ -1,6 +1,6 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    ext.kotlin_version = "1.9.25"
+    ext.kotlin_version = "2.2.0"
     repositories {
         google()
         mavenCentral()
@@ -13,7 +13,7 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath("org.jlleitschuh.gradle:ktlint-gradle:11.4.2")
         classpath("org.jacoco:org.jacoco.core:0.8.10")
-        classpath "com.vanniktech:gradle-maven-publish-plugin:0.19.0"
+        classpath "com.vanniktech:gradle-maven-publish-plugin:0.34.0"
     }
 }
 
@@ -28,8 +28,11 @@ allprojects {
 
 allprojects {
     plugins.withId("com.vanniktech.maven.publish") {
-        mavenPublish {
-            sonatypeHost = "S01"
+        mavenPublishing {
+            // sonatypeHost = "CENTRAL_PORTAL"
+            publishToMavenCentral()
+
+            signAllPublications()
         }
     }
 }
