@@ -8,6 +8,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
+import org.gradle.internal.configuration.problems.logger
 import org.gradle.util.GradleVersion
 import org.jetbrains.annotations.VisibleForTesting
 
@@ -227,7 +228,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         val tracker = DependencyTracker(project, null)
         project.tasks.configureEach { task ->
             if (task.name.contains(ANDROID_TEST_PATTERN)) {
-                tracker.findAllDependents(project.projectPath).forEach { dependentProject ->
+                tracker.findAllDependents(project.projectPath, logger).forEach { dependentProject ->
                     project.rootProject.findProject(dependentProject.path)?.tasks?.forEach { dependentTask ->
                         AffectedModuleDetector.configureTaskGuard(dependentTask)
                     }

@@ -28,7 +28,7 @@ import java.io.Serializable
  * Utility class that traverses all project dependencies and discover which modules depend on each
  * other. This is mainly used by [AffectedModuleDetector] to find out which projects should be run.
  */
-class DependencyTracker(private val rootProject: Project, private val logger: Logger?) : Serializable {
+class DependencyTracker(rootProject: Project, logger: Logger?) : Serializable {
 
     private val dependentList: Map<ProjectPath, Set<ProjectPath>> by lazy {
         val result = mutableMapOf<ProjectPath, MutableSet<ProjectPath>>()
@@ -52,7 +52,7 @@ class DependencyTracker(private val rootProject: Project, private val logger: Lo
         result
     }
 
-    fun findAllDependents(projectPath: ProjectPath): Set<ProjectPath> {
+    fun findAllDependents(projectPath: ProjectPath, logger: Logger?): Set<ProjectPath> {
         logger?.info("finding dependents of $projectPath")
         val result = mutableSetOf<ProjectPath>()
         fun addAllDependents(projectPath: ProjectPath) {
