@@ -84,6 +84,8 @@ class AffectedModuleConfiguration : Serializable {
 
     var specifiedRawCommitSha: String? = null
 
+    var parentBranch: String? = null
+
     var compareFrom: String = "PreviousCommit"
         set(value) {
             val commitShaProviders = listOf(

@@ -13,5 +13,6 @@ data class CommitShaProviderConfiguration(
     val specifiedBranch: String? = null,
     val specifiedSha: String? = null,
     val top: Sha,
-    val includeUncommitted: Boolean
+    val includeUncommitted: Boolean,
+    val parentBranch: String? = null
 ) : Serializable
