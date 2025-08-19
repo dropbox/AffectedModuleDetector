@@ -52,7 +52,7 @@ class DependencyTracker(rootProject: Project, logger: Logger?) : Serializable {
         result
     }
 
-    fun findAllDependents(projectPath: ProjectPath, logger: Logger?): Set<ProjectPath> {
+    fun findAllDependents(projectPath: ProjectPath, logger: Logger? = null): Set<ProjectPath> {
         logger?.info("finding dependents of $projectPath")
         val result = mutableSetOf<ProjectPath>()
         fun addAllDependents(projectPath: ProjectPath) {
