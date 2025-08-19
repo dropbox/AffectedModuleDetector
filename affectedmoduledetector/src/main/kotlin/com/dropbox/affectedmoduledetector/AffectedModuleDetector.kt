@@ -591,7 +591,7 @@ class AffectedModuleDetectorImpl(
      */
     private fun findDependentProjects(): Set<ProjectPath> {
         return changedProjects.flatMap { path ->
-            dependencyTracker.findAllDependents(path)
+            dependencyTracker.findAllDependents(path, logger)
         }.toSet()
     }
 

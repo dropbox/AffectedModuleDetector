@@ -227,7 +227,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         val tracker = DependencyTracker(project, null)
         project.tasks.configureEach { task ->
             if (task.name.contains(ANDROID_TEST_PATTERN)) {
-                tracker.findAllDependents(project.projectPath).forEach { dependentProject ->
+                tracker.findAllDependents(project.projectPath, null).forEach { dependentProject ->
                     project.rootProject.findProject(dependentProject.path)?.tasks?.forEach { dependentTask ->
                         AffectedModuleDetector.configureTaskGuard(dependentTask)
                     }
