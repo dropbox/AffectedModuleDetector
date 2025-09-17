@@ -15,6 +15,7 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import java.io.File
+import java.util.function.Predicate
 
 @RunWith(JUnit4::class)
 class AffectedModuleDetectorImplTest {
@@ -237,6 +238,9 @@ class AffectedModuleDetectorImplTest {
         affectedModuleConfiguration = AffectedModuleConfiguration().also {
             it.baseDir = tmpDir.absolutePath
             it.pathsAffectingAllModules = pathsAffectingAllModules
+        }
+        listOf(root, root2, root3).forEach { rootProject ->
+            rootProject.extensions.add(AffectedModuleConfiguration.name, affectedModuleConfiguration)
         }
     }
 
@@ -1771,6 +1775,59 @@ class AffectedModuleDetectorImplTest {
                 setOf()
             )
         )
+    }
+
+    @Test
+    fun `GIVEN upward configuration reference from p2 to p6 WHEN no predicate is supplied THEN p2 is affected`() {
+        p2.configurations.create("p2-upward-p6") { config ->
+            config.dependencies.add(p2.dependencies.project(mapOf("path" to p6.path)))
+        }
+        val detector = AffectedModuleDetectorImpl(
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
+            modules = null,
+            changedFilesProvider = MockGitClient(
+                changedFiles = listOf(
+                    convertToFilePath("d1/d3/d6", "foo.java")
+                ),
+                tmpFolder = tmpFolder.root
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
+            config = affectedModuleConfiguration
+        )
+        Truth.assertThat(detector.shouldInclude(p2.projectPath)).isTrue()
+        Truth.assertThat(detector.shouldInclude(p6.projectPath)).isTrue()
+    }
+
+    @Test
+    fun `GIVEN upward configuration reference from p2 to p6 WHEN predicate filtered THEN p2 is unaffected`() {
+        p2.configurations.create("p2-upward-p6") { config ->
+            config.dependencies.add(p2.dependencies.project(mapOf("path" to p6.path)))
+        }
+        affectedModuleConfiguration.configurationPredicate = Predicate { configuration ->
+            !configuration.name.contains("-upward-")
+        }
+        val detector = AffectedModuleDetectorImpl(
+            projectGraph = rootProjectGraph,
+            dependencyTracker = rootDependencyTracker,
+            logger = logger.toLogger(),
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
+            modules = null,
+            changedFilesProvider = MockGitClient(
+                changedFiles = listOf(
+                    convertToFilePath("d1/d3/d6", "foo.java")
+                ),
+                tmpFolder = tmpFolder.root
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
+            config = affectedModuleConfiguration
+        )
+        Truth.assertThat(detector.shouldInclude(p2.projectPath)).isFalse()
+        Truth.assertThat(detector.shouldInclude(p6.projectPath)).isTrue()
     }
 
     // For both Linux/Windows

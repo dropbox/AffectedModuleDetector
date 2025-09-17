@@ -105,6 +105,11 @@ affectedModuleDetector {
             "Run static analysis tool without auto-correction by Impact analysis"
         )
     ]
+    configurationPredicate = new Predicate<Configuration>() {
+        boolean test(Configuration configuration) {
+            return !configuration.name.contains("somethingToExclude")
+        }
+    }
 }
 ```
 
@@ -128,6 +133,7 @@ affectedModuleDetector {
  - `includeUncommitted`: If uncommitted files should be considered affected
  - `top`: The top of the git log to use. Must be used in combination with configuration `includeUncommitted = false`
  - `customTasks`: set of [CustomTask](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleConfiguration.kt)
+ - `configurationPredicate`: A predicate to filter configurations that should be considered for the dependency graph.  By default, all configurations are considered.
 
  By default, the Detector will look for `assembleAndroidDebugTest`, `connectedAndroidDebugTest`, and `testDebug`.  Modules can specify a configuration block to specify which variant tests to run:
  ```groovy
