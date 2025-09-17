@@ -376,4 +376,20 @@ class AffectedModuleConfigurationTest {
         // THEN
         assertFalse(actual)
     }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN parentBranch is set THEN value is returned`() {
+        val parentBranch = "main"
+
+        config.parentBranch = parentBranch
+
+        val actual = config.parentBranch
+        assertThat(actual).isEqualTo(parentBranch)
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN parentBranch is not set THEN null is returned`() {
+        val actual = config.parentBranch
+        assertThat(actual).isNull()
+    }
 }

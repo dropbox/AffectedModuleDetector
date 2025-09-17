@@ -208,7 +208,8 @@ abstract class AffectedModuleDetector(protected val logger: Logger?) {
                     specifiedBranch = config.specifiedBranch,
                     specifiedSha = config.specifiedRawCommitSha,
                     top = config.top,
-                    includeUncommitted = config.includeUncommitted
+                    includeUncommitted = config.includeUncommitted,
+                    parentBranch = config.parentBranch
                 ),
                 ignoredFiles = config.ignoredFiles
             )
