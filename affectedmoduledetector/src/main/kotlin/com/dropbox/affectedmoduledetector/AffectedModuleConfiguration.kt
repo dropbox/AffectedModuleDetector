@@ -1,6 +1,15 @@
 package com.dropbox.affectedmoduledetector
 
+import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProvider
+import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProviderConfiguration
+import com.dropbox.affectedmoduledetector.commitshaproviders.ForkCommit
+import com.dropbox.affectedmoduledetector.commitshaproviders.PreviousCommit
+import com.dropbox.affectedmoduledetector.commitshaproviders.SpecifiedBranchCommit
+import com.dropbox.affectedmoduledetector.commitshaproviders.SpecifiedBranchCommitMergeBase
+import com.dropbox.affectedmoduledetector.commitshaproviders.SpecifiedRawCommitSha
 import com.dropbox.affectedmoduledetector.util.toOsSpecificPath
+import com.dropbox.affectedmoduledetector.vcs.BaseVcsClient
+import com.dropbox.affectedmoduledetector.vcs.GitClientImpl
 import java.io.File
 import java.io.Serializable
 
@@ -80,6 +89,22 @@ class AffectedModuleConfiguration : Serializable {
             return field
         }
 
+    var commitShaProvider: CommitShaProvider = PreviousCommit()
+
+    var vcsClientProvider: (
+        workingDir: File,
+        logger: FileLogger?,
+        commitShaProviderConfiguration: CommitShaProviderConfiguration,
+        ignoredFiles: Set<String>?,
+    ) -> BaseVcsClient = { workingDir: File, logger: FileLogger?, commitShaProviderConfiguration: CommitShaProviderConfiguration, ignoredFiles: Set<String>? ->
+        GitClientImpl(
+            workingDir = workingDir,
+            logger = logger,
+            commitShaProviderConfiguration = commitShaProviderConfiguration,
+            ignoredFiles = ignoredFiles,
+        )
+    }
+
     var specifiedBranch: String? = null
 
     var specifiedRawCommitSha: String? = null
@@ -100,11 +125,22 @@ class AffectedModuleConfiguration : Serializable {
                 requireNotNull(specifiedBranch) {
                     "Specify a branch using the configuration specifiedBranch"
                 }
+                when (value) {
+                    "SpecifiedBranchCommit" -> commitShaProvider = SpecifiedBranchCommit(specifiedBranch!!)
+                    "SpecifiedBranchCommitMergeBase" -> commitShaProvider = SpecifiedBranchCommitMergeBase(specifiedBranch!!)
+                }
             }
             if (value == "SpecifiedRawCommitSha") {
                 requireNotNull(specifiedRawCommitSha) {
                     "Provide a Commit SHA for the specifiedRawCommitSha property when using SpecifiedRawCommitSha comparison strategy."
                 }
+                commitShaProvider = SpecifiedRawCommitSha(specifiedRawCommitSha!!)
+            }
+            if (value == "PreviousCommit") {
+                commitShaProvider = PreviousCommit()
+            }
+            if (value == "ForkCommit") {
+                commitShaProvider = ForkCommit()
             }
             field = value
         }

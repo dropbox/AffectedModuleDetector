@@ -1,7 +1,7 @@
 package com.dropbox.affectedmoduledetector.mocks
 
-import com.dropbox.affectedmoduledetector.GitClient
-import com.dropbox.affectedmoduledetector.Sha
+import com.dropbox.affectedmoduledetector.vcs.VcsClient
+import com.dropbox.affectedmoduledetector.vcs.Sha
 import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProvider
 
 class MockCommitShaProvider : CommitShaProvider {
@@ -10,7 +10,7 @@ class MockCommitShaProvider : CommitShaProvider {
     fun addReply(sha: Sha) {
         replies.add(sha)
     }
-    override fun get(commandRunner: GitClient.CommandRunner): Sha {
+    override fun get(commandRunner: VcsClient.CommandRunner): Sha {
         return replies.first()
     }
 }

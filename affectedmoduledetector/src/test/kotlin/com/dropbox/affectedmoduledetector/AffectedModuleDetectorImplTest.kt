@@ -1,5 +1,6 @@
 package com.dropbox.affectedmoduledetector
 
+import com.dropbox.affectedmoduledetector.vcs.VcsClient
 import com.google.common.truth.Truth
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtraPropertiesExtension
@@ -248,7 +249,7 @@ class AffectedModuleDetectorImplTest {
             logger = logger.toLogger(),
             ignoreUnknownProjects = false,
             projectSubset = ProjectSubset.ALL_AFFECTED_PROJECTS,
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration,
             changedFilesProvider = MockGitClient(
                 changedFiles = emptyList(),
@@ -286,7 +287,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = emptyList(),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -320,7 +321,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = emptyList(),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -343,7 +344,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -374,7 +375,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = emptyList(),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -397,7 +398,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -424,7 +425,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -450,7 +451,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -483,7 +484,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -514,7 +515,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -540,7 +541,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf("foo.java"),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -563,7 +564,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf("foo.java"),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -586,7 +587,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf("foo.java", convertToFilePath("d7", "bar.java")),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -613,7 +614,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -640,7 +641,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -667,7 +668,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -694,7 +695,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -721,7 +722,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -748,7 +749,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -775,7 +776,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -802,7 +803,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -829,7 +830,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -856,7 +857,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -882,7 +883,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -908,7 +909,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -934,7 +935,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -960,7 +961,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -986,7 +987,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1012,7 +1013,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1037,7 +1038,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1062,7 +1063,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1087,7 +1088,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1123,7 +1124,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
 
         )
@@ -1152,7 +1153,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1177,7 +1178,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1205,7 +1206,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root2),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1238,7 +1239,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1264,7 +1265,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         // Verify expectations on affected projects
@@ -1309,7 +1310,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         // Verify expectations on affected projects
@@ -1358,7 +1359,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         // Verify expectations on affected projects
@@ -1408,7 +1409,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = emptyList(),
                 tmpFolder = root3.projectDir
             ).findChangedFiles(root3),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1436,7 +1437,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = emptyList(),
                 tmpFolder = root3.projectDir
             ).findChangedFiles(root3),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1464,7 +1465,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = emptyList(),
                 tmpFolder = root3.projectDir
             ).findChangedFiles(root3),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1487,7 +1488,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(convertToFilePath("d14", "d16", "foo.java")),
                 tmpFolder = root3.projectDir
             ).findChangedFiles(root3),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1515,7 +1516,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(convertToFilePath("d15", "d18", "foo.java")),
                 tmpFolder = root3.projectDir
             ).findChangedFiles(root3),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1541,7 +1542,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(convertToFilePath("d15", "d19", "foo.java")),
                 tmpFolder = root3.projectDir
             ).findChangedFiles(root3),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1601,7 +1602,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         Truth.assertThat(detector.shouldInclude(p1.projectPath)).isTrue()
@@ -1622,7 +1623,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         Truth.assertThat(detector.shouldInclude(p1.projectPath)).isFalse()
@@ -1644,7 +1645,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         Truth.assertThat(detector.shouldInclude(p1.projectPath)).isTrue()
@@ -1669,7 +1670,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(convertToFilePath("d1", "foo.java")),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         Truth.assertThat(detector.shouldInclude(p1.projectPath)).isFalse()
@@ -1698,7 +1699,7 @@ class AffectedModuleDetectorImplTest {
                 ),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         Truth.assertThat(detector.shouldInclude(p3.projectPath)).isTrue()
@@ -1725,7 +1726,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(changedFile),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1762,7 +1763,7 @@ class AffectedModuleDetectorImplTest {
                 changedFiles = listOf(changedFile),
                 tmpFolder = tmpFolder.root
             ).findChangedFiles(root),
-            gitRoot = tmpFolder.root,
+            vcsRoot = tmpFolder.root,
             config = affectedModuleConfiguration
         )
         MatcherAssert.assertThat(
@@ -1781,13 +1782,13 @@ class AffectedModuleDetectorImplTest {
     private class MockGitClient(
         val changedFiles: List<String>,
         val tmpFolder: File
-    ) : GitClient {
+    ) : VcsClient {
 
         override fun findChangedFiles(
             project: Project,
         ): Provider<List<String>> = project.provider { changedFiles }
 
-        override fun getGitRoot(): File {
+        override fun getVcsRoot(): File {
             return tmpFolder
         }
     }

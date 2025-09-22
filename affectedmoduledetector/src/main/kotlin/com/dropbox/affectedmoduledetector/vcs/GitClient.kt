@@ -18,15 +18,11 @@
  * Copyright (c) 2020, Dropbox, Inc. All rights reserved.
  */
 
-package com.dropbox.affectedmoduledetector
+package com.dropbox.affectedmoduledetector.vcs
 
-import com.dropbox.affectedmoduledetector.GitClientImpl.Companion.CHANGED_FILES_CMD_PREFIX
+import com.dropbox.affectedmoduledetector.FileLogger
+import com.dropbox.affectedmoduledetector.vcs.GitClientImpl.Companion.CHANGED_FILES_CMD_PREFIX
 import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProviderConfiguration
-import com.dropbox.affectedmoduledetector.commitshaproviders.ForkCommit
-import com.dropbox.affectedmoduledetector.commitshaproviders.PreviousCommit
-import com.dropbox.affectedmoduledetector.commitshaproviders.SpecifiedBranchCommit
-import com.dropbox.affectedmoduledetector.commitshaproviders.SpecifiedBranchCommitMergeBase
-import com.dropbox.affectedmoduledetector.commitshaproviders.SpecifiedRawCommitSha
 import com.dropbox.affectedmoduledetector.util.toOsSpecificLineEnding
 import com.dropbox.affectedmoduledetector.util.toOsSpecificPath
 import org.gradle.api.Project
@@ -39,35 +35,6 @@ import org.gradle.api.provider.ValueSourceParameters
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-interface GitClient {
-    fun findChangedFiles(
-        project: Project,
-    ): Provider<List<String>>
-
-    fun getGitRoot(): File
-
-    /**
-     * Abstraction for running execution commands for testability
-     */
-    interface CommandRunner {
-        /**
-         * Executes the given shell command and returns the stdout as a string.
-         */
-        fun execute(command: String): String
-
-        /**
-         * Executes the given shell command and returns the stdout by lines.
-         */
-        fun executeAndParse(command: String): List<String>
-
-        /**
-         * Executes the given shell command and returns the first stdout line.
-         */
-        fun executeAndParseFirst(command: String): String
-    }
-}
-
-typealias Sha = String
 
 /**
  * A simple git client that uses system process commands to communicate with the git setup in the
@@ -78,11 +45,16 @@ internal class GitClientImpl(
     /**
      * The root location for git
      */
-    private val workingDir: File,
-    private val logger: FileLogger?,
-    private val commitShaProviderConfiguration: CommitShaProviderConfiguration,
-    private val ignoredFiles: Set<String>?
-) : GitClient {
+    workingDir: File,
+    logger: FileLogger?,
+    commitShaProviderConfiguration: CommitShaProviderConfiguration,
+    ignoredFiles: Set<String>?,
+) : BaseVcsClient(
+    workingDir = workingDir,
+    logger = logger,
+    commitShaProviderConfiguration = commitShaProviderConfiguration,
+    ignoredFiles = ignoredFiles,
+) {
 
     /**
      * Finds changed file paths
@@ -91,7 +63,7 @@ internal class GitClientImpl(
         project: Project,
     ): Provider<List<String>> {
         return project.providers.of(GitChangedFilesSource::class.java) {
-            it.parameters.commitShaProvider = commitShaProviderConfiguration
+            it.parameters.commitShaProviderConfiguration = commitShaProviderConfiguration
             it.parameters.workingDir.set(workingDir)
             it.parameters.logger = logger
             it.parameters.ignoredFiles.set(ignoredFiles)
@@ -109,7 +81,7 @@ internal class GitClientImpl(
         return null
     }
 
-    override fun getGitRoot(): File {
+    override fun getVcsRoot(): File {
         return findGitDirInParentFilepath(workingDir) ?: workingDir
     }
 
@@ -122,7 +94,7 @@ internal class GitClientImpl(
 private class RealCommandRunner(
     private val workingDir: File,
     private val logger: Logger?
-) : GitClient.CommandRunner {
+) : VcsClient.CommandRunner {
     override fun execute(command: String): String {
         val parts = command.split("\\s".toRegex())
         logger?.info("running command $command in $workingDir")
@@ -176,7 +148,7 @@ private class RealCommandRunner(
 internal abstract class GitChangedFilesSource :
     ValueSource<List<String>, GitChangedFilesSource.Parameters> {
     interface Parameters : ValueSourceParameters {
-        var commitShaProvider: CommitShaProviderConfiguration
+        var commitShaProviderConfiguration: CommitShaProviderConfiguration
         val workingDir: DirectoryProperty
         var logger: FileLogger?
         val ignoredFiles: SetProperty<String>
@@ -186,7 +158,7 @@ internal abstract class GitChangedFilesSource :
         findGitDirInParentFilepath(parameters.workingDir.get().asFile)
     }
 
-    private val commandRunner: GitClient.CommandRunner by lazy {
+    private val commandRunner: VcsClient.CommandRunner by lazy {
         RealCommandRunner(
             workingDir = gitRoot ?: parameters.workingDir.get().asFile,
             logger = null
@@ -194,12 +166,12 @@ internal abstract class GitChangedFilesSource :
     }
 
     override fun obtain(): List<String> {
-        val top = parameters.commitShaProvider.top
+        val top = parameters.commitShaProviderConfiguration.top
         val sha = getSha()
 
         // use this if we don't want local changes
         val changedFiles = commandRunner.executeAndParse(
-            if (parameters.commitShaProvider.includeUncommitted) {
+            if (parameters.commitShaProviderConfiguration.includeUncommitted) {
                 "$CHANGED_FILES_CMD_PREFIX $sha"
             } else {
                 "$CHANGED_FILES_CMD_PREFIX $top..$sha"
@@ -227,31 +199,6 @@ internal abstract class GitChangedFilesSource :
     }
 
     private fun getSha(): Sha {
-        val specifiedBranch = parameters.commitShaProvider.specifiedBranch
-        val specifiedSha = parameters.commitShaProvider.specifiedSha
-        val type = when (parameters.commitShaProvider.type) {
-            "PreviousCommit" -> PreviousCommit()
-            "ForkCommit" -> ForkCommit()
-            "SpecifiedBranchCommit" -> {
-                requireNotNull(specifiedBranch) {
-                    "Specified branch must be defined"
-                }
-                SpecifiedBranchCommit(specifiedBranch)
-            }
-            "SpecifiedBranchCommitMergeBase" -> {
-                requireNotNull(specifiedBranch) {
-                    "Specified branch must be defined"
-                }
-                SpecifiedBranchCommitMergeBase(specifiedBranch)
-            }
-            "SpecifiedRawCommitSha" -> {
-                requireNotNull(specifiedSha) {
-                    "Provide a Commit SHA for the specifiedRawCommitSha property when using SpecifiedRawCommitSha comparison strategy."
-                }
-                SpecifiedRawCommitSha(specifiedSha)
-            }
-            else -> throw IllegalArgumentException("Unsupported compareFrom type")
-        }
-        return type.get(commandRunner)
+        return parameters.commitShaProviderConfiguration.provider.get(commandRunner)
     }
 }
