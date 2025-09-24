@@ -1,9 +1,9 @@
 package com.dropbox.affectedmoduledetector.mocks
 
 import com.dropbox.affectedmoduledetector.FileLogger
-import com.dropbox.affectedmoduledetector.GitClient
+import com.dropbox.affectedmoduledetector.vcs.VcsClient
 
-internal class MockCommandRunner(private val logger: FileLogger) : GitClient.CommandRunner {
+internal class MockCommandRunner(private val logger: FileLogger) : VcsClient.CommandRunner {
     private val replies = mutableMapOf<String, List<String>>()
 
     fun addReply(command: String, response: String) {
