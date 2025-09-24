@@ -91,6 +91,22 @@ internal class GitClientImpl(
     }
 }
 
+internal class GitClientProviderImpl: BaseVcsClientProvider() {
+    override fun get(
+        workingDir: File,
+        logger: FileLogger?,
+        commitShaProviderConfiguration: CommitShaProviderConfiguration,
+        ignoredFiles: Set<String>?
+    ): BaseVcsClient {
+        return GitClientImpl(
+            workingDir = workingDir,
+            logger = logger,
+            commitShaProviderConfiguration = commitShaProviderConfiguration,
+            ignoredFiles = ignoredFiles,
+        )
+    }
+}
+
 private class RealCommandRunner(
     private val workingDir: File,
     private val logger: Logger?

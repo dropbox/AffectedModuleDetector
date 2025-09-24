@@ -1,15 +1,14 @@
 package com.dropbox.affectedmoduledetector
 
 import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProvider
-import com.dropbox.affectedmoduledetector.commitshaproviders.CommitShaProviderConfiguration
 import com.dropbox.affectedmoduledetector.commitshaproviders.ForkCommit
 import com.dropbox.affectedmoduledetector.commitshaproviders.PreviousCommit
 import com.dropbox.affectedmoduledetector.commitshaproviders.SpecifiedBranchCommit
 import com.dropbox.affectedmoduledetector.commitshaproviders.SpecifiedBranchCommitMergeBase
 import com.dropbox.affectedmoduledetector.commitshaproviders.SpecifiedRawCommitSha
 import com.dropbox.affectedmoduledetector.util.toOsSpecificPath
-import com.dropbox.affectedmoduledetector.vcs.BaseVcsClient
-import com.dropbox.affectedmoduledetector.vcs.GitClientImpl
+import com.dropbox.affectedmoduledetector.vcs.BaseVcsClientProvider
+import com.dropbox.affectedmoduledetector.vcs.GitClientProviderImpl
 import java.io.File
 import java.io.Serializable
 
@@ -91,19 +90,7 @@ class AffectedModuleConfiguration : Serializable {
 
     var commitShaProvider: CommitShaProvider = PreviousCommit()
 
-    var vcsClientProvider: (
-        workingDir: File,
-        logger: FileLogger?,
-        commitShaProviderConfiguration: CommitShaProviderConfiguration,
-        ignoredFiles: Set<String>?,
-    ) -> BaseVcsClient = { workingDir: File, logger: FileLogger?, commitShaProviderConfiguration: CommitShaProviderConfiguration, ignoredFiles: Set<String>? ->
-        GitClientImpl(
-            workingDir = workingDir,
-            logger = logger,
-            commitShaProviderConfiguration = commitShaProviderConfiguration,
-            ignoredFiles = ignoredFiles,
-        )
-    }
+    var vcsClientProvider: BaseVcsClientProvider = GitClientProviderImpl()
 
     var specifiedBranch: String? = null
 

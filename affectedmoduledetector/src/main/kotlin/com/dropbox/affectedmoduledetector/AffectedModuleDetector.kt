@@ -200,7 +200,7 @@ abstract class AffectedModuleDetector(protected val logger: Logger?) {
                     rootProject
                 )
 
-            val vcsClient = config.vcsClientProvider(
+            val vcsClient = config.vcsClientProvider.get(
                 rootProject.projectDir,
                 logger,
                 CommitShaProviderConfiguration(

@@ -3,8 +3,9 @@ package com.dropbox.affectedmoduledetector.vcs
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import java.io.File
+import java.io.Serializable
 
-interface VcsClient {
+interface VcsClient: Serializable {
     fun findChangedFiles(
         project: Project,
     ): Provider<List<String>>
