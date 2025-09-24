@@ -32,6 +32,7 @@ gradlePlugin {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation("com.android.tools.build:gradle:8.13.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito.kotlin:mockito-kotlin:6.0.0")
     testImplementation("com.google.truth:truth:1.4.5")

@@ -12,6 +12,9 @@ open class AffectedTestConfiguration {
     var runAndroidTestTask: String? = DEFAULT_ANDROID_TEST_TASK
     var jvmTestTask: String? = DEFAULT_JVM_TEST_TASK
 
+    var runTestsForEveryVariant: Boolean = false
+    var defaultTestBuildType: String = "debug"
+
     companion object {
         const val name = "affectedTestConfiguration"
 
