@@ -1,5 +1,8 @@
 package com.dropbox.affectedmoduledetector
 
+import org.gradle.api.provider.Provider
+import java.io.Serializable
+
 /**
  * Used to configure which variant to run for affected tasks by adding following block to modules
  * affectedTestConfiguration{
@@ -12,8 +15,13 @@ open class AffectedTestConfiguration {
     var runAndroidTestTask: String? = DEFAULT_ANDROID_TEST_TASK
     var jvmTestTask: String? = DEFAULT_JVM_TEST_TASK
 
-    var runTestsForEveryVariant: Boolean = false
-    var defaultTestBuildType: String = "debug"
+    var testTasksProvider: Provider<TasksNames>? = null
+
+    data class TasksNames(
+        val unitTestTasks: List<String>,
+        val androidTestTasks: List<String>,
+        val assembleAndroidTestTasks: List<String>,
+    ): Serializable
 
     companion object {
         const val name = "affectedTestConfiguration"

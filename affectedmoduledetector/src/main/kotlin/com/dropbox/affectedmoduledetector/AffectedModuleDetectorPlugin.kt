@@ -4,7 +4,6 @@
 
 package com.dropbox.affectedmoduledetector
 
-import com.android.build.gradle.TestedAndroidConfig
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -193,29 +192,19 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             lazyMessage = { "Unable to find ${AffectedTestConfiguration.name} in $project" }
         ) as AffectedTestConfiguration
 
+        val androidTaskNames = tasks.testTasksProvider?.orNull
+
         return when (taskType) {
             InternalTaskType.ANDROID_TEST -> {
-                if (tasks.runTestsForEveryVariant) {
-                    getAndroidPathsAndTasks(project, tasks.defaultTestBuildType, InternalTaskType.ANDROID_TEST)
-                } else {
-                    getPathAndTask(project, tasks.runAndroidTestTask)
-                }
+                androidTaskNames?.androidTestTasks?.takeIf { it.isNotEmpty() } ?: getPathAndTask(project, tasks.runAndroidTestTask)
             }
 
             InternalTaskType.ASSEMBLE_ANDROID_TEST -> {
-                if (tasks.runTestsForEveryVariant) {
-                    getAndroidPathsAndTasks(project, tasks.defaultTestBuildType, InternalTaskType.ASSEMBLE_ANDROID_TEST)
-                } else {
-                    getPathAndTask(project, tasks.assembleAndroidTestTask)
-                }
+                androidTaskNames?.assembleAndroidTestTasks?.takeIf { it.isNotEmpty() } ?: getPathAndTask(project, tasks.assembleAndroidTestTask)
             }
 
             InternalTaskType.ANDROID_JVM_TEST -> {
-                if (tasks.runTestsForEveryVariant) {
-                    getAndroidPathsAndTasks(project, tasks.defaultTestBuildType, InternalTaskType.ANDROID_JVM_TEST)
-                } else {
-                    getPathAndTask(project, tasks.jvmTestTask)
-                }
+                androidTaskNames?.unitTestTasks?.takeIf { it.isNotEmpty() } ?: getPathAndTask(project, tasks.jvmTestTask)
             }
 
             InternalTaskType.JVM_TEST -> {
@@ -230,39 +219,6 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
                 getPathAndTask(project, taskType.originalGradleCommand)
             }
         }
-    }
-
-    private fun getAndroidPathsAndTasks(project: Project, buildType: String, taskType: InternalTaskType): List<String> {
-        val androidTestExtension = requireNotNull(
-            value = project.extensions.findByType(TestedAndroidConfig::class.java),
-            lazyMessage = { "Unable to find ${TestedAndroidConfig::class.simpleName} in $project" }
-        )
-
-        val taskSuffix = when (taskType) {
-            InternalTaskType.ANDROID_JVM_TEST -> "UnitTest"
-            InternalTaskType.ANDROID_TEST -> "AndroidTest"
-            InternalTaskType.ASSEMBLE_ANDROID_TEST -> "AndroidTest"
-            else -> throw IllegalArgumentException("Unknown task type: $taskType")
-        }
-
-        val taskPrefix = when (taskType) {
-            InternalTaskType.ANDROID_JVM_TEST -> "test"
-            InternalTaskType.ANDROID_TEST -> "test"
-            InternalTaskType.ASSEMBLE_ANDROID_TEST -> "assemble"
-            else -> throw IllegalArgumentException("Unknown task type: $taskType")
-        }
-
-        val variantSet = when (taskType) {
-            InternalTaskType.ANDROID_JVM_TEST -> androidTestExtension.unitTestVariants
-            InternalTaskType.ANDROID_TEST -> androidTestExtension.unitTestVariants
-            InternalTaskType.ASSEMBLE_ANDROID_TEST -> androidTestExtension.testVariants
-            else -> throw IllegalArgumentException("Unknown task type: $taskType")
-        }
-
-        return variantSet.matching { it.buildType.name == buildType }
-            .map { variant ->
-                "${taskPrefix}${variant.name.replaceFirstChar { it.uppercase() }}${taskSuffix}"
-            }
     }
 
     private fun getPathAndTask(project: Project, task: String?): List<String> {
