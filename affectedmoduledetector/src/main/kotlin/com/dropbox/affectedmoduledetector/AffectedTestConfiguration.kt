@@ -10,17 +10,16 @@ import java.io.Serializable
  * }
  */
 open class AffectedTestConfiguration {
+    var testTasksProvider: Provider<TaskNames>? = null
 
-    var assembleAndroidTestTask: String? = DEFAULT_ASSEMBLE_ANDROID_TEST_TASK
-    var runAndroidTestTask: String? = DEFAULT_ANDROID_TEST_TASK
-    var jvmTestTask: String? = DEFAULT_JVM_TEST_TASK
+    fun getTestTaskNames(): TaskNames {
+        return testTasksProvider?.orNull ?: TaskNames()
+    }
 
-    var testTasksProvider: Provider<TasksNames>? = null
-
-    data class TasksNames(
-        val unitTestTasks: List<String>,
-        val androidTestTasks: List<String>,
-        val assembleAndroidTestTasks: List<String>,
+    data class TaskNames(
+        val unitTestTasks: List<String> = listOf(DEFAULT_JVM_TEST_TASK),
+        val androidTestTasks: List<String> = listOf(DEFAULT_ANDROID_TEST_TASK),
+        val assembleAndroidTestTasks: List<String> = listOf(DEFAULT_ASSEMBLE_ANDROID_TEST_TASK),
     ): Serializable
 
     companion object {

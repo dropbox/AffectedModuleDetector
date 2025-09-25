@@ -192,27 +192,25 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
             lazyMessage = { "Unable to find ${AffectedTestConfiguration.name} in $project" }
         ) as AffectedTestConfiguration
 
-        val androidTaskNames = tasks.testTasksProvider?.orNull
+        val androidTaskNames = tasks.getTestTaskNames()
 
         return when (taskType) {
             InternalTaskType.ANDROID_TEST -> {
-                androidTaskNames?.androidTestTasks?.takeIf { it.isNotEmpty() } ?: getPathAndTask(project, tasks.runAndroidTestTask)
+                androidTaskNames.androidTestTasks.takeIf {
+                    it.isNotEmpty()
+                } ?: getPathAndTask(project, AffectedTestConfiguration.DEFAULT_ANDROID_TEST_TASK)
             }
 
             InternalTaskType.ASSEMBLE_ANDROID_TEST -> {
-                androidTaskNames?.assembleAndroidTestTasks?.takeIf { it.isNotEmpty() } ?: getPathAndTask(project, tasks.assembleAndroidTestTask)
+                androidTaskNames.assembleAndroidTestTasks.takeIf {
+                    it.isNotEmpty()
+                } ?: getPathAndTask(project, AffectedTestConfiguration.DEFAULT_ASSEMBLE_ANDROID_TEST_TASK)
             }
 
             InternalTaskType.ANDROID_JVM_TEST -> {
-                androidTaskNames?.unitTestTasks?.takeIf { it.isNotEmpty() } ?: getPathAndTask(project, tasks.jvmTestTask)
-            }
-
-            InternalTaskType.JVM_TEST -> {
-                if (tasks.jvmTestTask != AffectedTestConfiguration.DEFAULT_JVM_TEST_TASK) {
-                    getPathAndTask(project, tasks.jvmTestTask)
-                } else {
-                    getPathAndTask(project, taskType.originalGradleCommand)
-                }
+                androidTaskNames.unitTestTasks.takeIf {
+                    it.isNotEmpty()
+                } ?: getPathAndTask(project, AffectedTestConfiguration.DEFAULT_JVM_TEST_TASK)
             }
 
             else -> {
