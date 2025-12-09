@@ -129,6 +129,37 @@ affectedModuleDetector {
  - `top`: The top of the git log to use. Must be used in combination with configuration `includeUncommitted = false`
  - `customTasks`: set of [CustomTask](https://github.com/dropbox/AffectedModuleDetector/blob/main/affectedmoduledetector/src/main/kotlin/com/dropbox/affectedmoduledetector/AffectedModuleConfiguration.kt)
 
+## Git Submodule Support
+
+The plugin automatically detects git submodules by parsing the `.gitmodules` file in the project root. When a submodule pointer changes (i.e., the submodule is updated to a different commit), all Gradle projects located under that submodule path are marked as affected.
+
+### How It Works
+
+1. **Auto-Detection**: The plugin reads `.gitmodules` to discover all submodule paths
+2. **Change Detection**: When git reports a submodule path as changed, the plugin finds all Gradle projects under that path
+3. **Dependency Propagation**: Affected submodule projects and their dependents are included in the affected set
+
+### Example
+
+Given this project structure:
+```
+my-project/
+├── .gitmodules
+├── libs/
+│   └── my-submodule/          # git submodule
+│       ├── core/              # Gradle project :core
+│       └── utils/             # Gradle project :utils
+└── app/                       # Gradle project :app (depends on :core)
+```
+
+When `libs/my-submodule` is updated to a new commit:
+- `:core` and `:utils` are marked as **changed projects**
+- `:app` is marked as a **dependent project** (because it depends on `:core`)
+
+### Nested Submodules
+
+The plugin handles nested submodules correctly. When a nested submodule changes, git reports the immediate parent submodule as changed, and the plugin finds all projects under that parent path.
+
  By default, the Detector will look for `assembleAndroidDebugTest`, `connectedAndroidDebugTest`, and `testDebug`.  Modules can specify a configuration block to specify which variant tests to run:
  ```groovy
  affectedTestConfiguration {

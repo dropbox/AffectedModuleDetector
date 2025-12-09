@@ -70,6 +70,19 @@ class ProjectGraph(project: Project, logger: Logger? = null) : Serializable {
         return rootNode.find(sections, 0, logger)
     }
 
+    /**
+     * Finds all projects whose directory is under the given path prefix.
+     * Used for submodule support - when a submodule path changes, all projects under it are affected.
+     */
+    fun findAllProjectsUnderPath(pathPrefix: String, logger: Logger? = null): Set<ProjectPath> {
+        val sections = pathPrefix.split(File.separatorChar)
+        val node = rootNode.findNode(sections, 0) ?: return emptySet()
+        val result = mutableSetOf<ProjectPath>()
+        node.addAllProjectPaths(result)
+        logger?.info("Found ${result.size} projects under $pathPrefix: $result")
+        return result
+    }
+
     val allProjects by lazy {
         val result = mutableSetOf<ProjectPath>()
         rootNode.addAllProjectPaths(result)
@@ -96,6 +109,11 @@ class ProjectGraph(project: Project, logger: Logger? = null) : Serializable {
             } else {
                 child.find(sections, index + 1, logger)
             }
+        }
+
+        fun findNode(sections: List<String>, index: Int): Node? {
+            if (sections.size <= index) return this
+            return children[sections[index]]?.findNode(sections, index + 1)
         }
 
         fun addAllProjectPaths(collection: MutableSet<ProjectPath>) {
