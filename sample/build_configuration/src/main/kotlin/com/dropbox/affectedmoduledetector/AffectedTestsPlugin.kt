@@ -1,6 +1,5 @@
-package com.dropbox.sample
+package com.dropbox.affectedmoduledetector
 
-import com.dropbox.affectedmoduledetector.AffectedModuleDetector
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
