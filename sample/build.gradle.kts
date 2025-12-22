@@ -13,25 +13,22 @@ plugins {
 
 affectedModuleDetector {
     baseDir = project.rootDir.toString()
-    pathsAffectingAllModules =
-        setOf(
-            "build_configuration/",
-        )
+    pathsAffectingAllModules = setOf(
+        "build_configuration/",
+    )
     specifiedBranch = "origin/main"
     compareFrom = "SpecifiedBranchCommitMergeBase"
-    customTasks =
-        setOf(
-            AffectedModuleConfiguration.CustomTask(
-                "runDetektByImpact",
-                "detekt",
-                "Run static analysis tool by Impact analysis",
-            ),
-        )
+    customTasks = setOf(
+        AffectedModuleConfiguration.CustomTask(
+            "runDetektByImpact",
+            "detekt",
+            "Run static analysis tool by Impact analysis",
+        ),
+    )
     logFolder = project.rootDir.toString()
-    excludedModules =
-        setOf(
-            "sample-util",
-        )
+    excludedModules = setOf(
+        "sample-util",
+    )
 }
 
 tasks.register<Delete>("clean") {
