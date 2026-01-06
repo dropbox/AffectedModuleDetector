@@ -1,13 +1,8 @@
-package com.dropbox.affectedmoduledetector.tasks
+package com.dropbox.affectedmoduledetector
 
-import com.dropbox.affectedmoduledetector.AffectedModuleDetector
-import com.dropbox.affectedmoduledetector.DependencyTracker
-import com.dropbox.affectedmoduledetector.projectPath
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
-import java.util.*
 
 var TEST_TASK_TO_RUN_EXTENSION = "TestTasks"
 
@@ -23,9 +18,9 @@ open class TestTasks {
  * registers all affected test tasks. Advantage is speed in not needing to skip modules at a large scale
  *
  * Registers 3 tasks
- * gradlew runAffectedUnitTests - runs jvm tests
- * gradlew runAffectedAndroidTests - runs connected tests
- * gradlew assembleAffectedAndroidTests - assembles but does not run on device tests, useful when working with device labs
+ * gradlew runCustomAffectedUnitTests - runs jvm tests
+ * gradlew runCustomAffectedAndroidUnitTests - runs connected tests
+ * gradlew customAssembleAffectedAndroidTests - assembles but does not run on device tests, useful when working with device labs
  */
 class AffectedTasksPlugin : Plugin<Project> {
     var ANDROID_TEST_BUILD_VARIANT = "AndroidTest"
@@ -39,7 +34,7 @@ class AffectedTasksPlugin : Plugin<Project> {
                 project.extensions.findByName(TEST_TASK_TO_RUN_EXTENSION)
             ) as TestTasks
             registerAffectedTestTask(
-                "runAffectedUnitTests",
+                "runCustomAffectedUnitTests",
                 testTasks.jvmTest, testTasks.jvmTestBackup, rootProject,
             )
 
@@ -92,7 +87,7 @@ class AffectedTasksPlugin : Plugin<Project> {
         rootProject: Project
     ) {
         registerAffectedTestTask(
-            "runAffectedAndroidUnitTests",
+            "runCustomAffectedAndroidUnitTests",
             testTasks.runAndroidTestTask, null, rootProject
         )
     }
@@ -101,7 +96,7 @@ class AffectedTasksPlugin : Plugin<Project> {
         rootProject: Project
     ) {
         registerAffectedTestTask(
-            "assembleAffectedAndroidTests",
+            "customAssembleAffectedAndroidTests",
             testTasks.assembleAndroidTestTask, null, rootProject
         )
     }

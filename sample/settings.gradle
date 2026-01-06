@@ -1,4 +1,0 @@
-include ':sample-app'
-include ':sample-core'
-include ':sample-jvm-module'
-include ':sample-util'
