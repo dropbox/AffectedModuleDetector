@@ -62,5 +62,51 @@ class ProjectGraphTest {
             graph.findContainingProject("p2/a/b/c/d/e/f/a.java".toLocalPath())
         )
     }
+
+    @Test
+    fun testFindAllProjectsUnderPath() {
+        val tmpDir = tmpFolder.root
+        val root = ProjectBuilder.builder()
+            .withProjectDir(tmpDir)
+            .withName("root")
+            .build()
+        (root.properties.get("ext") as ExtraPropertiesExtension).set("supportRootFolder", tmpDir)
+
+        // Create submodule directory with multiple projects
+        val submoduleDir = tmpDir.resolve("submodule")
+        submoduleDir.mkdirs()
+
+        val p1 = ProjectBuilder.builder()
+            .withProjectDir(submoduleDir.resolve("module-a"))
+            .withName("module-a")
+            .withParent(root)
+            .build()
+        val p2 = ProjectBuilder.builder()
+            .withProjectDir(submoduleDir.resolve("module-b"))
+            .withName("module-b")
+            .withParent(root)
+            .build()
+
+        val graph = ProjectGraph(root, null)
+        val result = graph.findAllProjectsUnderPath("submodule")
+
+        assertEquals(setOf(p1.projectPath, p2.projectPath), result)
+    }
+
+    @Test
+    fun testFindAllProjectsUnderPath_returnsEmptyForNonexistent() {
+        val tmpDir = tmpFolder.root
+        val root = ProjectBuilder.builder()
+            .withProjectDir(tmpDir)
+            .withName("root")
+            .build()
+        (root.properties.get("ext") as ExtraPropertiesExtension).set("supportRootFolder", tmpDir)
+
+        val graph = ProjectGraph(root, null)
+        val result = graph.findAllProjectsUnderPath("nonexistent")
+
+        assertEquals(emptySet<ProjectPath>(), result)
+    }
+
     private fun String.toLocalPath() = this.split("/").joinToString(File.separator)
 }
