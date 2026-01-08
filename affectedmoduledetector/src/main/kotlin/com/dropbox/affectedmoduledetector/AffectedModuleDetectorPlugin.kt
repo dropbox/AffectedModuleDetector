@@ -167,7 +167,7 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         }
 
         project.pluginManager.withPlugin(pluginId) {
-            getAffectedPath(testType, project)?.let { path ->
+            getAffectedPaths(testType, project).takeIf { it.isNotEmpty() }?.forEach { path ->
                 val pathOrNull = project.tasks.findByPath(path)
                 val onlyIf = when {
                     pathOrNull == null -> false
@@ -183,34 +183,34 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         }
     }
 
-    private fun getAffectedPath(
+    private fun getAffectedPaths(
         taskType: AffectedModuleTaskType,
         project: Project
-    ): String? {
+    ): List<String> {
         val tasks = requireNotNull(
             value = project.extensions.findByName(AffectedTestConfiguration.name),
             lazyMessage = { "Unable to find ${AffectedTestConfiguration.name} in $project" }
         ) as AffectedTestConfiguration
 
+        val androidTaskNames = tasks.getTestTaskNames()
+
         return when (taskType) {
             InternalTaskType.ANDROID_TEST -> {
-                getPathAndTask(project, tasks.runAndroidTestTask)
+                androidTaskNames.androidTestTasks.takeIf {
+                    it.isNotEmpty()
+                } ?: getPathAndTask(project, AffectedTestConfiguration.DEFAULT_ANDROID_TEST_TASK)
             }
 
             InternalTaskType.ASSEMBLE_ANDROID_TEST -> {
-                getPathAndTask(project, tasks.assembleAndroidTestTask)
+                androidTaskNames.assembleAndroidTestTasks.takeIf {
+                    it.isNotEmpty()
+                } ?: getPathAndTask(project, AffectedTestConfiguration.DEFAULT_ASSEMBLE_ANDROID_TEST_TASK)
             }
 
             InternalTaskType.ANDROID_JVM_TEST -> {
-                getPathAndTask(project, tasks.jvmTestTask)
-            }
-
-            InternalTaskType.JVM_TEST -> {
-                if (tasks.jvmTestTask != AffectedTestConfiguration.DEFAULT_JVM_TEST_TASK) {
-                    getPathAndTask(project, tasks.jvmTestTask)
-                } else {
-                    getPathAndTask(project, taskType.originalGradleCommand)
-                }
+                androidTaskNames.unitTestTasks.takeIf {
+                    it.isNotEmpty()
+                } ?: getPathAndTask(project, AffectedTestConfiguration.DEFAULT_JVM_TEST_TASK)
             }
 
             else -> {
@@ -219,8 +219,8 @@ class AffectedModuleDetectorPlugin : Plugin<Project> {
         }
     }
 
-    private fun getPathAndTask(project: Project, task: String?): String? {
-        return if (task.isNullOrBlank()) null else "${project.path}:$task"
+    private fun getPathAndTask(project: Project, task: String?): List<String> {
+        return if (task.isNullOrBlank()) emptyList() else listOf("${project.path}:$task")
     }
 
     private fun filterAndroidTests(project: Project) {
