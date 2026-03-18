@@ -202,7 +202,7 @@ internal abstract class GitChangedFilesSource :
             if (parameters.commitShaProvider.includeUncommitted) {
                 "$CHANGED_FILES_CMD_PREFIX $sha"
             } else {
-                "$CHANGED_FILES_CMD_PREFIX $top..$sha"
+                "$CHANGED_FILES_CMD_PREFIX $sha..$top"
             }
         ).map { it.toOsSpecificPath() }
 
