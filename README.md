@@ -12,11 +12,19 @@ A Gradle Plugin to determine which modules were affected by a set of files in a 
 
 The AffectedModuleDetector will look at the last commit and determine which files have changed, it will then build a dependency graph of all the modules in the project.   The detector exposes a set of APIs which can be used to determine whether a module was considered affected.
 
-### ⚠️ Maintenance Status
+### ⚠️ Repository Archived
 
-Affected Module Detector is in maintenance mode.
+Dropbox has archived this repository and is no longer maintaining Affected Module Detector.
 
-Only critical fixes may be merged. There are no plans for new features and no guaranteed support timeline. See [this issue](https://github.com/dropbox/AffectedModuleDetector/issues/335) for details and ownership discussion.
+The project is now actively maintained by Flo Health:
+
+https://github.com/flo-health/AffectedModuleDetector
+
+Users should migrate to the Flo Health repository for ongoing development, support, bug fixes, new features, and future releases.
+
+We are grateful to the Flo Health team for continuing stewardship of the project.
+
+**Please note**: this repository is archived. Issues, pull requests, and other contributions will not be reviewed or accepted.
 
 ### Git
 
