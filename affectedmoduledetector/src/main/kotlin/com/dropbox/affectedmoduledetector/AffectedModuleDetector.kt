@@ -646,11 +646,9 @@ class AffectedModuleDetectorImpl(
     }
 
     private fun affectsAllModules(relativeFilePath: String): Boolean {
-        val rootProjectDir = if (config.baseDir != null) {
-            File(config.baseDir!!)
-        } else {
-            File(projectGraph.getRootProjectPath()!!.path)
-        }
+        val rootProjectDir = getRootProjectDir()
+
+        // Normalize the file path from git-relative to project-relative
         val pathSections = relativeFilePath.toPathSections(rootProjectDir, gitRoot)
         val projectRelativePath = pathSections.joinToString(File.separatorChar.toString())
 
@@ -658,8 +656,22 @@ class AffectedModuleDetectorImpl(
     }
 
     private fun findContainingProject(filePath: String): ProjectPath? {
-        return projectGraph.findContainingProject(filePath, logger).also {
-            logger?.info("search result for $filePath resulted in ${it?.path}")
+        val rootProjectDir = getRootProjectDir()
+
+        // Normalize the file path from git-relative to project-relative
+        val pathSections = filePath.toPathSections(rootProjectDir, gitRoot)
+        val projectRelativePath = pathSections.joinToString(File.separatorChar.toString())
+
+        return projectGraph.findContainingProject(projectRelativePath, logger).also {
+            logger?.info("search result for $filePath (normalized to $projectRelativePath) resulted in ${it?.path}")
+        }
+    }
+    
+    private fun getRootProjectDir(): File {
+        return if (config.baseDir != null) {
+            File(config.baseDir!!)
+        } else {
+            File(projectGraph.getRootProjectPath()!!.path)
         }
     }
 }
