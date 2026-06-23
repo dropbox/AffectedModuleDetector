@@ -14,6 +14,6 @@
 .externalNativeBuild
 .cxx
 local.properties
-buildSrc/build
-buildSrc/.idea/
+build_configuration/build
+build_configuration/.idea/
 affected_module_detector.log
