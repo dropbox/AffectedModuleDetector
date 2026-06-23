@@ -15,27 +15,13 @@ class AffectedTestConfigurationTest {
 
     @Test
     fun `GIVEN AffectedTestConfiguration WHEN default values THEN default values returned`() {
-        assertThat(config.assembleAndroidTestTask).isEqualTo("assembleDebugAndroidTest")
-        assertThat(config.runAndroidTestTask).isEqualTo("connectedDebugAndroidTest")
-        assertThat(config.jvmTestTask).isEqualTo("testDebugUnitTest")
-    }
-
-    @Test
-    fun `GIVEN AffectedTestConfiguration WHEN values are updated THEN new values are returned`() {
-        // GIVEN
-        val assembleAndroidTestTask = "assembleAndroidTestTask"
-        val runAndroidTestTask = "runAndroidTestTask"
-        val jvmTest = "jvmTest"
-
-        // WHEN
-        config.assembleAndroidTestTask = assembleAndroidTestTask
-        config.runAndroidTestTask = runAndroidTestTask
-        config.jvmTestTask = jvmTest
-
-        // THEN
-        assertThat(config.assembleAndroidTestTask).isEqualTo(assembleAndroidTestTask)
-        assertThat(config.runAndroidTestTask).isEqualTo(runAndroidTestTask)
-        assertThat(config.jvmTestTask).isEqualTo(jvmTest)
+        val taskNames = config.getTestTaskNames()
+        assertThat(taskNames.assembleAndroidTestTasks.size).isEqualTo(1)
+        assertThat(taskNames.assembleAndroidTestTasks.first()).isEqualTo("assembleDebugAndroidTest")
+        assertThat(taskNames.androidTestTasks.size).isEqualTo(1)
+        assertThat(taskNames.androidTestTasks.first()).isEqualTo("connectedDebugAndroidTest")
+        assertThat(taskNames.unitTestTasks.size).isEqualTo(1)
+        assertThat(taskNames.unitTestTasks.first()).isEqualTo("testDebugUnitTest")
     }
 
     @Test
