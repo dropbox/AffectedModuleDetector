@@ -75,4 +75,17 @@ class ForkCommitTest {
 
         assertThat(actual).isEqualTo("commit-sha")
     }
+
+    @Test
+    fun givenProvidedParentBranch_whenGetCommitSha_thenVerifyExactCommand() {
+        val providedParentBranch = "abc"
+        val forkCommitWithParent = ForkCommit(providedParentBranch)
+        
+        commandRunner.addReply(ForkCommit.CURRENT_BRANCH_CMD, "feature")
+        commandRunner.addReply("git merge-base feature abc", "commit-sha")
+
+        forkCommitWithParent.get(commandRunner)
+
+        assertThat(commandRunner.executedCommands).contains("git merge-base feature abc")
+    }
 }

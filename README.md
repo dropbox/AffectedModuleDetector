@@ -112,6 +112,9 @@ affectedModuleDetector {
     buildAllWhenNoProjectsChanged = true // default is true
     includeUncommitted = true
     top = "HEAD"
+    specifiedBranch = "main"
+    specifiedRawCommitSha = "abc123"
+    parentBranch = "main" // Optional: specify parent branch for ForkCommit comparison
     customTasks = [
         new AffectedModuleConfiguration.CustomTask(
             "runDetektByImpact",
@@ -128,6 +131,7 @@ affectedModuleDetector {
  - `logFolder`: A folder to output the log file in
  - `specifiedBranch`: A branch to specify changes against. Must be used in combination with configuration `compareFrom = "SpecifiedBranchCommit"` 
  - `specifiedRawCommitSha`: A raw commit SHA to specify changes against. Must be used in combination with configuration `compareFrom = "SpecifiedRawCommitSha"`
+ - `parentBranch`: A branch to specify as the parent branch for ForkCommit comparison. If not provided, ForkCommit will try to detect it automatically.
  - `ignoredFiles`: A set of files that will be filtered out of the list of changed files retrieved by git. 
  - `buildAllWhenNoProjectsChanged`: If true, the plugin will build all projects when no projects are considered affected.
  - `compareFrom`: A commit to compare the branch changes against. Can be either:
@@ -239,7 +243,6 @@ which is implementing the [AffectedModuleTaskType](https://github.com/dropbox/Af
 
 ```groovy
 // ... 
-
 affectedModuleDetector {
      // ...
      customTasks = [
@@ -277,3 +280,4 @@ Special thanks to the AndroidX team for originally developing this project at ht
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+    

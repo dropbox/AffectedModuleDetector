@@ -5,6 +5,8 @@ import com.dropbox.affectedmoduledetector.GitClient
 
 internal class MockCommandRunner(private val logger: FileLogger) : GitClient.CommandRunner {
     private val replies = mutableMapOf<String, List<String>>()
+    private val _executedCommands = mutableListOf<String>()
+    val executedCommands: List<String> get() = _executedCommands
 
     fun addReply(command: String, response: String) {
         logger.info("add reply. cmd: $command response: $response")
@@ -12,6 +14,7 @@ internal class MockCommandRunner(private val logger: FileLogger) : GitClient.Com
     }
 
     override fun execute(command: String): String {
+        _executedCommands.add(command)
         return replies.getOrDefault(command, emptyList())
             .joinToString(System.lineSeparator()).also {
                 logger.info("cmd: $command response: $it")
@@ -19,12 +22,14 @@ internal class MockCommandRunner(private val logger: FileLogger) : GitClient.Com
     }
 
     override fun executeAndParse(command: String): List<String> {
+        _executedCommands.add(command)
         return replies.getOrDefault(command, emptyList()).also {
             logger.info("cmd: $command response: $it")
         }
     }
 
     override fun executeAndParseFirst(command: String): String {
+        _executedCommands.add(command)
         return replies.getOrDefault(command, emptyList()).first().also {
             logger.info("cmd: $command response: $it")
         }
