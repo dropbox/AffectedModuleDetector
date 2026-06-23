@@ -1,5 +1,9 @@
 package com.dropbox.affectedmoduledetector
 
+import com.dropbox.affectedmoduledetector.commitshaproviders.ForkCommit
+import com.dropbox.affectedmoduledetector.commitshaproviders.PreviousCommit
+import com.dropbox.affectedmoduledetector.commitshaproviders.SpecifiedBranchCommitMergeBase
+import com.dropbox.affectedmoduledetector.vcs.GitClientImpl
 import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -10,6 +14,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import org.mockito.kotlin.mock
 import java.io.File
 
 @RunWith(JUnit4::class)
@@ -166,6 +171,13 @@ class AffectedModuleConfigurationTest {
     }
 
     @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN commitShaProvider THEN is PreviousCommit`() {
+        val actual = config.commitShaProvider
+
+        assertThat(actual).isInstanceOf(PreviousCommit::class.java)
+    }
+
+    @Test
     fun `GIVEN AffectedModuleConfiguration WHEN compareFrom THEN is PreviousCommit`() {
         val actual = config.compareFrom
 
@@ -173,7 +185,21 @@ class AffectedModuleConfigurationTest {
     }
 
     @Test
-    fun `WHEN compareFrom is set to SpecifiedBranchCommitMergeBase AND specifiedBranch is set THEN return SpecifiedBranchCommitMergeBase`() {
+    fun `GIVEN AffectedModuleConfiguration WHEN compareFrom is set THEN commitShaProvider is set to class from compareFrom`() {
+        val providerClass = ForkCommit::class.java
+        val specifiedCompareFrom = providerClass.simpleName
+
+        println(specifiedCompareFrom)
+
+        config.compareFrom = specifiedCompareFrom
+
+        val actual = config.commitShaProvider
+
+        assertThat(actual).isInstanceOf(providerClass)
+    }
+
+    @Test
+    fun `WHEN compareFrom is set to SpecifiedBranchCommitMergeBase AND specifiedBranch is set THEN compareFrom is equal to SpecifiedBranchCommitMergeBase`() {
         val specifiedBranchCommitMergeBase = "SpecifiedBranchCommitMergeBase"
         val specifiedBranch = "origin/dev"
 
@@ -183,6 +209,20 @@ class AffectedModuleConfigurationTest {
         val actual = config.compareFrom
 
         assertThat(actual).isEqualTo(specifiedBranchCommitMergeBase)
+    }
+
+    @Test
+    fun `WHEN compareFrom is set to SpecifiedBranchCommitMergeBase AND specifiedBranch is set THEN commitShaProvider is equal to SpecifiedBranchCommitMergeBase`() {
+        val specifiedBranchCommitMergeBaseClass = SpecifiedBranchCommitMergeBase::class.java
+        val specifiedBranchCommitMergeBase = specifiedBranchCommitMergeBaseClass.simpleName
+        val specifiedBranch = "origin/dev"
+
+        config.specifiedBranch = specifiedBranch
+        config.compareFrom = specifiedBranchCommitMergeBase
+
+        val actual = config.commitShaProvider
+
+        assertThat(actual).isInstanceOf(specifiedBranchCommitMergeBaseClass)
     }
 
     @Test
@@ -375,5 +415,17 @@ class AffectedModuleConfigurationTest {
 
         // THEN
         assertFalse(actual)
+    }
+
+    @Test
+    fun `GIVEN AffectedModuleConfiguration WHEN vcsClientProvider THEN is GitClientImpl`() {
+        val actual = config.vcsClientProvider(
+            tmpFolder.root,
+            mock(),
+            mock(),
+            mock(),
+        )
+
+        assertThat(actual).isInstanceOf(GitClientImpl::class.java)
     }
 }

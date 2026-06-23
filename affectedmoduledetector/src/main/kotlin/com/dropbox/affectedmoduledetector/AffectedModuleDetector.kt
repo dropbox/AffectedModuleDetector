@@ -200,17 +200,15 @@ abstract class AffectedModuleDetector(protected val logger: Logger?) {
                     rootProject
                 )
 
-            val gitClient = GitClientImpl(
+            val vcsClient = config.vcsClientProvider.get(
                 rootProject.projectDir,
                 logger,
-                commitShaProviderConfiguration = CommitShaProviderConfiguration(
-                    type = config.compareFrom,
-                    specifiedBranch = config.specifiedBranch,
-                    specifiedSha = config.specifiedRawCommitSha,
+                CommitShaProviderConfiguration(
+                    provider = config.commitShaProvider,
                     top = config.top,
                     includeUncommitted = config.includeUncommitted
                 ),
-                ignoredFiles = config.ignoredFiles
+                config.ignoredFiles,
             )
 
             logger.lifecycle("projects evaluated")
@@ -226,8 +224,8 @@ abstract class AffectedModuleDetector(protected val logger: Logger?) {
                 parameters.projectSubset = subset
                 parameters.modules = modules
                 parameters.config = config
-                parameters.gitChangedFilesProvider = gitClient.findChangedFiles(rootProject)
-                parameters.gitRoot.set(gitClient.getGitRoot())
+                parameters.changedFilesProvider = vcsClient.findChangedFiles(rootProject)
+                parameters.vcsRoot.set(vcsClient.getVcsRoot())
             }
             logger.info("Using real detector with $subset")
             instance.wrapped = provider
@@ -409,9 +407,9 @@ abstract class AffectedModuleDetectorLoader :
         var ignoreUnknownProjects: Boolean
         var projectSubset: ProjectSubset
         var modules: Set<String>?
-        var gitChangedFilesProvider: Provider<List<String>>
+        var changedFilesProvider: Provider<List<String>>
         var config: AffectedModuleConfiguration
-        val gitRoot: DirectoryProperty
+        val vcsRoot: DirectoryProperty
     }
 
     val detector: AffectedModuleDetector by lazy {
@@ -427,8 +425,8 @@ abstract class AffectedModuleDetectorLoader :
                 projectSubset = parameters.projectSubset,
                 modules = parameters.modules,
                 config = parameters.config,
-                changedFilesProvider = parameters.gitChangedFilesProvider,
-                gitRoot = parameters.gitRoot.get().asFile
+                changedFilesProvider = parameters.changedFilesProvider,
+                vcsRoot = parameters.vcsRoot.get().asFile
             )
         }
     }
@@ -482,7 +480,7 @@ class AffectedModuleDetectorImpl(
     private val modules: Set<String>? = null,
     private val config: AffectedModuleConfiguration,
     private val changedFilesProvider: Provider<List<String>>,
-    private val gitRoot: File,
+    private val vcsRoot: File,
 ) : AffectedModuleDetector(logger) {
 
     init {
@@ -651,7 +649,7 @@ class AffectedModuleDetectorImpl(
         } else {
             File(projectGraph.getRootProjectPath()!!.path)
         }
-        val pathSections = relativeFilePath.toPathSections(rootProjectDir, gitRoot)
+        val pathSections = relativeFilePath.toPathSections(rootProjectDir, vcsRoot)
         val projectRelativePath = pathSections.joinToString(File.separatorChar.toString())
 
         return config.pathsAffectingAllModules.any { projectRelativePath.startsWith(it) }
