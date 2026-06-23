@@ -507,6 +507,11 @@ class AffectedModuleDetectorImpl(
 
     private var unknownFiles: MutableSet<String> = mutableSetOf()
 
+    /** Lazily loaded set of submodule paths from .gitmodules file */
+    private val submodulePaths: Set<String> by lazy {
+        parseSubmodulePaths()
+    }
+
     override fun shouldInclude(project: ProjectPath): Boolean {
         val isProjectAffected = affectedProjects.contains(project)
         val isProjectProvided = isProjectProvided2(project)
@@ -566,6 +571,15 @@ class AffectedModuleDetectorImpl(
         val changedProjects = mutableSetOf<ProjectPath>()
 
         for (filePath in changedFiles) {
+            if (submodulePaths.contains(filePath)) {
+                val submoduleProjects = projectGraph.findAllProjectsUnderPath(filePath, logger)
+                if (submoduleProjects.isNotEmpty()) {
+                    changedProjects.addAll(submoduleProjects)
+                    logger?.info("Submodule $filePath changed. Added ${submoduleProjects.size} projects: $submoduleProjects")
+                    continue
+                }
+            }
+
             val containingProject = findContainingProject(filePath)
             if (containingProject == null) {
                 unknownFiles.add(filePath)
@@ -661,6 +675,31 @@ class AffectedModuleDetectorImpl(
         return projectGraph.findContainingProject(filePath, logger).also {
             logger?.info("search result for $filePath resulted in ${it?.path}")
         }
+    }
+
+    /**
+     * Parses .gitmodules file to extract submodule paths.
+     * Returns empty set if no .gitmodules file exists.
+     */
+    private fun parseSubmodulePaths(): Set<String> {
+        val gitmodulesFile = File(gitRoot, ".gitmodules")
+        if (!gitmodulesFile.exists()) {
+            logger?.info("No .gitmodules file found at ${gitmodulesFile.absolutePath}")
+            return emptySet()
+        }
+
+        val pathRegex = Regex("""^\s*path\s*=\s*(.+)\s*$""")
+        val paths = mutableSetOf<String>()
+
+        gitmodulesFile.readLines().forEach { line ->
+            pathRegex.find(line)?.let { match ->
+                val path = match.groupValues[1].trim().replace("/", File.separator)
+                paths.add(path)
+            }
+        }
+
+        logger?.info("Found ${paths.size} submodules: $paths")
+        return paths
     }
 }
 

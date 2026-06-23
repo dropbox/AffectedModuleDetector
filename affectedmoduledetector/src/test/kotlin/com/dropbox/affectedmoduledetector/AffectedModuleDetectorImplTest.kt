@@ -1773,6 +1773,50 @@ class AffectedModuleDetectorImplTest {
         )
     }
 
+    @Test
+    fun `GIVEN submodule with projects WHEN submodule changes THEN all projects under submodule are affected`() {
+        // Create submodule directory with a project inside
+        val submodulePath = convertToFilePath("libs", "my-submodule")
+        val submoduleDir = File(tmpFolder.root, submodulePath)
+        submoduleDir.mkdirs()
+
+        // Create .gitmodules file
+        File(tmpFolder.root, ".gitmodules").writeText("""
+            [submodule "libs/my-submodule"]
+                path = libs/my-submodule
+                url = https://github.com/example/repo.git
+        """.trimIndent())
+
+        // Create a project inside the submodule
+        val submoduleProject = ProjectBuilder.builder()
+            .withProjectDir(submoduleDir.resolve("module-a"))
+            .withName("module-a")
+            .withParent(root)
+            .build()
+
+        val submoduleProjectGraph = ProjectGraph(root, null)
+
+        val detector = AffectedModuleDetectorImpl(
+            projectGraph = submoduleProjectGraph,
+            dependencyTracker = DependencyTracker(root, null),
+            logger = logger.toLogger(),
+            ignoreUnknownProjects = false,
+            projectSubset = ProjectSubset.CHANGED_PROJECTS,
+            modules = null,
+            changedFilesProvider = MockGitClient(
+                changedFiles = listOf(submodulePath),
+                tmpFolder = tmpFolder.root
+            ).findChangedFiles(root),
+            gitRoot = tmpFolder.root,
+            config = affectedModuleConfiguration
+        )
+
+        MatcherAssert.assertThat(
+            detector.affectedProjects,
+            CoreMatchers.hasItem(submoduleProject.projectPath)
+        )
+    }
+
     // For both Linux/Windows
     fun convertToFilePath(vararg list: String): String {
         return list.toList().joinToString(File.separator)
