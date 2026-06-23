@@ -30,24 +30,30 @@ import java.io.Serializable
  */
 class DependencyTracker(rootProject: Project, logger: Logger?) : Serializable {
 
+    private val configuration: AffectedModuleConfiguration by lazy {
+        rootProject.extensions.getByType(AffectedModuleConfiguration::class.java)
+    }
+
     private val dependentList: Map<ProjectPath, Set<ProjectPath>> by lazy {
         val result = mutableMapOf<ProjectPath, MutableSet<ProjectPath>>()
         rootProject.subprojects.forEach { project ->
             logger?.info("checking ${project.path} for dependencies")
-            project.configurations.forEach { config ->
-                logger?.info("checking config ${project.path}/$config for dependencies")
-                config
-                    .dependencies
-                    .filterIsInstance<ProjectDependency>()
-                    .forEach {
-                        logger?.info(
-                            "there is a dependency from ${project.projectPath} to " +
-                                    it.path,
-                        )
-                        result.getOrPut(ProjectPath(it.path)) { mutableSetOf() }
-                            .add(project.projectPath)
-                    }
-            }
+            project.configurations
+                .filter(configuration.configurationPredicate::test)
+                .forEach { config ->
+                    logger?.info("checking config ${project.path}/$config for dependencies")
+                    config
+                        .dependencies
+                        .filterIsInstance<ProjectDependency>()
+                        .forEach {
+                            logger?.info(
+                                "there is a dependency from ${project.projectPath} to " +
+                                        it.path,
+                            )
+                            result.getOrPut(ProjectPath(it.path)) { mutableSetOf() }
+                                .add(project.projectPath)
+                        }
+                }
         }
         result
     }

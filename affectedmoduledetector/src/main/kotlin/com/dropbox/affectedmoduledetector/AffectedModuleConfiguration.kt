@@ -1,8 +1,10 @@
 package com.dropbox.affectedmoduledetector
 
 import com.dropbox.affectedmoduledetector.util.toOsSpecificPath
+import org.gradle.api.artifacts.Configuration
 import java.io.File
 import java.io.Serializable
+import java.util.function.Predicate
 
 class AffectedModuleConfiguration : Serializable {
 
@@ -44,6 +46,13 @@ class AffectedModuleConfiguration : Serializable {
      * @see AffectedModuleDetectorPlugin - gradle plugin
      */
     var customTasks = emptySet<CustomTask>()
+
+    /**
+     * Predicate to determine if a configuration should be considered or ignored.  This predicate
+     * will be called for every configuration defined by each project module.  By default,
+     * all configurations are considered.
+     */
+    var configurationPredicate: Predicate<Configuration> = AlwaysConfigurationPredicate()
 
     /**
      * Folder to place the log in
